@@ -28,7 +28,7 @@
   <link rel="manifest" href="/site.webmanifest">
   <link rel="apple-touch-icon" href="/icon.png">
 
-  <link rel="stylesheet" href="/<?php echo $config['themePath']; ?>style.css?v=$VERSION$">
+  <link rel="stylesheet" href="<?php echo $config['themePath']; ?>style.css?v=$VERSION$">
 </head>
 <body>
 <?php include '_navbar.php' ?>

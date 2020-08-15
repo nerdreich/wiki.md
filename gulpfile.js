@@ -19,11 +19,14 @@ const p = require('./package.json')
 const gulp = require('gulp')
 const replace = require('gulp-replace')
 
+const subdir = ''
+// const subdir = '/mywiki'
+
 const dirs = {
   build: 'dist/',
-  site: 'dist/' + p.name,
-  theme: 'dist/' + p.name + '/themes/elegant',
-  data: 'dist/' + p.name + '/content'
+  site: 'dist/' + p.name + subdir,
+  theme: 'dist/' + p.name + subdir + '/themes/elegant',
+  data: 'dist/' + p.name + subdir + '/content'
 }
 
 // --- testing targets ---------------------------------------------------

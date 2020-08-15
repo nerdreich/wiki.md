@@ -21,11 +21,6 @@
 // --- load config -------------------------------------------------------------
 
 $config = parse_ini_file('.config.ini');
-$config['themePath'] = 'themes/' . $config['theme'] . '/';
-
-$contentPath = sanitizePath(
-    parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)
-);
 
 // --- setup user session ------------------------------------------------------
 
@@ -74,9 +69,16 @@ $wiki = new at\nerdreich\Wiki($config['content_dir']);
 
 // --- setup theme --------------------------------------------------------------
 
-require_once($config['themePath'] . '/setup.php');
+$config['themePath'] = $wiki->getPathRoot() . '/themes/' . $config['theme'] . '/';
+$config['themeRoot'] = dirname(__FILE__) . '/themes/' . $config['theme'] . '/';
+require_once($config['themeRoot'] . 'setup.php');
 
 // --- route requests ----------------------------------------------------------
+
+// determine content path. will trim folder if wiki.md is installed in a sub-folder.
+$contentPath = substr(sanitizePath(
+    parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)
+), strlen($wiki->getPathRoot()));
 
 $wiki->load($contentPath);
 
@@ -86,17 +88,17 @@ switch ($_GET['auth']) {
         if ($user->login(trim($_POST['password']))) {
             // successfull -> redirect back
             $action = array_key_exists('action', $_GET) ? '?action=' . urlencode($_GET['action']) : '';
-            redirect($contentPath, $action);
+            redirect($wiki->getPathRoot() . $contentPath, $action);
         } else {
             // unsuccessful -> show login again
-            include($config['themePath'] . 'login.php');
+            include($config['themeRoot'] . 'login.php');
             exit;
         }
         break;
     case 'logout':
         $user->logout();
         $action = array_key_exists('action', $_GET) ? '?action=' . urlencode($_GET['action']) : '';
-        redirect($contentPath, $action);
+        redirect($wiki->getPathRoot() . $contentPath, $action);
 }
 
 // now check for regular wiki operations
@@ -105,7 +107,7 @@ if (!$wiki->exists()) {
         case 'createPage':
             if ($user->mayCreate($contentPath)) {
                 $wiki->createPage();
-                include($config['themePath'] . 'edit.php');
+                include($config['themeRoot'] . 'edit.php');
                 exit;
             }
             break;
@@ -121,14 +123,14 @@ if (!$wiki->exists()) {
             }
             break;
         default:
-            include($config['themePath'] . '404.php');
+            include($config['themeRoot'] . '404.php');
             exit;
     }
 } else {
     switch ($_GET['action']) {
         case 'delete':
             if ($user->mayDelete($contentPath)) {
-                include($config['themePath'] . 'delete.php');
+                include($config['themeRoot'] . 'delete.php');
                 exit;
             }
             break;
@@ -140,7 +142,7 @@ if (!$wiki->exists()) {
             break;
         case 'edit':
             if ($user->mayRead($contentPath) && $user->mayUpdate($contentPath)) {
-                include($config['themePath'] . 'edit.php');
+                include($config['themeRoot'] . 'edit.php');
                 exit;
             }
             break;
@@ -157,7 +159,7 @@ if (!$wiki->exists()) {
             break;
         case 'history':
             if ($user->mayRead($contentPath) && $user->mayUpdate($contentPath)) {
-                include($config['themePath'] . 'history.php');
+                include($config['themeRoot'] . 'history.php');
                 exit;
             }
             break;
@@ -167,17 +169,17 @@ if (!$wiki->exists()) {
                 if ($version > 0) {
                     $wiki->revertToVersion($version);
                 }
-                include($config['themePath'] . 'edit.php');
+                include($config['themeRoot'] . 'edit.php');
                 exit;
             }
             break;
         default:
             if ($user->mayRead($contentPath)) {
-                include($config['themePath'] . 'view.php');
+                include($config['themeRoot'] . 'view.php');
                 exit;
             }
     }
 }
 
 // if we got here, then no 'exit' fired - probably a permission error
-include($config['themePath'] . 'login.php');
+include($config['themeRoot'] . 'login.php');

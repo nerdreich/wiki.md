@@ -30,9 +30,10 @@ require_once('lib/ParsedownExtra.php'); // better markdown parser
  */
 class Wiki
 {
-    private $filename = 'na'; // path to markdown file, e.g. /var/www/www.mysite.com/mywiki/data/animals/lion.md
-    private $wikiroot = '';   // path to wiki php, e.g. /var/www/www.mysite.com/mywiki
-    private $dataPath = '';   // path to wiki data, e.g. /var/www/www.mysite.com/mywiki/data
+    private $filename = 'na'; // fs-path to content file, e.g. /var/www/www.mysite.com/mywiki/data/animals/lion.md
+    private $wikiroot = '';   // fs-path to wiki code, e.g. /var/www/www.mysite.com/mywiki
+    private $dataPath = '';   // fs-path to wiki data, e.g. /var/www/www.mysite.com/mywiki/data
+    private $urlRoot = '';   // url-parent-folder of the wiki, e.g. /mywiki
     private $urlPath = '/';   // current URL path within the wiki, e.g. /animals/lion
 
     private $metadata = [];   // yaml front matter for a content
@@ -51,6 +52,7 @@ class Wiki
         // wiki path + files
         $this->wikiroot = dirname(__FILE__);
         $this->dataPath = $this->wikiroot . '/' . $datadir;
+        $this->urlRoot = substr($this->wikiroot, strlen($_SERVER['DOCUMENT_ROOT']));
 
         $this->registerMacro('include', function (?string $primary, ?array $secondary, string $path) {
             return $this->resolveMacroInclude($primary, $secondary, $path);
@@ -70,6 +72,25 @@ class Wiki
         list($this->metadata, $this->content) = $this->loadFile($this->filename, true);
     }
 
+    /**
+     * Redirect to a wiki path, e.g. /animals/lion.
+     *
+     * If wiki.md is installed in a sub-folder, it will prefix the location
+     * with it, e.g. /mywiki/animals/lion.
+     *
+     * @param string $urlPath The URI path for the wiki page.
+     */
+    private function redirect(
+        string $path
+    ) {
+        if ($this->urlRoot . $path === '') {
+            header('Location: /');
+        } else {
+            header('Location: ' . $this->urlRoot . $path);
+        }
+        die();
+    }
+
     // ----------------------------------------------------------------------
     // --- content access for theme files -----------------------------------
     // ----------------------------------------------------------------------
@@ -87,11 +108,24 @@ class Wiki
     /**
      * Get the user-visible path for the current wiki page.
      *
+     * In case wiki.md was installed in a sub-directory, this path does not
+     * contain it.
+     *
      * @return string URI Path, e.g. '/library/animals/lion'.
      */
     public function getPath(): string
     {
         return $this->urlPath;
+    }
+
+    /**
+     * Get the parent directory of the wiki.
+     *
+     * @return string URL Path, e.g. '/mywiki'.
+     */
+    public function getPathRoot(): string
+    {
+        return $this->urlRoot;
     }
 
     /**
@@ -428,8 +462,7 @@ class Wiki
         $this->fileWriteContent($this->filename, $frontmatter . "---\n" . trim($content) . "\n");
         $this->addToChangelog();
 
-        header('Location: ' . ($this->urlPath === '' ? '/' : $this->urlPath));
-        die();
+        $this->redirect($this->urlPath);
     }
 
     /**
@@ -461,8 +494,7 @@ class Wiki
                 $this->filename . '.deleted'
             );
         }
-        header('Location: ' . $this->urlPath);
-        die();
+        $this->redirect($this->urlPath);
     }
 
     // ----------------------------------------------------------------------
@@ -564,7 +596,7 @@ class Wiki
                 continue;
             }
             $markdown = str_replace($matchFull[$index], '[' . $matchText[$index] . ']('
-                . $folder . '/' . $matchLink[$index] . ')', $markdown);
+                . $this->urlRoot . $folder . '/' . $matchLink[$index] . ')', $markdown);
         }
         return $markdown;
     }

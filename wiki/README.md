@@ -6,4 +6,4 @@ history: [ ]
 ---
 This is the homepage of your new wiki. Enjoy!
 
-When you are ready, head over to the [documentation](/docs/).
+When you are ready, head over to the [documentation](docs/).

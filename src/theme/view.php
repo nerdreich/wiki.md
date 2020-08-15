@@ -32,7 +32,7 @@
   <style>
   body { background-color: #2b3e50; color: rgba(255, 255, 255, 0.8); }
   </style>
-  <link rel="stylesheet" href="/<?php echo $config['themePath']; ?>style.css?v=$VERSION$">
+  <link rel="stylesheet" href="<?php echo $config['themePath']; ?>style.css?v=$VERSION$">
 </head>
 <body>
 <?php include '_navbar.php' ?>

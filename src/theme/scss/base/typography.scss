@@ -210,8 +210,8 @@ hr {
   margin-top: 2rem;
 }
 
-a[href^='http:']::after,
-a[href^='https:']::after {
+a[href^='http:']:not(.no-icon)::after,
+a[href^='https:']:not(.no-icon)::after {
   content: '⇗';
   font-size: .75em;
   padding-bottom: .25em;

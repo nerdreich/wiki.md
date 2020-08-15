@@ -9,7 +9,23 @@ Before you install, make sure the following requirements are met:
 
 ## Basic installation
 
-Download a `wiki.md-<version>.tar.gz` or `wiki.md-<version>.zip` and extract it to a temporary location. If you want your whole site to be the wiki, copy everything from `wiki.md/` into the root of your web-server. If you want to run the wiki only within a sub-directory, copy everything into a folder of your choice on the web-server, turning that into the wiki.
+Download a `wiki.md-<version>.tar.gz` or `wiki.md-<version>.zip` and extract it to a temporary location.
+
+If you want to turn your *whole site* into a wiki, copy everything from `wiki.md/` into the root of your web-server.
+
+If you want to turn only a *sub-directory* into a wiki (let's assume `/my/wiki`), then edit `.htaccess` and change
+
+```
+RewriteRule ^(.*)$ /index.php?path=$1 [NC,L,QSA]
+```
+
+to
+
+```
+RewriteRule ^(.*)$ /my/wiki/index.php?path=$1 [NC,L,QSA]
+```
+
+before copying everything into the `my/wiki` folder on your web-server.
 
 ### Change password
 
