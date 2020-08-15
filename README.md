@@ -30,17 +30,28 @@ Any recent HTML5-capable browser should do.
 
 Extract the `*.tar.gz`/`*.zip` into a folder on your web-server and you are (almost) ready to go - wiki.md comes with reasonable, secure defaults. See [Docs](docs/README.md) for details.
 
+## Build from source
+
+This is only recommended for advanced use-cases. For most users using the pre-packaged `*.tar.gz`/`*.zip` should be fine.
+
+To build wiki.md yourself, you'll need `git`, `npm` v6.5+ and `gulp` v4. Assuming all requirements are met, just:
+
+```
+git clone https://github.com/nerdreich/wiki.md
+cd wiki.md
+npm install
+gulp dist
+```
+
+Afterwards, the archives can be found in the `dist/` folder.
+
 ## Next steps
 
 Read the [Documentation](docs/) to learn more.
 
 ## Roadmap
 
-wiki.md currently is beta software. It should work mostly fine, but you might miss features or hit some bugs. Feel free to report any issues you find.
-
-### Planned for v0.1.0 (first public release)
-
-* Footer-line too long (margin/padding)
+wiki.md currently is beta software. It should work mostly fine, but you might miss features or hit some bugs. Feel free to report any [issues](https://github.com/nerdreich/wiki.md/issues) you find.
 
 ### Planned for v1.0.0
 
@@ -49,6 +60,7 @@ wiki.md currently is beta software. It should work mostly fine, but you might mi
 * better page history browser
 * squash history of multiple page saves in short (configurable) time
 * unit tests for utility code
+* contributing and code guidelines
 
 ### Planned for v1.1.0
 
