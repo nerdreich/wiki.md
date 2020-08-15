@@ -30,6 +30,9 @@ require_once('lib/ParsedownExtra.php'); // better markdown parser
  */
 class Wiki
 {
+    private $version = '$VERSION$';
+    private $repo = '$URL$';
+
     private $filename = 'na'; // fs-path to content file, e.g. /var/www/www.mysite.com/mywiki/data/animals/lion.md
     private $wikiroot = '';   // fs-path to wiki code, e.g. /var/www/www.mysite.com/mywiki
     private $dataPath = '';   // fs-path to wiki data, e.g. /var/www/www.mysite.com/mywiki/data
@@ -94,6 +97,26 @@ class Wiki
     // ----------------------------------------------------------------------
     // --- content access for theme files -----------------------------------
     // ----------------------------------------------------------------------
+
+    /**
+     * Get the wiki.md version.
+     *
+     * @return string SemVer version, e.g. '1.0.2'.
+     */
+    public function getVersion(): string
+    {
+        return $this->version;
+    }
+
+    /**
+     * Get the wiki.md source code repository URL.
+     *
+     * @return string Link to repo/homepage.
+     */
+    public function getRepo(): string
+    {
+        return $this->repo;
+    }
 
     /**
      * Check if the current wiki page exists.

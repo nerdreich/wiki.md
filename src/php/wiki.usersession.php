@@ -144,7 +144,7 @@ class UserSession
         // do not autostart sessions to not create unwanted cookies
         if (array_key_exists('PHPSESSID', $_COOKIE)) {
             session_start();
-            return $_SESSION['username'];
+            return $_SESSION['username'] ?? '';
         }
         return '*'; // no session -> anonmyous user
     }
