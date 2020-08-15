@@ -1,0 +1,49 @@
+// Copyright 2020 Markus Leupold-Löwenthal
+//
+// This file is part of wiki.md.
+//
+// wiki.md is free software: you can redistribute it and/or modify it under the
+// terms of the GNU Affero General Public License as published by the Free
+// Software Foundation, either version 3 of the License, or (at your option) any
+// later version.
+//
+// wiki.md is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
+
+////
+/// @group themes
+/// @access public
+////
+
+// Color values for 'elegant' theme.
+
+$theme-color1: #9b6a6c;
+$theme-color2: #202020;
+$theme-color3: #fefdfa;
+$theme-color4: #f4eeec;
+$theme-color5: #404040;
+
+$color-primary: $theme-color1;
+
+$color-bg: $theme-color3;
+$color-bg-secondary: $theme-color4;
+$color-bg-highlight: $color-bg-secondary;
+
+$color-panel-bg: $theme-color4;
+$color-text: $theme-color2;
+$color-text-bold: $theme-color1;
+$color-headline: $theme-color5;
+$color-error: #ed0006;
+$color-hr: $color-black-10a;
+
+pre,
+code,
+kbd,
+samp {
+  background-color: $theme-color4;
+  border-radius: $var-border-radius;
+}

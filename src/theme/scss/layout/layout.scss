@@ -1,0 +1,59 @@
+// Copyright 2020 Markus Leupold-Löwenthal
+//
+// This file is part of wiki.md.
+//
+// wiki.md is free software: you can redistribute it and/or modify it under the
+// terms of the GNU Affero General Public License as published by the Free
+// Software Foundation, either version 3 of the License, or (at your option) any
+// later version.
+//
+// wiki.md is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
+
+////
+/// @group layout
+/// @access public
+////
+
+// Basic grid and spacing settings. We move all margins to the top of
+// entities. This makes it soo much easier to use the + selector to
+// fine-tune situation specific spacings in other files.
+
+@mixin layout-top-margin ($top-margin) {
+  margin-bottom: 0;
+  margin-top: $top-margin;
+
+  &:first-child {
+    margin-top: 0; // do not apply top spacing to first element in a container
+  }
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.h1,
+.h2,
+.h3,
+.h4,
+.h5,
+.h6,
+hr,
+li,
+p,
+pre,
+blockquote,
+ul,
+ol,
+table,
+form,
+input,
+textarea {
+  @include layout-top-margin($spacing);
+}

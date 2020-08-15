@@ -1,0 +1,127 @@
+// Copyright 2020 Markus Leupold-Löwenthal
+//
+// This file is part of wiki.md.
+//
+// wiki.md is free software: you can redistribute it and/or modify it under the
+// terms of the GNU Affero General Public License as published by the Free
+// Software Foundation, either version 3 of the License, or (at your option) any
+// later version.
+//
+// wiki.md is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
+
+////
+/// @group components
+/// @access public
+////
+
+$navbar-text-color: $color-white-100;
+
+.navbar {
+  background-color: $color-primary;
+  color: $navbar-text-color;
+  padding-bottom: $spacing / 4;
+  padding-top: $spacing / 4;
+
+  a {
+    @include typography-links($navbar-text-color, $navbar-text-color, 1px, transparent, $navbar-text-color);
+    margin-right: $spacing;
+  }
+
+  .col-12 {
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: 0;
+    padding-top: 0;
+  }
+
+  .wiki-menu {
+    z-index: 10;
+
+    a {
+      display: inline-block;
+      margin: 0;
+      padding: .25rem;
+      width: 100%;
+    }
+
+    i {
+      min-width: 1.25em;
+      opacity: .5;
+    }
+  }
+
+  input[type='checkbox'] {
+    + label {
+      margin: 0;
+
+      + div {
+        background-color: $color-bg;
+        border-radius: $var-border-radius;
+        color: $color-text;
+        display: none;
+        padding: .2em .5em;
+        position: absolute;
+        right: 15px; // bs padding
+
+        a {
+          @include typography-links($color-text, $color-text, 1px, transparent, $color-text);
+        }
+      }
+    }
+
+    &:checked {
+      + label {
+        + div {
+          display: block;
+        }
+      }
+    }
+  }
+}
+
+.banner {
+  .h1,
+  .h2 {
+    font-style: normal;
+    text-transform: uppercase;
+
+    + * {
+      margin-top: .5rem;
+    }
+  }
+
+  em {
+    font-family: $typography-font-list-serif;
+  }
+}
+
+.sidenav {
+  font-size: 1rem;
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  .h1,
+  .h2,
+  .h3,
+  .h4,
+  .h5,
+  .h6 {
+    @include typography-font($typography-font-list-serif, 700, 1.25em);
+    border-bottom: 0;
+    font-style: normal;
+    text-transform: uppercase;
+
+    + * {
+      margin-top: 0;
+    }
+  }
+}

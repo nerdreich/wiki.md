@@ -1,0 +1,53 @@
+// Copyright 2020 Markus Leupold-Löwenthal
+//
+// This file is part of wiki.md.
+//
+// wiki.md is free software: you can redistribute it and/or modify it under the
+// terms of the GNU Affero General Public License as published by the Free
+// Software Foundation, either version 3 of the License, or (at your option) any
+// later version.
+//
+// wiki.md is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
+
+////
+/// @group components
+/// @access public
+////
+
+$input-padding: $spacing / 2;
+
+input[type='text'],
+input[type='password'],
+textarea {
+  @include typography-font($typography-font-list-courier, 400, px(18), 1.4em);
+
+  background-color: $color-bg;
+  border: 2px solid $color-hr;
+  border-radius: $var-border-radius;
+  color: $color-text;
+  padding: $input-padding;
+  width: 100%;
+
+  &::placeholder {
+    color: $color-gray-60;
+    font-style: italic;
+    opacity: 1;
+  }
+
+  &:required::placeholder {
+    color: $color-error;
+  }
+
+  &:invalid {
+    border-color: $color-error;
+  }
+}
+
+textarea {
+  min-height: 20 * 1.5em + 1em; // 20x line height plus a bit padding
+}

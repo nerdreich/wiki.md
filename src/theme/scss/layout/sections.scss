@@ -1,0 +1,59 @@
+// Copyright 2020 Markus Leupold-Löwenthal
+//
+// This file is part of wiki.md.
+//
+// wiki.md is free software: you can redistribute it and/or modify it under the
+// terms of the GNU Affero General Public License as published by the Free
+// Software Foundation, either version 3 of the License, or (at your option) any
+// later version.
+//
+// wiki.md is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
+
+////
+/// @group layout
+/// @access public
+////
+
+// Basic handling of <sections>. Automatically adds proper spacing between
+// sections based on their content/usage (mostly depending on if they do have
+// background images/colors).
+
+$section-spacing: $spacing * 2; // visual gap between sections
+
+section,
+footer {
+  padding: $section-spacing / 2 0;
+}
+
+.col-12,
+.col-11,
+.col-10,
+.col-9,
+.col-8,
+.col-7,
+.col-6,
+.col-5,
+.col-4,
+.col-3,
+.col-2,
+.col-1 {
+  padding-bottom: $section-spacing / 2;
+  padding-top: $section-spacing / 2;
+}
+
+section:not(.section-has-bg) + section:not(.section-has-bg) {
+  padding-top: 0;
+}
+
+.section-main {
+  margin-top: .5em;
+}
+
+.section-meta {
+  background-color: $color-white-10a;
+}

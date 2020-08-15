@@ -1,0 +1,42 @@
+{
+  "name": "wiki.md",
+  "version": "0.1.0",
+  "description": "A file-based, responsive Markdown wiki, written in PHP.",
+  "keywords": [
+    "wiki",
+    "PHP",
+    "responsive"
+  ],
+  "engines": {
+    "npm": ">=6.5.0"
+  },
+  "author": "Markus Leupold-Löwenthal",
+  "homepage": "https://github.com/nerdreich/wiki.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nerdreich/wiki.md"
+  },
+  "bugs": {
+    "url": "https://github.com/nerdreich/wiki.md/issues"
+  },
+  "license": "AGPL-3.0-or-later",
+  "devDependencies": {
+    "del": "5",
+    "gulp": "4",
+    "gulp-autoprefixer": "7",
+    "gulp-concat": "2",
+    "gulp-gzip": "1",
+    "gulp-imagemin": "7",
+    "gulp-phpcs": "3",
+    "gulp-replace": "1",
+    "gulp-sass": "4",
+    "gulp-sass-lint": "1",
+    "gulp-sort": "2",
+    "gulp-tar": "3",
+    "gulp-zip": "5",
+    "imagemin-pngquant": "9"
+  },
+  "dependencies": {
+    "bootstrap": "4.5"
+  }
+}

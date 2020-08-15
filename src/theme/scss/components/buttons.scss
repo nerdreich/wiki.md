@@ -1,0 +1,71 @@
+// Copyright 2020 Markus Leupold-Löwenthal
+//
+// This file is part of wiki.md.
+//
+// wiki.md is free software: you can redistribute it and/or modify it under the
+// terms of the GNU Affero General Public License as published by the Free
+// Software Foundation, either version 3 of the License, or (at your option) any
+// later version.
+//
+// wiki.md is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
+
+////
+/// @group components
+/// @access public
+////
+
+button,
+.btn,
+input[type='button'],
+input[type='submit'] {
+  @include typography-font($typography-font-list-serif, 700, px(18), 1em, 1px);
+  @include typography-links(inherit, inherit, 0);
+  @include media-breakpoint-down(xs) {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  background-color: $color-panel-bg;
+  border: 0;
+  border-radius: $var-border-radius;
+  color: $color-white-90a;
+  display: inline-block;
+  margin-right: $spacing;
+  padding: $spacing / 2 $spacing;
+  text-align: center;
+  text-transform: uppercase;
+
+  &.primary {
+    background-color: $color-primary;
+    color: $color-white-100;
+  }
+
+  &.error {
+    background-color: $color-error;
+    color: $color-white-100;
+  }
+
+  &:hover {
+    background-color: $color-white-100;
+    color: $color-black-80a;
+  }
+}
+
+// add our layout.scss margins also to a.btn, as they are inline-blocks now.
+.btn {
+  @include layout-top-margin($spacing);
+}
+
+.btn-outline {
+  background-color: transparent;
+  border: 1px solid $color-white-100;
+  color: $color-white-100;
+  font-size: .75em;
+  font-weight: 700;
+  padding: .1em .5em;
+}

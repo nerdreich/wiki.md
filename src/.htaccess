@@ -1,0 +1,15 @@
+# minimalistic .htaccess file for wiki functionality
+# use .htaccess-full for a better, more performant & secure version
+
+RewriteEngine on
+
+# Block access to all hidden files and directories
+RewriteCond %{REQUEST_URI} "!(^|/)\.well-known/([^./]+./?)+$" [NC]
+RewriteCond %{SCRIPT_FILENAME} -d [OR]
+RewriteCond %{SCRIPT_FILENAME} -f
+RewriteRule "(^|/)\." - [F]
+
+# Enable catch-all rule for the main file.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ /index.php?path=$1 [NC,L,QSA]

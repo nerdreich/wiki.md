@@ -1,0 +1,5 @@
+---
+  userCreate: admin
+  userRead: *
+  userUpdate: admin
+  userDelete: admin

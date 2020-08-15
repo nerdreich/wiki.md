@@ -1,0 +1,220 @@
+// Copyright 2020 Markus Leupold-Löwenthal
+//
+// This file is part of wiki.md.
+//
+// wiki.md is free software: you can redistribute it and/or modify it under the
+// terms of the GNU Affero General Public License as published by the Free
+// Software Foundation, either version 3 of the License, or (at your option) any
+// later version.
+//
+// wiki.md is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
+
+////
+/// @group abstracts
+/// @access public
+////
+
+// We try to use relative units (em) if possible, so that it is easier to scale
+// the font/element on its font-size.
+
+@import '../../fonts/Vollkorn/font';
+@import '../../fonts/SourceCodePro/font';
+
+$typography-font-list-serif-fallback:
+-apple-system,
+BlinkMacSystemFont,
+'Segoe UI',
+Roboto,
+'Helvetica Neue',
+Arial,
+sans-serif,
+'Apple Color Emoji',
+'Segoe UI Emoji',
+'Segoe UI Symbol';
+
+$typography-font-list-courier-fallback:
+SFMono-Regular,
+Menlo,
+Monaco,
+Consolas,
+'Liberation Mono',
+'Courier New',
+monospace;
+
+$typography-font-list-serif:
+'Vollkorn',
+$typography-font-list-serif-fallback;
+
+$typography-font-list-courier:
+'Source Code Pro',
+$typography-font-list-courier-fallback;
+
+$typography-body-font-size: px(18);
+
+// ---------------------------------------------------------------------
+
+@mixin typography-font (
+  $font-family,
+  $font-weight: 300,
+  $font-size: 1em,
+  $line-height: 1.5em,
+  $letter-spacing: 0
+) {
+  @include set-property-if-not(letter-spacing, 0, $letter-spacing);
+
+  font-family: $font-family;
+  font-size: $font-size;
+  font-weight: $font-weight;
+  line-height: $line-height;
+}
+
+/// Setup links (anchors). Fancy with color, opacity and colorful underlines!
+///
+/// @example scss
+///   @include a-underlined(#333, rgba(#333, 0.7), 2px, #555, rgba(#555, 0.7));
+///
+/// @param {color} $color [inherit] The text color.
+/// @param {color} $color-hover [$color] The text color when hovering.
+/// @param {length} $underline-height [1px] The height / thickness of the underline.
+/// @param {color} $underline-color [$color] The regular color of the underline.
+/// @param {color} $underline-color-hover [$color] The hover color fo the underline.
+/// @output An `a {}` rules block for fancy links.
+@mixin typography-links(
+  $color: inherit,
+  $color-hover: $color,
+  $underline-height: 1px,
+  $underline-color: $color,
+  $underline-color-hover: $color
+) {
+  $gradient-transparent: linear-gradient(transparent, transparent);
+
+  background-image: $gradient-transparent, $gradient-transparent, linear-gradient(to right, $underline-color, $underline-color);
+  background-position: left bottom 3px; // depends on underline
+  background-repeat: no-repeat;
+  background-size: 100% $underline-height;
+  color: $color;
+  display: inline;
+  padding-bottom: 2px;
+  position: relative;
+  text-decoration: none;
+
+  &:hover {
+    @include set-property-if-not(color, $color, $color-hover);
+
+    background-image: $gradient-transparent, $gradient-transparent, linear-gradient(to right, $underline-color-hover, $underline-color-hover);
+    text-decoration: none;
+  }
+}
+
+// ---------------------------------------------------------------------
+
+html {
+  font-size: 16px; // root font size
+}
+
+html,
+body {
+  background-color: $color-bg;
+}
+
+body {
+  @include typography-font($typography-font-list-serif, 400, $typography-body-font-size, 1.5em, .0125em);
+  color: $color-text;
+
+  a {
+    @include typography-links($color-primary, $color-primary, 1px, transparent, $color-primary);
+  }
+}
+
+pre,
+code,
+kbd,
+samp {
+  @include typography-font($typography-font-list-courier, 400, px(16), 1.4em);
+  padding: .1em .25em;
+}
+
+pre code {
+  padding: 0;
+}
+
+.h0,
+%h0, {
+  @include typography-font($typography-font-list-serif, 900, 2.5em, 1em, .025em);
+  color: $color-headline;
+  text-transform: uppercase;
+}
+
+h1,
+.h1,
+%h1 {
+  @include typography-font($typography-font-list-serif, 900, 2.5em, 1em, .025em);
+  color: $color-headline;
+  font-style: italic;
+  margin-bottom: $spacing * 2;
+  margin-top: $spacing * 2.5;
+}
+
+h2,
+.h2,
+%h2 {
+  @include typography-font($typography-font-list-serif, 800, 1.75em, 1em, .025em);
+  color: $color-headline;
+  font-style: italic;
+  margin-top: $spacing * 2.5;
+}
+
+h3,
+.h3,
+%h3 {
+  @include typography-font($typography-font-list-serif, 800, 1.25em, 1em, .025em);
+  color: $color-headline;
+  margin-top: $spacing * 2.5;
+}
+
+h4,
+.h4,
+%h4,
+h5,
+.h5,
+%h5,
+h6,
+.h6,
+%h6 {
+  @include typography-font($typography-font-list-serif, 800, 1.25em, 1.15em);
+  color: $color-headline;
+  margin-top: $spacing * 2.5;
+}
+
+ul {
+  padding-left: 1.25em;
+}
+
+li {
+  margin-top: 0;
+}
+
+strong {
+  color: $color-text-bold;
+  font-weight: 700;
+}
+
+hr {
+  border-bottom: 2px sold $color-hr;
+  margin-bottom: 2rem;
+  margin-top: 2rem;
+}
+
+a[href^='http:']::after,
+a[href^='https:']::after {
+  content: '⇗';
+  font-size: .75em;
+  padding-bottom: .25em;
+  position: relative;
+  top: -.5em;
+}
