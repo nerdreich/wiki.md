@@ -9,11 +9,11 @@ Before you install, make sure the following requirements are met:
 
 ## Basic installation
 
-Download a `wiki.md-<version>.tar.gz` or `wiki.md-<version>.zip` and extract it to a temporary location. If you want your whole site to be the wiki, copy everything from `wiki.md/` into the root of your webserver. If you want to run the wiki only within a subdirectory, copy everything into a folder of your choice on the webserver, turning that into the wiki.
+Download a `wiki.md-<version>.tar.gz` or `wiki.md-<version>.zip` and extract it to a temporary location. If you want your whole site to be the wiki, copy everything from `wiki.md/` into the root of your web-server. If you want to run the wiki only within a sub-directory, copy everything into a folder of your choice on the web-server, turning that into the wiki.
 
 ### Change password
 
-The default installation requires a `admin` password to edit pages. There is no default password, so you can't edit anything until you set one.
+The default installation requires an `admin` password to edit pages. There is no default password, so you can't edit anything until you set one.
 
 To do so, replace the `admin`'s password in `.htpasswd` with a new one. You can use any tool that can create a bcrypt hash, e.g. Apache's `htpassd`:
 
@@ -23,7 +23,7 @@ $ htpasswd -B /path/to/wiki/.htpasswd admin
 
 ### Delete documentation
 
-wiki.md adds it's documentation as /docs to your installation. You can safely delete this folder if you don't need it.
+wiki.md adds its documentation as /docs to your installation. You can safely delete this folder if you don't need it.
 
 ## Advanced configuration
 
@@ -65,4 +65,4 @@ The default installation only knows a single `admin` user. See [Permissions](per
 
 ### Content folder
 
-Per default all wiki content is stored in a `content/` subfolder. As this is not visible in the URL, it's probably is ok for you. In case you want to change the foldername, edit `.config.ini` and set `content_dir` to a name of your choice. You will also have to rename the original `content/` folder or create a set up a new one from scratch.
+Per default all wiki content is stored in a `content/` sub-folder. As this is not visible in the URL, it's probably is OK for you. In case you want to change the folder name, edit `.config.ini` and set `content_dir` to a name of your choice. You will also have to rename the original `content/` folder or create a set up a new one from scratch.

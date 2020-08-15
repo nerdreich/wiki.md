@@ -28,7 +28,7 @@ Any recent HTML5-capable browser should do.
 
 ## Installation
 
-Extract the `*.tar.gz`/`*.zip` into a folder on your webserver and you are (almost) ready to go - wiki.md comes with reasonable, secure defaults. See [Docs](docs/README.md) for details.
+Extract the `*.tar.gz`/`*.zip` into a folder on your web-server and you are (almost) ready to go - wiki.md comes with reasonable, secure defaults. See [Docs](docs/README.md) for details.
 
 ## Next steps
 
