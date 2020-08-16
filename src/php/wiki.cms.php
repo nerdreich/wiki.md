@@ -206,7 +206,9 @@ class Wiki
      */
     public function getContentHTML(): string
     {
-        return $this->markdown2Html($this->content);
+        return $this->markdown2Html(
+            $this->preprocessMarkdown($this->content, $this->filename)
+        );
     }
 
     /**
@@ -252,7 +254,9 @@ class Wiki
         string $markdownPath
     ): string {
         list($snippetMetadata, $snippetContent) = $this->loadFile($markdownPath);
-        return $this->markdown2Html($snippetContent);
+        return $this->markdown2Html(
+            $this->preprocessMarkdown($snippetContent, $markdownPath)
+        );
     }
 
     /**
@@ -347,7 +351,7 @@ class Wiki
      *
      * @param string $primary The primary parameter.
      * @param array $secondary The secondary parameter.
-     * @param string $path Path to macro file (for relative processing).
+     * @param string $path Absolute path to file containing the macro (for relative processing).
      * @return string Expanded macro.
      */
     private function resolveMacroInclude(
@@ -356,14 +360,18 @@ class Wiki
         string $path
     ): string {
         $includePath = dirname($path) . '/' . $primary . '.md';
-        return $this->getHTML($includePath);
+        if (is_file($includePath)) {
+            return $this->getHTML($includePath);
+        } else {
+            return '{{error include-not-found}}';
+        }
     }
 
     /**
      * Expand all {{...}} macros with their dynamic content.
      *
      * @param string $markdown A markdown body of a page or snippet.
-     * @param string $path The path of the page or snippet for relative path processing.
+     * @param string $path Absolute path to file containing the macros (for relative processing).
      * @return string New markdown with all macros expanded.
      */
     private function resolveMacros(
@@ -560,7 +568,7 @@ class Wiki
     }
 
     /**
-     * Render Markdown content to HTML.
+     * Render Raw Markdown content to HTML.
      *
      * @param string $markdown Markdown content.
      * @return string HTML.
@@ -625,15 +633,22 @@ class Wiki
     }
 
     /**
-     * Make all Headlines one level deeper (# -> ##).
+     * Improve markdown for rendering.
+     *
+     * Will resolve relative links, fix headline depth, resolve macros ...
      *
      * @param string $markdown The Markdown content to fix.
-     * @return string Fixed Markdown.
+     * @param string $fsPath The absolute fs-path to the content.
+     * @return string Preprocessed Markdown.
      */
-    private function fixMarkdown(
-        string $markdown
+    private function preprocessMarkdown(
+        string $markdown,
+        string $fsPath
     ): string {
+        // Make all Headlines one level deeper (# -> ##).
         $markdown = preg_replace('/^#/m', '##', $markdown);
+        $markdown = $this->fixLinks($markdown, $fsPath);
+        $markdown = $this->resolveMacros($markdown, $fsPath);
         return $markdown;
     }
 
@@ -664,9 +679,6 @@ class Wiki
 
         // load page content
         $markdown = $this->extractMarkdown($content);
-        $markdown = $this->fixLinks($markdown, $filename);
-        $markdown = $this->fixMarkdown($markdown);
-        $markdown = $this->resolveMacros($markdown, $filename);
 
         // done
         return array($yaml, $markdown);
