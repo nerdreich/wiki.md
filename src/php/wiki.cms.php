@@ -66,13 +66,27 @@ class Wiki
     /**
      * Load a page.
      *
+     * Will also fix invalid/hidden dir/README combinations.
+     *
      * @param string $urlPath The URI path for the wiki page to load/process.
      */
     public function load(
         string $urlPath
     ) {
+        // hide /dir/README.md behind /dir/
+        if (preg_match('/README$/', $urlPath)) {
+            $this->redirect(dirname($urlPath) . '/');
+        }
+
+        // assemble absolute fs url
         $this->urlPath = $urlPath;
         $this->filename = $this->findContentFileForURLPath($this->urlPath);
+
+        // if this is both a file and a folder, redirect to the folder instead
+        if (is_dir(preg_replace('/\.md$/', '/', $this->filename))) {
+            $this->redirect($urlPath . '/');
+        }
+
         list($this->metadata, $this->content) = $this->loadFile($this->filename, true);
     }
 
@@ -90,6 +104,7 @@ class Wiki
         if ($this->urlRoot . $path === '') {
             header('Location: /');
         } else {
+            $path = preg_replace('/\/+/', '/', $path); // remove double slashed
             header('Location: ' . $this->urlRoot . $path);
         }
         die();

@@ -71,7 +71,8 @@ wiki.md currently is beta software. It should work mostly fine, but you might mi
 
 ### Unscheduled ideas
 
-* individual user language (setting)
+* user settings
+  * language
 * RSS/feed for changes
 * move-page feature
 * generate phpdocs during build
