@@ -76,3 +76,4 @@ wiki.md currently is beta software. It should work mostly fine, but you might mi
 * move-page feature
 * generate phpdocs during build
 * generate sassdocs during build
+* detect/handle direct file changes

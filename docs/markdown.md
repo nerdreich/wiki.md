@@ -4,7 +4,7 @@ wiki.md is powered by markdown, a simple yet efficient markup language.
 
 ## Text
 
-Use `_italic_` for _italic_ text, `**strong**` for **strong** text. To force a underscore or asterisk when Markdown would convert it, escape it with a backslash: `\*` for a \* and `\_` for a \_.
+Use `_italic_` for _italic_ text, `**strong**` for **strong** text, `~~strike through~~` for ~~strike through~~ text. To force a underscore or asterisk when Markdown would convert it, escape it with a backslash: `\*` for a \* and `\_` for a \_.
 
 To create a new paragraph, enter an empty line before it.
 

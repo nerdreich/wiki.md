@@ -57,6 +57,7 @@ class Wiki
         $this->dataPath = $this->wikiroot . '/' . $datadir;
         $this->urlRoot = substr($this->wikiroot, strlen($_SERVER['DOCUMENT_ROOT']));
 
+        // register core macros
         $this->registerMacro('include', function (?string $primary, ?array $secondary, string $path) {
             return $this->resolveMacroInclude($primary, $secondary, $path);
         });
@@ -349,8 +350,8 @@ class Wiki
     /**
      * Expand a {{include ...}} macro.
      *
-     * @param string $primary The primary parameter.
-     * @param array $secondary The secondary parameter.
+     * @param string $primary The primary parameter. Path to file to include. Can be relative.
+     * @param array $secondary The secondary parameters. Not used.
      * @param string $path Absolute path to file containing the macro (for relative processing).
      * @return string Expanded macro.
      */
