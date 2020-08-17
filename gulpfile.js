@@ -42,8 +42,20 @@ gulp.task('test-sass', function () {
 gulp.task('test-php', function () {
   const phpcs = require('gulp-phpcs')
   return gulp.src([
-    'src/php/*.php',
-    'src/php/lib/class-UDiff.php',
+    'src/php/*.php'
+  ])
+    .pipe(phpcs({
+      bin: 'tools/phpcs.phar',
+      standard: 'PSR12',
+      colors: 1,
+      warningSeverity: 0
+    }))
+    .pipe(phpcs.reporter('log'))
+})
+
+gulp.task('test-php-theme', function () {
+  const phpcs = require('gulp-phpcs')
+  return gulp.src([
     'src/theme/*php'
   ])
     .pipe(phpcs({
@@ -55,7 +67,7 @@ gulp.task('test-php', function () {
     .pipe(phpcs.reporter('log'))
 })
 
-gulp.task('tests', gulp.series('test-sass', 'test-php'))
+gulp.task('tests', gulp.series('test-sass', 'test-php', 'test-php-theme'))
 
 // --- build targets -----------------------------------------------------
 
@@ -91,14 +103,14 @@ gulp.task('theme-scss', gulp.series('test-sass', function () {
     .pipe(gulp.dest(dirs.theme))
 }))
 
-gulp.task('theme-php', function () {
+gulp.task('theme-php', gulp.series('test-php-theme', function () {
   return gulp.src([
     'src/theme/**/*.php'
   ])
     .pipe(replace('$VERSION$', p.version, { skipBinary: true }))
     .pipe(replace('$URL$', p.homepage, { skipBinary: true }))
     .pipe(gulp.dest(dirs.theme))
-})
+}))
 
 gulp.task('theme-I18N', function () {
   return gulp.src([
@@ -128,19 +140,20 @@ gulp.task('meta', function () {
     'src/robots.txt',
     'src/.config.ini',
     'src/.htpasswd',
-    'src/.htaccess'
+    'src/.htaccess',
+    'src/.htaccess-full'
   ])
     .pipe(gulp.dest(dirs.site))
 })
 
-gulp.task('php', function () {
+gulp.task('php', gulp.series('test-php', function () {
   return gulp.src([
     'src/php/**/*.php'
   ])
     .pipe(replace('$VERSION$', p.version, { skipBinary: true }))
     .pipe(replace('$URL$', p.homepage, { skipBinary: true }))
     .pipe(gulp.dest(dirs.site))
-})
+}))
 
 gulp.task('wiki', function () {
   return gulp.src([
@@ -154,6 +167,7 @@ gulp.task('docs', function () {
   return gulp.src([
     'docs/**/*.md'
   ])
+    .pipe(replace('.md)', ')', { skipBinary: true })) // wiki.md does not use extensions
     .pipe(gulp.dest(dirs.data + '/docs'))
 })
 
@@ -166,7 +180,7 @@ gulp.task('package-tgz', function () {
 
   return gulp.src([
     dirs.build + '/wiki.md/**/*'
-  ], { base: dirs.build })
+  ], { base: dirs.build, dot: true })
     .pipe(sort())
     .pipe(tar('wiki.md-' + p.version + '.tar'))
     .pipe(gzip({ gzipOptions: { level: 9 } }))
@@ -179,7 +193,7 @@ gulp.task('package-zip', function () {
 
   return gulp.src([
     dirs.build + '/wiki.md/**/*'
-  ], { base: dirs.build })
+  ], { base: dirs.build, dot: true })
     .pipe(sort())
     .pipe(zip('wiki.md-' + p.version + '.zip'))
     .pipe(gulp.dest(dirs.build))

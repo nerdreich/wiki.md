@@ -32,15 +32,15 @@ Extract the `*.tar.gz`/`*.zip` into a folder on your web-server and you are (alm
 
 ## Build from source
 
-This is only recommended for advanced use-cases. For most users using the pre-packaged `*.tar.gz`/`*.zip` should be fine.
+This is only recommended for advanced use-cases. For most users the pre-packaged `*.tar.gz`/`*.zip` should be fine.
 
-To build wiki.md yourself, you'll need `git`, `npm` v6.5+ and `gulp` v4. Assuming all requirements are met, just:
+To build wiki.md yourself, you'll need `git`, `php` v7.1+, `npm` v6.5+ and `gulp` v4. Assuming all requirements are met, just:
 
 ```
-git clone https://github.com/nerdreich/wiki.md
+git clone --depth 1 https://github.com/nerdreich/wiki.md
 cd wiki.md
 npm install
-gulp dist
+gulp release
 ```
 
 Afterwards, the archives can be found in the `dist/` folder.
@@ -59,6 +59,7 @@ wiki.md currently is beta software. It should work mostly fine, but you might mi
 * file uploads
 * better page history browser
 * squash history of multiple page saves in short (configurable) time
+* comprehensive docs
 * unit tests for utility code
 * contributing and code guidelines
 
@@ -70,8 +71,10 @@ wiki.md currently is beta software. It should work mostly fine, but you might mi
 
 ### Unscheduled ideas
 
-* individual user language (setting)
+* user settings
+  * language
 * RSS/feed for changes
 * move-page feature
 * generate phpdocs during build
 * generate sassdocs during build
+* detect/handle direct file changes

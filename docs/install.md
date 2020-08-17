@@ -47,7 +47,7 @@ After basic installation, you might want to do one or more of the following...
 
 ### Theme
 
-wiki.md comes with a single basic theme. See [Themes](themes) page how to install a 3rd party theme or create your own.
+wiki.md comes with a single basic theme. See [Themes](themes.md) page how to install a 3rd party theme or create your own.
 
 ### Language
 
@@ -77,7 +77,7 @@ Be aware that `.htaccess-full` might or might not work out-of-the-box depending 
 
 ### More users / passwords
 
-The default installation only knows a single `admin` user. See [Permissions](permissions) how to add more.
+The default installation only knows a single `admin` user. See [Permissions](permissions.md) how to add more.
 
 ### Content folder
 

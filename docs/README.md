@@ -5,15 +5,15 @@ filesystem - no database required.
 
 ## Setup
 
-* [Installation & Setup](install)
-* [Users & permissions](permissions)
-* [Themes](themes)
+* [Installation & Setup](install.md)
+* [Users & permissions](permissions.md)
+* [Themes](themes.md)
 
 ## Usage
 
 * [Pages](pages)
-* [Markdown](markdown)
+* [Markdown](markdown.md)
 
 ## Advanced topics
 
-* [Content format](content)
+* [Content format](content.md)

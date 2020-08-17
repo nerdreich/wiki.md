@@ -30,6 +30,9 @@ require_once('lib/ParsedownExtra.php'); // better markdown parser
  */
 class Wiki
 {
+    private $version = '$VERSION$';
+    private $repo = '$URL$';
+
     private $filename = 'na'; // fs-path to content file, e.g. /var/www/www.mysite.com/mywiki/data/animals/lion.md
     private $wikiroot = '';   // fs-path to wiki code, e.g. /var/www/www.mysite.com/mywiki
     private $dataPath = '';   // fs-path to wiki data, e.g. /var/www/www.mysite.com/mywiki/data
@@ -54,6 +57,7 @@ class Wiki
         $this->dataPath = $this->wikiroot . '/' . $datadir;
         $this->urlRoot = substr($this->wikiroot, strlen($_SERVER['DOCUMENT_ROOT']));
 
+        // register core macros
         $this->registerMacro('include', function (?string $primary, ?array $secondary, string $path) {
             return $this->resolveMacroInclude($primary, $secondary, $path);
         });
@@ -62,13 +66,27 @@ class Wiki
     /**
      * Load a page.
      *
+     * Will also fix invalid/hidden dir/README combinations.
+     *
      * @param string $urlPath The URI path for the wiki page to load/process.
      */
     public function load(
         string $urlPath
     ) {
+        // hide /dir/README.md behind /dir/
+        if (preg_match('/README$/', $urlPath)) {
+            $this->redirect(dirname($urlPath) . '/');
+        }
+
+        // assemble absolute fs url
         $this->urlPath = $urlPath;
         $this->filename = $this->findContentFileForURLPath($this->urlPath);
+
+        // if this is both a file and a folder, redirect to the folder instead
+        if (is_dir(preg_replace('/\.md$/', '/', $this->filename))) {
+            $this->redirect($urlPath . '/');
+        }
+
         list($this->metadata, $this->content) = $this->loadFile($this->filename, true);
     }
 
@@ -86,6 +104,7 @@ class Wiki
         if ($this->urlRoot . $path === '') {
             header('Location: /');
         } else {
+            $path = preg_replace('/\/+/', '/', $path); // remove double slashed
             header('Location: ' . $this->urlRoot . $path);
         }
         die();
@@ -94,6 +113,26 @@ class Wiki
     // ----------------------------------------------------------------------
     // --- content access for theme files -----------------------------------
     // ----------------------------------------------------------------------
+
+    /**
+     * Get the wiki.md version.
+     *
+     * @return string SemVer version, e.g. '1.0.2'.
+     */
+    public function getVersion(): string
+    {
+        return $this->version;
+    }
+
+    /**
+     * Get the wiki.md source code repository URL.
+     *
+     * @return string Link to repo/homepage.
+     */
+    public function getRepo(): string
+    {
+        return $this->repo;
+    }
 
     /**
      * Check if the current wiki page exists.
@@ -183,7 +222,9 @@ class Wiki
      */
     public function getContentHTML(): string
     {
-        return $this->markdown2Html($this->content);
+        return $this->markdown2Html(
+            $this->preprocessMarkdown($this->content, $this->filename)
+        );
     }
 
     /**
@@ -229,7 +270,9 @@ class Wiki
         string $markdownPath
     ): string {
         list($snippetMetadata, $snippetContent) = $this->loadFile($markdownPath);
-        return $this->markdown2Html($snippetContent);
+        return $this->markdown2Html(
+            $this->preprocessMarkdown($snippetContent, $markdownPath)
+        );
     }
 
     /**
@@ -322,9 +365,9 @@ class Wiki
     /**
      * Expand a {{include ...}} macro.
      *
-     * @param string $primary The primary parameter.
-     * @param array $secondary The secondary parameter.
-     * @param string $path Path to macro file (for relative processing).
+     * @param string $primary The primary parameter. Path to file to include. Can be relative.
+     * @param array $secondary The secondary parameters. Not used.
+     * @param string $path Absolute path to file containing the macro (for relative processing).
      * @return string Expanded macro.
      */
     private function resolveMacroInclude(
@@ -333,14 +376,18 @@ class Wiki
         string $path
     ): string {
         $includePath = dirname($path) . '/' . $primary . '.md';
-        return $this->getHTML($includePath);
+        if (is_file($includePath)) {
+            return $this->getHTML($includePath);
+        } else {
+            return '{{error include-not-found}}';
+        }
     }
 
     /**
      * Expand all {{...}} macros with their dynamic content.
      *
      * @param string $markdown A markdown body of a page or snippet.
-     * @param string $path The path of the page or snippet for relative path processing.
+     * @param string $path Absolute path to file containing the macros (for relative processing).
      * @return string New markdown with all macros expanded.
      */
     private function resolveMacros(
@@ -537,7 +584,7 @@ class Wiki
     }
 
     /**
-     * Render Markdown content to HTML.
+     * Render Raw Markdown content to HTML.
      *
      * @param string $markdown Markdown content.
      * @return string HTML.
@@ -602,15 +649,22 @@ class Wiki
     }
 
     /**
-     * Make all Headlines one level deeper (# -> ##).
+     * Improve markdown for rendering.
+     *
+     * Will resolve relative links, fix headline depth, resolve macros ...
      *
      * @param string $markdown The Markdown content to fix.
-     * @return string Fixed Markdown.
+     * @param string $fsPath The absolute fs-path to the content.
+     * @return string Preprocessed Markdown.
      */
-    private function fixMarkdown(
-        string $markdown
+    private function preprocessMarkdown(
+        string $markdown,
+        string $fsPath
     ): string {
+        // Make all Headlines one level deeper (# -> ##).
         $markdown = preg_replace('/^#/m', '##', $markdown);
+        $markdown = $this->fixLinks($markdown, $fsPath);
+        $markdown = $this->resolveMacros($markdown, $fsPath);
         return $markdown;
     }
 
@@ -641,9 +695,6 @@ class Wiki
 
         // load page content
         $markdown = $this->extractMarkdown($content);
-        $markdown = $this->fixLinks($markdown, $filename);
-        $markdown = $this->fixMarkdown($markdown);
-        $markdown = $this->resolveMacros($markdown, $filename);
 
         // done
         return array($yaml, $markdown);
