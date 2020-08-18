@@ -291,7 +291,7 @@ class Wiki
      * Will update class data to reflect this version. Will silently fail if
      * the given version number does not exist.
      *
-     * @param int $version A version to revert to (e.g. 2).
+     * @param int $version A version to revert to (e.g. 2). 1-based index.
      * @return string True if version could be applied.
      */
     public function revertToVersion(
@@ -300,7 +300,7 @@ class Wiki
         $historySize = count($this->metadata['history']);
         if ($version > 0 && $version <= $historySize) {
             // reverse-apply all diffs up to to the requested version
-            for ($revertTo = $historySize; $revertTo > $version; $revertTo--) {
+            for ($revertTo = $historySize; $revertTo >= $version; $revertTo--) {
                 $diffToApply = $revertTo - 1;
                 $diff = gzuncompress(base64_decode($this->metadata['history'][$diffToApply]['diff']));
                 $this->content = \at\nerdreich\UDiff::patch($this->content, $diff, true);
@@ -470,14 +470,16 @@ class Wiki
         string $title,
         string $author
     ) {
-        // calculate diff
+        // calculate diff & hash
         $diff = \at\nerdreich\UDiff::diff($this->content, $content);
+        $hash = hash('sha1', $content);
 
         if (array_key_exists('history', $this->metadata)) {
             // create a new history entry if history already exists
             $historyEntry = [];
             $historyEntry['author'] = $this->metadata['author'] ?? 'unknown';
-            $historyEntry['date'] = $this->metadata['date'] ?? date(\DateTimeInterface::ATOM, filemtime($this->filename));
+            $historyEntry['date'] =
+                $this->metadata['date'] ?? date(\DateTimeInterface::ATOM, filemtime($this->filename));
             $diff = preg_replace('/^.+\n/', '', $diff); // remove first line (---)
             $diff = preg_replace('/^.+\n/', '', $diff); // remove second line (+++)
             $historyEntry['diff'] = chunk_split(base64_encode(gzcompress($diff)), 64, "\n");
@@ -498,6 +500,7 @@ class Wiki
         } else {
             $this->metadata['author'] = 'unknown';
         }
+        $this->metadata['hash'] = $hash;
 
         // create parent dir if necessary
         if (!\file_exists(dirname($this->filename))) {
