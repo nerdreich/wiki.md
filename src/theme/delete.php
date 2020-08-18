@@ -28,7 +28,7 @@ outputBanner($wiki);
     <div class="row">
       <div class="col-12">
         <p><?php __('Do you really want to delete this page?'); ?></p>
-        <?php if ($wiki->mayDelete()) { ?>
+        <?php if ($user->mayDelete($wiki->getPath())) { ?>
           <form action="?action=deleteOK" method="post">
             <input type="submit" class="error" value="<?php __('Delete page'); ?>"><a class="btn" href="<?php echo $wiki->getPath(); ?>"><?php __('Cancel'); ?></a>
           </form>

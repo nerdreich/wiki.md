@@ -61,6 +61,7 @@ $navbar-text-color: $color-white-100;
     z-index: -10;
 
     + label {
+      cursor: pointer;
       margin: 0;
 
       + div {

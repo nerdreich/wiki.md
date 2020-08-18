@@ -150,7 +150,7 @@ class Wiki
      * In case wiki.md was installed in a sub-directory, this path does not
      * contain it.
      *
-     * @return string URI Path, e.g. '/library/animals/lion'.
+     * @return string URI Path, e.g. '/animals/lion'.
      */
     public function getPath(): string
     {
@@ -165,6 +165,16 @@ class Wiki
     public function getPathRoot(): string
     {
         return $this->urlRoot;
+    }
+
+    /**
+     * Get the full url path including the url root.
+     *
+     * @return string URL Path, e.g. '/mywiki/animals/lion'.
+     */
+    public function getLocation(): string
+    {
+        return $this->urlRoot . $this->urlPath;
     }
 
     /**
@@ -297,6 +307,10 @@ class Wiki
     public function revertToVersion(
         string $version
     ): bool {
+        if ($this->isDirty()) {
+            // direct changes in the FS prevent the history from working
+            return false;
+        }
         $historySize = count($this->metadata['history']);
         if ($version > 0 && $version <= $historySize) {
             // reverse-apply all diffs up to to the requested version
@@ -458,18 +472,37 @@ class Wiki
     // --- page management --------------------------------------------------
     // ----------------------------------------------------------------------
 
+    /** Determine if the file has been changed on disk.
+     *
+     * wiki.md assumes that only this class makes changes to .md files. If
+     * someone else does, the page content hash will no longer match and the
+     * page history will no longer work. (To correct this, the page just has
+     * to be re-saved and the hash re-calculated.)
+     *
+     * @return True, if content in filesystem does not match with our hash.
+     */
+    public function isDirty()
+    {
+        $hash = hash('sha1', $this->content);
+        if (array_key_exists('hash', $this->metadata)) {
+            return $hash !== $this->metadata['hash'];
+        }
+        return true; // no headers -> this page has not yet been saved by wiki.md
+    }
+
     /**
      * Save a page. Create a new diff/history on the fly if it already existed.
      *
      * @param $content New markdown content for this page.
      * @param $title New title of this page.
      * @param $author Name to store as author for this change.
+     * @return bool True, if the page could be saved.
      */
     public function savePage(
         string $content,
         string $title,
         string $author
-    ) {
+    ): bool {
         // calculate diff & hash
         $diff = \at\nerdreich\UDiff::diff($this->content, $content);
         $hash = hash('sha1', $content);
@@ -512,7 +545,7 @@ class Wiki
         $this->fileWriteContent($this->filename, $frontmatter . "---\n" . trim($content) . "\n");
         $this->addToChangelog();
 
-        $this->redirect($this->urlPath);
+        return true;
     }
 
     /**

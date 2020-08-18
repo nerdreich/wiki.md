@@ -26,6 +26,9 @@ outputBanner($wiki);
 <section class="section-main container">
   <div class="row">
     <form class="col-12" action="?action=save" method="post">
+      <?php if ($wiki->isDirty()) { ?>
+        <p><?php __('The checksum of this page is invalid. Save the page in wiki.md again to correct this.') ?></p>
+      <?php } ?>
       <?php echo $wiki->getTitle() !== '' ? '<h1>' . htmlspecialchars($wiki->getTitle()) . '</h1>' : ''; ?>
       <input type="text" name="title" placeholder="<?php __('Title - may remain empty'); ?>" value="<?php echo $wiki->getTitle(); ?>">
       <textarea name="content" placeholder="<?php __('Content'); ?>" required><?php echo $wiki->getMarkup(); ?></textarea>

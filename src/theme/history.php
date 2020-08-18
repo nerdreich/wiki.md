@@ -29,6 +29,9 @@ outputBanner($wiki);
   <div class="row">
     <div class="col-12 col-md-8 col-lg-9">
       <h2><?php __('History for %s', $wiki->getPath()); ?></h2>
+      <?php if ($wiki->isDirty()) { ?>
+        <p><?php __('The checksum of this page is invalid. Save the page in wiki.md again to correct this.') ?>
+      <?php } ?>
       <?php if ($history === null) { ?>
         <div class="card"><p><?php __('No history available.'); ?></p></div>
       <?php } else {
@@ -56,11 +59,12 @@ outputBanner($wiki);
                     <h3><?php __('Version'); ?> v<?php echo $version; ?></h3>
                     <p><?php __('Date'); ?>: <?php echo htmlspecialchars($date); ?></p>
                     <p><?php __('Author'); ?>: <?php echo htmlspecialchars($author); ?></p>
+                    <?php if (!$wiki->isDirty()) { ?>
                     <form action='?action=restore&version=<?php echo $version; ?>' method='post'>
                       <input class="btn primary" type="submit" value="<?php __('restore %s', 'v' . $version); ?>">
                     </form>
+                    <?php } ?>
                   </div>
-
             <?php } ?>
       <?php } ?>
     </div>

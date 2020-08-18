@@ -44,4 +44,5 @@ restore %s: %s wiederherstellen
 Save & Edit: Speichern & Editieren
 Save: Speichern
 Title - may remain empty: Titel – darf auch leer bleiben
+The checksum of this page is invalid. Save the page in wiki.md again to correct this.: Die Prüfsumme dieser Seite ist nicht korrekt. Speichere die Seite in wiki.md erneut ab, um sie zu korrigieren.
 Version: Version

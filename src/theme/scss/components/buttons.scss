@@ -30,10 +30,10 @@ input[type='submit'] {
     width: 100%;
   }
 
-  background-color: $color-panel-bg;
-  border: 0;
+  background-color: $color-bg;
+  border: px(2) solid $color-primary;
   border-radius: $var-border-radius;
-  color: $color-white-90a;
+  color: $color-primary;
   display: inline-block;
   margin-right: $spacing;
   padding: $spacing / 2 $spacing;
@@ -43,16 +43,33 @@ input[type='submit'] {
   &.primary {
     background-color: $color-primary;
     color: $color-white-100;
+
+    &:visited,
+    &:active,
+    &:hover {
+      background-color: $color-primary;
+      color: $color-white-100;
+    }
   }
 
   &.error {
     background-color: $color-error;
+    border-color: $color-error;
     color: $color-white-100;
+
+    &:visited,
+    &:active,
+    &:hover {
+      background-color: $color-error;
+      color: $color-white-100;
+    }
   }
 
+  &:visited,
+  &:active,
   &:hover {
-    background-color: $color-white-100;
-    color: $color-black-80a;
+    color: $color-primary;
+    opacity: .8;
   }
 }
 
