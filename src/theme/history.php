@@ -21,22 +21,11 @@
 // load history
 $history = $wiki->getHistory();
 
-?><!doctype html>
-<html class="no-js" lang="">
-<head>
-  <meta charset="utf-8">
-  <title><?php __('History'); ?>: <?php echo htmlspecialchars($wiki->getTitle()); ?></title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+outputHeader($config, ___('History') . ': ' . $wiki->getTitle(), 'page history');
+outputNavbar($wiki, $user);
+outputBanner($wiki);
 
-  <link rel="manifest" href="/site.webmanifest">
-  <link rel="apple-touch-icon" href="/icon.png">
-
-  <link rel="stylesheet" href="<?php echo $config['themePath']; ?>style.css?v=$VERSION$">
-</head>
-<body>
-<?php include '_navbar.php' ?>
-<?php include '_banner.php' ?>
-<section class="section-main container">
+?><section class="section-main container">
   <div class="row">
     <div class="col-12 col-md-8 col-lg-9">
       <h2><?php __('History for %s', $wiki->getPath()); ?></h2>
@@ -76,6 +65,4 @@ $history = $wiki->getHistory();
     </nav>
   </div>
 </section>
-<?php include '_footer.php' ?>
-</body>
-</html>
+<?php outputFooter($wiki); ?>

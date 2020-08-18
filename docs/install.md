@@ -9,7 +9,7 @@ Before you install, make sure the following requirements are met:
 
 ## Basic installation
 
-Download a `wiki.md-<version>.tar.gz` or `wiki.md-<version>.zip` and extract it to a temporary location.
+Download a `wiki.md-<version>.tar.gz` or `wiki.md-<version>.zip` from the [GitHub releases page](https://github.com/nerdreich/wiki.md/releases) and extract it to a temporary location.
 
 If you want to turn your *whole site* into a wiki, copy everything from `wiki.md/` into the root of your web-server.
 

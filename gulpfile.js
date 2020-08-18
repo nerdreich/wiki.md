@@ -119,21 +119,22 @@ gulp.task('theme-I18N', function () {
     .pipe(gulp.dest(dirs.theme + '/I18N'))
 })
 
-gulp.task('theme', gulp.parallel('theme-fonts', 'theme-scss', 'theme-php', 'theme-I18N'))
-
-gulp.task('favicon', function () {
+gulp.task('theme-favicon', function () {
   const imagemin = require('gulp-imagemin')
   const imageminPngquant = require('imagemin-pngquant')
 
   return gulp.src([
-    'src/favicon/**/*'
+    'src/theme/favicon/**/*'
   ])
     .pipe(imagemin([
       imageminPngquant({ quality: [0.8, 0.9], strip: true })
     ], { verbose: true }))
     .pipe(replace('$NAME$', p.name, { skipBinary: true }))
-    .pipe(gulp.dest(dirs.site))
+    .pipe(replace('$BGCOLOR$', p.bgColor, { skipBinary: true }))
+    .pipe(gulp.dest(dirs.theme))
 })
+
+gulp.task('theme', gulp.parallel('theme-fonts', 'theme-scss', 'theme-php', 'theme-I18N', 'theme-favicon'))
 
 gulp.task('meta', function () {
   return gulp.src([
@@ -171,7 +172,7 @@ gulp.task('docs', function () {
     .pipe(gulp.dest(dirs.data + '/docs'))
 })
 
-gulp.task('dist', gulp.series(gulp.parallel('php', 'meta', 'favicon', 'theme', 'wiki'), 'docs'))
+gulp.task('dist', gulp.series(gulp.parallel('php', 'meta', 'theme', 'wiki'), 'docs'))
 
 gulp.task('package-tgz', function () {
   const tar = require('gulp-tar')

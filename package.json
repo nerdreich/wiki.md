@@ -1,6 +1,6 @@
 {
   "name": "wiki.md",
-  "version": "0.2.0",
+  "version": "0.3.0-dev",
   "description": "A file-based, responsive Markdown wiki, written in PHP.",
   "keywords": [
     "wiki",
@@ -40,5 +40,6 @@
   },
   "dependencies": {
     "bootstrap": "4.5"
-  }
+  },
+  "bgColor": "#fefdfa"
 }

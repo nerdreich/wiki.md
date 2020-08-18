@@ -18,21 +18,11 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
-?><!doctype html>
-<html class="no-js" lang="">
-<head>
-  <meta charset="utf-8">
-  <title><?php __('Login'); ?></title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+outputHeader($config, ___('Login'), 'wiki.md login page');
+outputNavbar($wiki, $user);
+outputBanner($wiki);
 
-  <link rel="manifest" href="/site.webmanifest">
-  <link rel="apple-touch-icon" href="/icon.png">
-
-  <link rel="stylesheet" href="<?php echo $config['themePath']; ?>style.css?v=$VERSION$">
-</head>
-<body>
-<?php require '_navbar.php' ?>
-<?php require '_banner.php' ?>
+?>
 <section class="section-main container">
   <div class="row">
     <div class="col-12">
@@ -47,6 +37,4 @@
     </div>
   </div>
 </section>
-<?php require '_footer.php' ?>
-</body>
-</html>
+<?php outputFooter($wiki); ?>

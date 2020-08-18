@@ -87,3 +87,99 @@ function getPageLinksHTML($user, $wiki)
     }
     return $html;
 }
+
+/**
+ * Generate the HTML header and open the <body>.
+ *
+ * @param at\nerdreich\Wiki $wiki Current CMS object.
+ * @param array $config Wiki configuration.
+ */
+function outputHeader(array $config, string $title, string $description = '')
+{
+    ?><!doctype html>
+<html class="no-js" lang="">
+<head>
+  <meta charset="utf-8">
+  <title><?php echo htmlspecialchars($title); ?></title>
+  <meta name="description" content="<?php echo htmlspecialchars($description); ?>">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="manifest" href="<?php echo $config['themePath']; ?>site.webmanifest">
+  <link rel="apple-touch-icon" href="<?php echo $config['themePath']; ?>icon.png">
+  <link rel="icon" href="<?php echo $config['themePath']; ?>favicon.ico"  type="image/x-icon">
+  <link rel="stylesheet" href="<?php echo $config['themePath']; ?>style.css?v=$VERSION$">
+</head>
+<body>
+    <?php
+}
+
+/**
+ * Generate the (top) navbar.
+ *
+ * @param at\nerdreich\Wiki $wiki Current CMS object.
+ * @param at\nerdreich\UserSession $user Current user/Session object.
+ */
+function outputNavbar(at\nerdreich\Wiki $wiki, at\nerdreich\UserSession $user)
+{
+    ?>
+<section class="section-has-bg navbar">
+  <nav class="container">
+    <div class="row">
+      <div class="col-12">
+        <?php echo $wiki->getSnippetHTML('topnav'); ?>
+        <div>
+          <input id="wiki-burger" style="display:none;" type="checkbox">
+          <label for="wiki-burger"><i class="fas fa-cog"></i></label>
+          <div class="wiki-menu">
+            <?php echo getPageLinksHTML($user, $wiki); ?>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+</section>
+    <?php
+}
+
+/**
+ * Generate the banner area.
+ *
+ * @param at\nerdreich\Wiki $wiki Current CMS object.
+ */
+function outputBanner(at\nerdreich\Wiki $wiki)
+{
+    ?>
+<section class="section-has-bg banner">
+  <nav class="container">
+    <div class="row">
+      <div class="col-12">
+        <?php echo $wiki->getSnippetHTML('banner'); ?>
+      </div>
+    </div>
+  </nav>
+</section>
+    <?php
+}
+
+/**
+ * Generate the footer and close <body> & <html>.
+ *
+ * @param at\nerdreich\Wiki $wiki Current CMS object.
+ */
+function outputFooter(at\nerdreich\Wiki $wiki)
+{
+    ?>
+<footer class="container">
+  <div class="row">
+    <div class="col-12">
+      <p>
+        <a class="no-icon" href="<?php echo $wiki->getRepo(); ?>">wiki.md v<?php echo $wiki->getVersion(); ?></a>
+        - <?php __('Last saved %s', $wiki->getDate()); ?>
+        - <a href="/<?php __('Privacy'); ?>"><?php __('Privacy'); ?></a>
+      </p>
+    </div>
+  </div>
+</footer>
+</body>
+</html>
+    <?php
+}
