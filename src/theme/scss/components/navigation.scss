@@ -56,6 +56,10 @@ $navbar-text-color: $color-white-100;
   }
 
   input[type='checkbox'] {
+    opacity: 0;
+    position: absolute;
+    z-index: -10;
+
     + label {
       margin: 0;
 

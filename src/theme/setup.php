@@ -127,7 +127,7 @@ function outputNavbar(at\nerdreich\Wiki $wiki, at\nerdreich\UserSession $user)
       <div class="col-12">
         <?php echo $wiki->getSnippetHTML('topnav'); ?>
         <div>
-          <input id="wiki-burger" style="display:none;" type="checkbox">
+          <input id="wiki-burger" type="checkbox">
           <label for="wiki-burger"><i class="fas fa-cog"></i></label>
           <div class="wiki-menu">
             <?php echo getPageLinksHTML($user, $wiki); ?>
