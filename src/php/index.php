@@ -20,12 +20,12 @@
 
 // --- load config -------------------------------------------------------------
 
-$config = parse_ini_file('.config.ini');
+$config = parse_ini_file('data/.config.ini');
 
 // --- setup user session ------------------------------------------------------
 
 require_once('wiki.usersession.php');
-$user = new at\nerdreich\UserSession($config['content_dir']);
+$user = new at\nerdreich\UserSession('data/content');
 
 // --- frontend helpers --------------------------------------------------------
 
@@ -65,7 +65,7 @@ function sanitizePath(
 // --- setup wiki --------------------------------------------------------------
 
 require_once('wiki.cms.php');
-$wiki = new at\nerdreich\Wiki($config['content_dir']);
+$wiki = new at\nerdreich\Wiki('data/content');
 
 // --- setup theme --------------------------------------------------------------
 

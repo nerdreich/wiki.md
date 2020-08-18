@@ -38,7 +38,8 @@ require_once('lib/spyc.php'); // yaml parser
  *
  * Notes:
  *
- * - Users are authenticated via the .htpasswd file next this php file.
+ * - Users are authenticated via the .htpasswd file in the data/ folder next to
+ *   this php file.
  * - Users are identified only via password, not usernames. Therefore no two
  *   users can have the same password.
  * - Users have an alias they can set after login and even change while logged
@@ -95,7 +96,7 @@ class UserSession
     private function getUserForPassword(
         string $password
     ): ?string {
-        $htpasswd = file(dirname(__FILE__) . '/.htpasswd');
+        $htpasswd = file(dirname(__FILE__) . '/data/.htpasswd');
         foreach ($htpasswd as $line) {
             list($username, $hash) = explode(':', $line);
             if (password_verify($password, trim($hash))) {
