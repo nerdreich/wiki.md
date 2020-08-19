@@ -1,3 +1,12 @@
+# v0.3.0
+
+* added Markdown quickhelp to edit page
+* added page hashes to secure page history
+* fixed history page
+* added data/ folder for all site artefacts
+* fixed navbar checkbox visibility
+* moved favicon into theme
+
 # v0.2.0
 
 * added transparent folder/README handling
