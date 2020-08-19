@@ -20,12 +20,12 @@
 
 // --- load config -------------------------------------------------------------
 
-$config = parse_ini_file('.config.ini');
+$config = parse_ini_file('data/.config.ini');
 
 // --- setup user session ------------------------------------------------------
 
 require_once('wiki.usersession.php');
-$user = new at\nerdreich\UserSession($config['content_dir']);
+$user = new at\nerdreich\UserSession('data/content');
 
 // --- frontend helpers --------------------------------------------------------
 
@@ -40,7 +40,7 @@ $user = new at\nerdreich\UserSession($config['content_dir']);
  */
 function redirect(
     string $path,
-    string $action
+    string $action = ''
 ) {
     header('Location: ' . $path . $action);
     exit; // terminate execution to enforce redirect
@@ -65,7 +65,7 @@ function sanitizePath(
 // --- setup wiki --------------------------------------------------------------
 
 require_once('wiki.cms.php');
-$wiki = new at\nerdreich\Wiki($config['content_dir']);
+$wiki = new at\nerdreich\Wiki('data/content');
 
 // --- setup theme --------------------------------------------------------------
 
@@ -114,11 +114,17 @@ if (!$wiki->exists()) {
         case 'save': // saving new pages
             if ($user->mayUpdate($contentPath)) {
                 $user->setAlias(trim($_POST['author']));
-                $wiki->savePage(
-                    trim($_POST['content']),
-                    trim($_POST['title']),
-                    trim($user->getAlias())
-                );
+                if (
+                    $wiki->savePage(
+                        trim(str_replace("\r", '', $_POST['content'])),
+                        trim($_POST['title']),
+                        trim($user->getAlias())
+                    )
+                ) {
+                    redirect($wiki->getLocation());
+                } else {
+                    include($config['themeRoot'] . 'error.php');
+                };
                 exit;
             }
             break;
@@ -136,7 +142,7 @@ if (!$wiki->exists()) {
             break;
         case 'deleteOK':
             if ($user->mayDelete($contentPath)) {
-                $user->deletePage();
+                $wiki->deletePage();
                 exit;
             }
             break;
@@ -149,12 +155,17 @@ if (!$wiki->exists()) {
         case 'save': // saving existing pages
             if ($user->mayUpdate($contentPath)) {
                 $user->setAlias(trim($_POST['author']));
-                $wiki->savePage(
-                    trim($_POST['content']),
-                    trim($_POST['title']),
-                    trim($user->getAlias())
-                );
-                exit;
+                if (
+                    $wiki->savePage(
+                        trim(str_replace("\r", '', $_POST['content'])),
+                        trim($_POST['title']),
+                        trim($user->getAlias())
+                    )
+                ) {
+                    redirect($wiki->getLocation());
+                } else {
+                    include($config['themeRoot'] . 'error.php');
+                };
             }
             break;
         case 'history':
@@ -167,7 +178,10 @@ if (!$wiki->exists()) {
             if ($user->mayRead($contentPath) && $user->mayUpdate($contentPath)) {
                 $version = (int) preg_replace('/[^0-9]/', '', $_GET['version']);
                 if ($version > 0) {
-                    $wiki->revertToVersion($version);
+                    if (!$wiki->revertToVersion($version)) {
+                        include($config['themeRoot'] . 'error.php');
+                        exit;
+                    };
                 }
                 include($config['themeRoot'] . 'edit.php');
                 exit;

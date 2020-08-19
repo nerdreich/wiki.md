@@ -150,7 +150,7 @@ class Wiki
      * In case wiki.md was installed in a sub-directory, this path does not
      * contain it.
      *
-     * @return string URI Path, e.g. '/library/animals/lion'.
+     * @return string URI Path, e.g. '/animals/lion'.
      */
     public function getPath(): string
     {
@@ -165,6 +165,16 @@ class Wiki
     public function getPathRoot(): string
     {
         return $this->urlRoot;
+    }
+
+    /**
+     * Get the full url path including the url root.
+     *
+     * @return string URL Path, e.g. '/mywiki/animals/lion'.
+     */
+    public function getLocation(): string
+    {
+        return $this->urlRoot . $this->urlPath;
     }
 
     /**
@@ -291,16 +301,20 @@ class Wiki
      * Will update class data to reflect this version. Will silently fail if
      * the given version number does not exist.
      *
-     * @param int $version A version to revert to (e.g. 2).
+     * @param int $version A version to revert to (e.g. 2). 1-based index.
      * @return string True if version could be applied.
      */
     public function revertToVersion(
         string $version
     ): bool {
+        if ($this->isDirty()) {
+            // direct changes in the FS prevent the history from working
+            return false;
+        }
         $historySize = count($this->metadata['history']);
         if ($version > 0 && $version <= $historySize) {
             // reverse-apply all diffs up to to the requested version
-            for ($revertTo = $historySize; $revertTo > $version; $revertTo--) {
+            for ($revertTo = $historySize; $revertTo >= $version; $revertTo--) {
                 $diffToApply = $revertTo - 1;
                 $diff = gzuncompress(base64_decode($this->metadata['history'][$diffToApply]['diff']));
                 $this->content = \at\nerdreich\UDiff::patch($this->content, $diff, true);
@@ -458,26 +472,47 @@ class Wiki
     // --- page management --------------------------------------------------
     // ----------------------------------------------------------------------
 
+    /** Determine if the file has been changed on disk.
+     *
+     * wiki.md assumes that only this class makes changes to .md files. If
+     * someone else does, the page content hash will no longer match and the
+     * page history will no longer work. (To correct this, the page just has
+     * to be re-saved and the hash re-calculated.)
+     *
+     * @return True, if content in filesystem does not match with our hash.
+     */
+    public function isDirty()
+    {
+        $hash = hash('sha1', $this->content);
+        if (array_key_exists('hash', $this->metadata)) {
+            return $hash !== $this->metadata['hash'];
+        }
+        return true; // no headers -> this page has not yet been saved by wiki.md
+    }
+
     /**
      * Save a page. Create a new diff/history on the fly if it already existed.
      *
      * @param $content New markdown content for this page.
      * @param $title New title of this page.
      * @param $author Name to store as author for this change.
+     * @return bool True, if the page could be saved.
      */
     public function savePage(
         string $content,
         string $title,
         string $author
-    ) {
-        // calculate diff
+    ): bool {
+        // calculate diff & hash
         $diff = \at\nerdreich\UDiff::diff($this->content, $content);
+        $hash = hash('sha1', $content);
 
         if (array_key_exists('history', $this->metadata)) {
             // create a new history entry if history already exists
             $historyEntry = [];
             $historyEntry['author'] = $this->metadata['author'] ?? 'unknown';
-            $historyEntry['date'] = $this->metadata['date'] ?? date(\DateTimeInterface::ATOM, filemtime($this->filename));
+            $historyEntry['date'] =
+                $this->metadata['date'] ?? date(\DateTimeInterface::ATOM, filemtime($this->filename));
             $diff = preg_replace('/^.+\n/', '', $diff); // remove first line (---)
             $diff = preg_replace('/^.+\n/', '', $diff); // remove second line (+++)
             $historyEntry['diff'] = chunk_split(base64_encode(gzcompress($diff)), 64, "\n");
@@ -498,6 +533,7 @@ class Wiki
         } else {
             $this->metadata['author'] = 'unknown';
         }
+        $this->metadata['hash'] = $hash;
 
         // create parent dir if necessary
         if (!\file_exists(dirname($this->filename))) {
@@ -509,7 +545,7 @@ class Wiki
         $this->fileWriteContent($this->filename, $frontmatter . "---\n" . trim($content) . "\n");
         $this->addToChangelog();
 
-        $this->redirect($this->urlPath);
+        return true;
     }
 
     /**

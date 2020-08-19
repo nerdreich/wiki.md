@@ -18,13 +18,16 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
+outputHeader($config, ___('Error'), '');
+outputNavbar($wiki, $user);
+outputBanner($wiki);
+
 ?>
-<section class="section-has-bg banner">
-  <nav class="container">
-    <div class="row">
-      <div class="col-12">
-        <?php echo $wiki->getSnippetHTML('banner'); ?>
-      </div>
+<section class="section-main container">
+  <div class="row">
+    <div class="col-12">
+      <p><?php __('Sorry, an error occured.'); ?></p>
     </div>
-  </nav>
+  </div>
 </section>
+<?php outputFooter($wiki); ?>

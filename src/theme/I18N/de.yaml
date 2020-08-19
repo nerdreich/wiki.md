@@ -15,8 +15,11 @@
 # along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
 
 Author: Autor
+bold: fett
 Cancel: Abbrechen
+Changes: Änderungen
 Content: Inhalt
+courier: courier
 Create page: Seite anlegen
 Create: Anlegen
 current: aktuell
@@ -26,21 +29,31 @@ Delete: Löschen
 Difference vs.: Unterschied zu
 Do you really want to delete this page?: Möchtest du diese Seite wirklich löschen?
 Edit: Bearbeiten
+Error: Fehler
+Headlines: Überschriften
 History: Protokoll
+italic: kursiv
 Last saved %s: zuletzt gespeichert %s
+link title: Link Titel
 Login: Anmelden
 Logout: Abmelden
 Löschen: Delete
 No history available.: Kein Protokoll verfügbar.
 Not found: Nicht gefunden
-Page %d: Seite %d
 Page %d of %d: Seite %d von %d
+Page %d: Seite %d
 Page %s does not exist.: Seite %s existiert nicht.
 Password required: Passwort benötigt
 Please enter your password to continue.: Bitte gib dein Passwort ein, um fortzufahren.
 Privacy: Datenschutz
+Quickhelp: Kleine Hilfe
 restore %s: %s wiederherstellen
 Save & Edit: Speichern & Editieren
 Save: Speichern
+Separator: Trennlinie
+Sorry, an error occured.: Es ist leider ein Fehler aufgetreten.
+strike through: durchgestrichen
+target: Ziel
+The checksum of this page is invalid. Save the page in wiki.md again to correct this.: Die Prüfsumme dieser Seite ist nicht korrekt. Speichere die Seite in wiki.md erneut ab, um sie zu korrigieren.
 Title - may remain empty: Titel – darf auch leer bleiben
 Version: Version

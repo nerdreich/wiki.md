@@ -9,7 +9,7 @@ Before you install, make sure the following requirements are met:
 
 ## Basic installation
 
-Download a `wiki.md-<version>.tar.gz` or `wiki.md-<version>.zip` and extract it to a temporary location.
+Download a `wiki.md-<version>.tar.gz` or `wiki.md-<version>.zip` from the [GitHub releases page](https://github.com/nerdreich/wiki.md/releases) and extract it to a temporary location.
 
 If you want to turn your *whole site* into a wiki, copy everything from `wiki.md/` into the root of your web-server.
 
@@ -34,7 +34,7 @@ The default installation requires an `admin` password to edit pages. There is no
 To do so, replace the `admin`'s password in `.htpasswd` with a new one. You can use any tool that can create a bcrypt hash, e.g. Apache's `htpassd`:
 
 ```
-$ htpasswd -B /path/to/wiki/.htpasswd admin
+$ htpasswd -B /path/to/wiki/data/.htpasswd admin
 ```
 
 ### Delete documentation
@@ -51,7 +51,7 @@ wiki.md comes with a single basic theme. See [Themes](themes.md) page how to ins
 
 ### Language
 
-To set the menu language, edit `.config.ini` and set the `language =` line. Currently supported are:
+To set the menu language, edit `data/.config.ini` and set the `language =` line. The default theme support:
 
 |Code|Language|
 |----|--------|
@@ -78,7 +78,3 @@ Be aware that `.htaccess-full` might or might not work out-of-the-box depending 
 ### More users / passwords
 
 The default installation only knows a single `admin` user. See [Permissions](permissions.md) how to add more.
-
-### Content folder
-
-Per default all wiki content is stored in a `content/` sub-folder. As this is not visible in the URL, it's probably is OK for you. In case you want to change the folder name, edit `.config.ini` and set `content_dir` to a name of your choice. You will also have to rename the original `content/` folder or create a set up a new one from scratch.

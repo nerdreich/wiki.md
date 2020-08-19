@@ -18,27 +18,17 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
-?><!doctype html>
-<html class="no-js" lang="">
-<head>
-  <meta charset="utf-8">
-  <title><?php __('Delete page'); ?></title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+outputHeader($config, ___('Delete page') . ': ' . $wiki->getTitle(), 'page editor');
+outputNavbar($wiki, $user);
+outputBanner($wiki);
 
-  <link rel="manifest" href="/site.webmanifest">
-  <link rel="apple-touch-icon" href="/icon.png">
-
-  <link rel="stylesheet" href="<?php echo $config['themePath']; ?>style.css?v=$VERSION$">
-</head>
-<body>
-<?php include '_navbar.php' ?>
-<?php include '_banner.php' ?>
+?>
 <section class="section-meta">
   <div class="container">
     <div class="row">
       <div class="col-12">
         <p><?php __('Do you really want to delete this page?'); ?></p>
-        <?php if ($wiki->mayDelete()) { ?>
+        <?php if ($user->mayDelete($wiki->getPath())) { ?>
           <form action="?action=deleteOK" method="post">
             <input type="submit" class="error" value="<?php __('Delete page'); ?>"><a class="btn" href="<?php echo $wiki->getPath(); ?>"><?php __('Cancel'); ?></a>
           </form>
@@ -58,6 +48,4 @@
     </nav>
   </div>
 </section>
-<?php include '_footer.php' ?>
-</body>
-</html>
+<?php outputFooter($wiki); ?>

@@ -14,29 +14,13 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
 
-@import '../../../node_modules/bootstrap/scss/bootstrap-reboot';
-@import '../../../node_modules/bootstrap/scss/bootstrap-grid';
-@import '../../../node_modules/bootstrap/scss/mixins/breakpoints';
+////
+/// @group pages
+/// @access public
+////
 
-// --- our stuff ----------------------------------------------------------
-
-@import 'abstracts/tools';
-@import 'abstracts/variables';
-
-@import 'themes/colors';
-@import 'themes/elegant';
-
-@import 'layout/layout';
-@import 'layout/sections';
-
-@import 'base/typography';
-
-@import 'components/banner';
-@import 'components/buttons';
-@import 'components/cards';
-@import 'components/footer';
-@import 'components/forms';
-@import 'components/navigation';
-@import 'components/tables';
-
-@import 'pages/history';
+.page-history {
+  .diff {
+    opacity: .33;
+  }
+}

@@ -26,7 +26,7 @@ const dirs = {
   build: 'dist/',
   site: 'dist/' + p.name + subdir,
   theme: 'dist/' + p.name + subdir + '/themes/elegant',
-  data: 'dist/' + p.name + subdir + '/content'
+  data: 'dist/' + p.name + subdir + '/data'
 }
 
 // --- testing targets ---------------------------------------------------
@@ -119,27 +119,26 @@ gulp.task('theme-I18N', function () {
     .pipe(gulp.dest(dirs.theme + '/I18N'))
 })
 
-gulp.task('theme', gulp.parallel('theme-fonts', 'theme-scss', 'theme-php', 'theme-I18N'))
-
-gulp.task('favicon', function () {
+gulp.task('theme-favicon', function () {
   const imagemin = require('gulp-imagemin')
   const imageminPngquant = require('imagemin-pngquant')
 
   return gulp.src([
-    'src/favicon/**/*'
+    'src/theme/favicon/**/*'
   ])
     .pipe(imagemin([
       imageminPngquant({ quality: [0.8, 0.9], strip: true })
     ], { verbose: true }))
     .pipe(replace('$NAME$', p.name, { skipBinary: true }))
-    .pipe(gulp.dest(dirs.site))
+    .pipe(replace('$BGCOLOR$', p.bgColor, { skipBinary: true }))
+    .pipe(gulp.dest(dirs.theme))
 })
+
+gulp.task('theme', gulp.parallel('theme-fonts', 'theme-scss', 'theme-php', 'theme-I18N', 'theme-favicon'))
 
 gulp.task('meta', function () {
   return gulp.src([
     'src/robots.txt',
-    'src/.config.ini',
-    'src/.htpasswd',
     'src/.htaccess',
     'src/.htaccess-full'
   ])
@@ -155,11 +154,11 @@ gulp.task('php', gulp.series('test-php', function () {
     .pipe(gulp.dest(dirs.site))
 }))
 
-gulp.task('wiki', function () {
+gulp.task('data', function () {
   return gulp.src([
-    'wiki/**/*.md',
-    'wiki/**/*.yaml'
-  ])
+    'data/**/*',
+    'data/**/*'
+  ], { dot: true })
     .pipe(gulp.dest(dirs.data))
 })
 
@@ -168,10 +167,10 @@ gulp.task('docs', function () {
     'docs/**/*.md'
   ])
     .pipe(replace('.md)', ')', { skipBinary: true })) // wiki.md does not use extensions
-    .pipe(gulp.dest(dirs.data + '/docs'))
+    .pipe(gulp.dest(dirs.data + '/content/docs'))
 })
 
-gulp.task('dist', gulp.series(gulp.parallel('php', 'meta', 'favicon', 'theme', 'wiki'), 'docs'))
+gulp.task('dist', gulp.series(gulp.parallel('php', 'meta', 'theme', 'data'), 'docs'))
 
 gulp.task('package-tgz', function () {
   const tar = require('gulp-tar')
