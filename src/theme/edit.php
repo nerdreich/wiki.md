@@ -36,6 +36,16 @@ outputBanner($wiki);
       <input type="submit" class="primary" value="<?php __('Save'); ?>"><input type="submit"
       value="<?php __('Save & Edit'); ?>"><a class="btn" href="<?php echo $wiki->getPath(); ?>"><?php __('Cancel'); ?></a>
     </form>
+    <div class="col-12">
+        <p><strong><?php __('Quickhelp'); ?>:</strong>
+          <code>_<?php __('italic'); ?>_</code> |
+          <code>**<?php __('bold'); ?>**</code> |
+          <code>``<?php __('courier'); ?>``</code> |
+          <code>~~<?php __('strike through'); ?>~~</code> |
+          <code>[<?php __('link title'); ?>](<?php __('target'); ?>)</code> |
+          <code>#</code>/<code>##</code>/<code>###</code>&nbsp;<?php __('Headlines'); ?> |
+          <code>---</code>&nbsp;<?php __('Separator'); ?>
+    </div>
   </div>
 </section>
 <?php outputFooter($wiki); ?>
