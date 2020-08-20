@@ -63,7 +63,6 @@ wiki.md currently is beta software. It should work mostly fine, but you might mi
 * permission check for {{include}}
 * display warning when other user is editing a file at the same time
 * file uploads
-* squash history of multiple page saves in short (configurable) time
 * comprehensive docs
 * unit tests for utility code
 * contributing and code guidelines

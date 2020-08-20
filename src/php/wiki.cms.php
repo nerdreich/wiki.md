@@ -32,6 +32,7 @@ class Wiki
 {
     private $version = '$VERSION$';
     private $repo = '$URL$';
+    private $config = [];
 
     private $filename = 'na'; // fs-path to content file, e.g. /var/www/www.mysite.com/mywiki/data/animals/lion.md
     private $wikiroot = '';   // fs-path to wiki code, e.g. /var/www/www.mysite.com/mywiki
@@ -47,14 +48,16 @@ class Wiki
     /**
      * Constructor
      *
-     * @param string $datadir The (sub)directory where the markdown files are stored.
+     * @param array $config Array with loaded config.ini as key => value entries.
      */
     public function __construct(
-        string $datadir = 'content'
+        array $config
     ) {
+        $this->config = $config;
+
         // wiki path + files
         $this->wikiroot = dirname(__FILE__);
-        $this->dataPath = $this->wikiroot . '/' . $datadir;
+        $this->dataPath = $this->wikiroot . '/' . ($this->config['datafolder'] ?? 'data') . '/content';
         $this->urlRoot = substr($this->wikiroot, strlen($_SERVER['DOCUMENT_ROOT']));
 
         // register core macros
@@ -305,7 +308,7 @@ class Wiki
      * @return string True if version could be applied.
      */
     public function revertToVersion(
-        string $version
+        int $version
     ): bool {
         if ($this->isDirty()) {
             // direct changes in the FS prevent the history from working
@@ -323,6 +326,26 @@ class Wiki
         }
 
         return false;
+    }
+
+    /**
+     * Undo one / the last version of this page.
+     *
+     * Will update class data to reflect this version. Will silently fail if
+     * the given version number does not exist.
+     *
+     * @return string True if version could be applied.
+     */
+    private function revertToPreviousVersion(): bool
+    {
+        if (array_key_exists('history', $this->metadata)) {
+            $count = count($this->metadata['history']);
+            if ($count > 0) {
+                return $this->revertToVersion(count($this->metadata['history']));
+            }
+        }
+        $this->content = ''; // without history the previous version was empty
+        return true;
     }
 
     // ----------------------------------------------------------------------
@@ -503,12 +526,37 @@ class Wiki
         string $title,
         string $author
     ): bool {
+        $author = $this->cleanupSingeLineText($author);
+        $title = $this->cleanupSingeLineText($title);
+
+        // check if this is yet another quick save by the same author
+        if ($this->metadata['author'] === $author) {
+            if (array_key_exists('date', $this->metadata)) {
+                $lastSaveDate = \DateTime::createFromFormat(\DateTimeInterface::ATOM, $this->metadata['date']);
+                $seconds = (new \DateTime())->getTimestamp() - $lastSaveDate->getTimestamp();
+                if ($seconds < $this->config['autosquash_interval'] ?? -1) {
+                    // this is a quick (re)save. undo last history to merge the saves into one.
+                    if ($this->revertToPreviousVersion()) {
+                        if ($this->metadata['history'] === []) {
+                            unset($this->metadata['history']);
+                        } else {
+                            array_pop($this->metadata['history']);
+                        }
+                    } else {
+                        return false;
+                    }
+                }
+            }
+        }
+
         // calculate diff & hash
         $diff = \at\nerdreich\UDiff::diff($this->content, $content);
         $hash = hash('sha1', $content);
 
         if (array_key_exists('history', $this->metadata)) {
-            // create a new history entry if history already exists
+            // page has a history -> add to that
+
+            // create a new history entry
             $historyEntry = [];
             $historyEntry['author'] = $this->metadata['author'] ?? 'unknown';
             $historyEntry['date'] =
@@ -519,17 +567,17 @@ class Wiki
 
             $this->metadata['history'][] = $historyEntry;
         } else {
-            // no history exists - this is the first save. just start a new/empty one
+            // no history exists -> this is the first save, just start a new/empty one
             $this->metadata['history'] = [];
         }
 
         // update yaml front matter / metadata
         $this->metadata['date'] = date(\DateTimeInterface::ATOM);
         if ($title !== '') {
-            $this->metadata['title'] = $this->cleanupSingeLineText($title);
+            $this->metadata['title'] = $title;
         }
         if ($author !== '') {
-            $this->metadata['author'] = $this->cleanupSingeLineText($author);
+            $this->metadata['author'] = $author;
         } else {
             $this->metadata['author'] = 'unknown';
         }

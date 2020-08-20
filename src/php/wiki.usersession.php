@@ -47,21 +47,25 @@ require_once('lib/spyc.php'); // yaml parser
  */
 class UserSession
 {
+    private $config = [];
     private $username = '*';  // asterisk is anonymous/not logged-in user
 
     private $superuser = 'admin';
-    private $datadir = 'content';
+    private $datadir = 'data';
+    private $contentdir = 'data/content';
 
     /**
      * Constructor
      *
      * @param string $urlPath The path to check permissions for.
-     * @param string $datadir The (sub)directory where the markdown files are stored.
+     * @param string $contentdir The (sub)directory where the markdown files are stored.
      */
     public function __construct(
-        string $datadir = 'content'
+        array $config
     ) {
-        $this->datadir = dirname(__FILE__) . '/' . $datadir;
+        $this->config = $config;
+        $this->datadir = $this->config['datafolder'] ?? 'data';
+        $this->contentdir = dirname(__FILE__) . '/' . $this->datadir . '/content';
         $this->username = $this->resumeSession();
     }
 
@@ -96,7 +100,7 @@ class UserSession
     private function getUserForPassword(
         string $password
     ): ?string {
-        $htpasswd = file(dirname(__FILE__) . '/data/.htpasswd');
+        $htpasswd = file(dirname(__FILE__) . '/' . $this->datadir . '/.htpasswd');
         foreach ($htpasswd as $line) {
             list($username, $hash) = explode(':', $line);
             if (password_verify($password, trim($hash))) {
@@ -177,7 +181,7 @@ class UserSession
      */
     public function getAlias(): string
     {
-        return $_SESSION['alias'];
+        return $_SESSION['alias'] ?? '';
     }
 
     /**
@@ -211,7 +215,7 @@ class UserSession
         $scanpath = preg_replace('/[^\/]*$/', '', $path);
 
         while (strlen($scanpath) > 0) { // path left to traverse
-            $scanfile = $this->datadir . $scanpath . '_.yaml';
+            $scanfile = $this->contentdir . $scanpath . '_.yaml';
             if (is_file($scanfile)) {
                 $yaml = \Spyc::YAMLLoadString(file_get_contents($scanfile));
 
