@@ -36,7 +36,7 @@ class Wiki
     private $filename = 'na'; // fs-path to content file, e.g. /var/www/www.mysite.com/mywiki/data/animals/lion.md
     private $wikiroot = '';   // fs-path to wiki code, e.g. /var/www/www.mysite.com/mywiki
     private $dataPath = '';   // fs-path to wiki data, e.g. /var/www/www.mysite.com/mywiki/data
-    private $urlRoot = '';   // url-parent-folder of the wiki, e.g. /mywiki
+    private $urlRoot = '';    // url-parent-folder of the wiki, e.g. /mywiki
     private $urlPath = '/';   // current URL path within the wiki, e.g. /animals/lion
 
     private $metadata = [];   // yaml front matter for a content
@@ -561,6 +561,10 @@ class Wiki
         $this->metadata['date'] = date(\DateTimeInterface::ATOM);
         $this->content = '';
         $this->filename = $this->dataPath . '/' . $this->urlPath . '.md';
+
+        // prefill title
+        $this->metadata['title'] = str_replace('_', ' ', basename($this->urlPath)); // underscore to spaces
+        $this->metadata['title'] = preg_replace('/([a-z])([A-Z])/', '$1 $2', $this->metadata['title']); // unCamelCase
     }
 
     /**
