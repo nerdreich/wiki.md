@@ -1,6 +1,6 @@
 # Markdown
 
-wiki.md is powered by markdown, a simple yet efficient markup language.
+wiki.md is powered by [Markdown](https://en.wikipedia.org/wiki/Markdown), a simple yet efficient markup language.
 
 ## Text
 

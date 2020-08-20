@@ -1,6 +1,10 @@
 # wiki.md
 
-Yet another Wiki/CMS written in PHP. Key features:
+Yet another Wiki/CMS written in PHP.
+
+![wiki.md](preview.png)
+
+## Key features
 
 * File-based - no database required.
   * Every page is a single file in a folder tree.
@@ -9,7 +13,8 @@ Yet another Wiki/CMS written in PHP. Key features:
   * Including Markdown Extra support (e.g. tables).
 * [YAML](https://en.wikipedia.org/wiki/YAML) front matter (YFM) metadata.
 * Page versioning / history (udiff).
-* Folder passwords (separate permissions for create/read/update/delete).
+* Folder passwords.
+  * Set separate permissions for create/read/edit/delete.
 * Snippet inheritance: Reference your partials (e.g. navigation or banner) in pages on the same/deeper directory levels.
 * Elegant, responsive default theme.
 * Custom theme support.
@@ -56,6 +61,7 @@ wiki.md currently is beta software. It should work mostly fine, but you might mi
 ### Planned for v1.0.0
 
 * permission check for {{include}}
+* display warning when other user is editing a file at the same time
 * file uploads
 * squash history of multiple page saves in short (configurable) time
 * comprehensive docs
@@ -77,4 +83,3 @@ wiki.md currently is beta software. It should work mostly fine, but you might mi
 * move-page feature
 * generate phpdocs during build
 * generate sassdocs during build
-* display warning when other user is editing a file at the same time
