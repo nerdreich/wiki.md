@@ -31,7 +31,7 @@ outputBanner($wiki);
       <form action="?<?php
         echo array_key_exists('action', $_GET) ? 'action=' . urlencode($_GET['action']) . '&' : '';
         ?>auth=login" method="post">
-        <input type="password" name="password" placeholder='********' required>
+        <input type="password" name="password" placeholder='********' required autofocus>
         <input type="submit" class="primary" value="<?php __('Login'); ?>">
       </form>
     </div>

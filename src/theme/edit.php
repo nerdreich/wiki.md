@@ -31,7 +31,7 @@ outputBanner($wiki);
       <?php } ?>
       <?php echo $wiki->getTitle() !== '' ? '<h1>' . htmlspecialchars($wiki->getTitle()) . '</h1>' : ''; ?>
       <input type="text" name="title" placeholder="<?php __('Title - may remain empty'); ?>" value="<?php echo $wiki->getTitle(); ?>">
-      <textarea name="content" placeholder="<?php __('Content'); ?>" required><?php echo $wiki->getMarkup(); ?></textarea>
+      <textarea name="content" placeholder="<?php __('Content'); ?>" required autofocus><?php echo $wiki->getMarkup(); ?></textarea>
       <input type="text" name="author" placeholder="<?php __('Author'); ?>" value="<?php echo $user->getAlias(); ?>" required>
       <input type="submit" class="primary" value="<?php __('Save'); ?>"><input type="submit"
       value="<?php __('Save & Edit'); ?>"><a class="btn" href="<?php echo $wiki->getPath(); ?>"><?php __('Cancel'); ?></a>
