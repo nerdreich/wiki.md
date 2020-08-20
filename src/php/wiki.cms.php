@@ -506,11 +506,11 @@ class Wiki
      */
     public function isDirty()
     {
-        $hash = hash('sha1', $this->content);
         if (array_key_exists('hash', $this->metadata)) {
+            $hash = hash('sha1', $this->content);
             return $hash !== $this->metadata['hash'];
         }
-        return true; // no headers -> this page has not yet been saved by wiki.md
+        return false; // no hash in headers -> this page has not yet been saved by wiki.md
     }
 
     /**
