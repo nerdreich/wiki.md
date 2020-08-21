@@ -18,7 +18,7 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace at\nerdreich\i18n {
+namespace at\nerdreich {
     class Translate
     {
         private static $translations = [];
@@ -28,13 +28,15 @@ namespace at\nerdreich\i18n {
          *
          * Only has very limited 'yaml' support:
          * - Will only load top-level entries.
-         * - Does not support escaping or colons within the texts.
+         * - Does not support escaping of colons within the texts.
          *
          * @param string $yamlfile .yaml/language file to load.
+         * @return bool True if this language file could be loaded. False if we
+         *              had to revert to default language.
          */
         public static function loadLanguage(
             string $yamlfile
-        ) {
+        ): bool {
             self::$translations = [];
             if (is_file($yamlfile)) {
                 $lines = file($yamlfile);
@@ -46,7 +48,9 @@ namespace at\nerdreich\i18n {
                     list($key, $value) = explode(':', ltrim($line, "- \t"));
                     self::$translations[trim($key)] = trim($value);
                 }
+                return count(self::$translations) > 0;
             }
+            return false;
         }
 
         /**
@@ -89,9 +93,9 @@ namespace { // global helpers to reduce clutter in templates
      * @param $args[0] String to translate.
      * @param $args[1..5] printf parameters to be applied after translating.
      */
-    function __()
+    function __(): void
     {
-        echo htmlspecialchars(at\nerdreich\i18n\Translate::translate(func_get_args()));
+        echo htmlspecialchars(at\nerdreich\Translate::translate(func_get_args()));
     }
 
     /**
@@ -105,7 +109,7 @@ namespace { // global helpers to reduce clutter in templates
      */
     function ___(): string
     {
-        return at\nerdreich\i18n\Translate::translate(func_get_args());
+        return at\nerdreich\Translate::translate(func_get_args());
     }
 
 }

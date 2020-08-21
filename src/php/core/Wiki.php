@@ -20,7 +20,7 @@
 
 namespace at\nerdreich;
 
-require_once('wiki.udiff.php');         // simple file-diff implementation
+require_once('Translate.php');          // simple file-diff implementation
 require_once('lib/spyc.php');           // yaml parser
 require_once('lib/Parsedown.php');      // markdown parser
 require_once('lib/ParsedownExtra.php'); // better markdown parser
@@ -52,11 +52,11 @@ class Wiki
      */
     public function __construct(
         array $config
-    ) {
+    ): void {
         $this->config = $config;
 
         // wiki path + files
-        $this->wikiroot = dirname(__FILE__);
+        $this->wikiroot = dirname(dirname(__FILE__)); // Wiki.php is in the ../core folder
         $this->dataPath = $this->wikiroot . '/' . ($this->config['datafolder'] ?? 'data') . '/content';
         $this->urlRoot = substr($this->wikiroot, strlen($_SERVER['DOCUMENT_ROOT']));
 
@@ -75,7 +75,7 @@ class Wiki
      */
     public function load(
         string $urlPath
-    ) {
+    ): void {
         // hide /dir/README.md behind /dir/
         if (preg_match('/README$/', $urlPath)) {
             $this->redirect(dirname($urlPath) . '/');
@@ -103,7 +103,7 @@ class Wiki
      */
     private function redirect(
         string $path
-    ) {
+    ): void {
         if ($this->urlRoot . $path === '') {
             header('Location: /');
         } else {
@@ -355,7 +355,7 @@ class Wiki
     public function registerMacro(
         string $name,
         callable $handler
-    ) {
+    ): void {
         $this->macros[$name] = $handler;
     }
 
@@ -504,7 +504,7 @@ class Wiki
      *
      * @return True, if content in filesystem does not match with our hash.
      */
-    public function isDirty()
+    public function isDirty(): bool
     {
         if (array_key_exists('hash', $this->metadata)) {
             $hash = hash('sha1', $this->content);
@@ -602,7 +602,7 @@ class Wiki
      * Will only reset internal data to a blank page, to be picked up by the
      * editor.
      */
-    public function createPage()
+    public function createPage(): void
     {
         // reset internal data to empty page
         $this->metadata = [];
@@ -621,7 +621,7 @@ class Wiki
      * Will rename the markdownfile to '.deleted', making it invisible to the
      * wiki.
      */
-    public function deletePage()
+    public function deletePage(): void
     {
         if ($this->exists()) {
             rename(
@@ -863,7 +863,7 @@ class Wiki
     /**
      * Log a file change.
      */
-    private function addToChangelog()
+    private function addToChangelog(): void
     {
         $changelog = $this->dataPath . '/CHANGELOG.md';
         touch($changelog); // make sure file exists

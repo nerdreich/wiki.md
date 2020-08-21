@@ -65,7 +65,7 @@ class UserSession
     ) {
         $this->config = $config;
         $this->datadir = $this->config['datafolder'] ?? 'data';
-        $this->contentdir = dirname(__FILE__) . '/' . $this->datadir . '/content';
+        $this->contentdir = dirname(dirname(__FILE__)) . '/' . $this->datadir . '/content';
         $this->username = $this->resumeSession();
     }
 
@@ -100,7 +100,7 @@ class UserSession
     private function getUserForPassword(
         string $password
     ): ?string {
-        $htpasswd = file(dirname(__FILE__) . '/' . $this->datadir . '/.htpasswd');
+        $htpasswd = file(dirname(dirname(__FILE__)) . '/' . $this->datadir . '/.htpasswd');
         foreach ($htpasswd as $line) {
             list($username, $hash) = explode(':', $line);
             if (password_verify($password, trim($hash))) {
@@ -116,7 +116,7 @@ class UserSession
      * Also makes sure the session cookie gets removed. This is done to better
      * comply with GDPR by not having cookies for non-logged-in users.
      */
-    public function logout()
+    public function logout(): void
     {
         // logout on server
         session_start();
@@ -191,7 +191,7 @@ class UserSession
      */
     public function setAlias(
         string $alias
-    ) {
+    ): void {
         $_SESSION['alias'] = $alias;
     }
 

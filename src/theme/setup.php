@@ -20,8 +20,8 @@
 
 // --- setup I18N --------------------------------------------------------------
 
-require_once('wiki.i18n.php');
-at\nerdreich\i18n\Translate::loadLanguage(dirname(__FILE__) . '/I18N/' . $config['language'] . '.yaml');
+require_once('core/Translate.php');
+at\nerdreich\Translate::loadLanguage(dirname(__FILE__) . '/I18N/' . $config['language'] . '.yaml');
 
 // --- register theme macros ---------------------------------------------------
 
