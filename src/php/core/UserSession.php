@@ -204,12 +204,15 @@ class UserSession
      * - if no permission is found even in the root -> NOK
      * - a '*' permission at any time allows everyone
      *
+     * @param string $username A username to check for.
      * @param string $permission Name of permission.
+     * @param string $path A path to check the permission for.
      * @return boolean True, if the permission is granted.
      */
-    private function hasExplicitPermission(
-        string $path,
-        string $permission
+    public function hasExplicitPermission(
+        string $username,
+        string $permission,
+        string $path
     ): bool {
         // we start at the content dir and traverse up from here
         $scanpath = preg_replace('/[^\/]*$/', '', $path);
@@ -223,7 +226,7 @@ class UserSession
                 // note that "any user" and "anonymous" are both '*'
                 if (array_key_exists($permission, $yaml)) {
                     $permissions = explode(',', trim($yaml[$permission] ?? ''));
-                    if (in_array($this->username, $permissions) || in_array('*', $permissions)) {
+                    if (in_array($username, $permissions) || in_array('*', $permissions)) {
                         return true; // -> ALLOWED
                     }
                     return false; // there were explicit permissions and none matched -> DENIED
@@ -246,7 +249,8 @@ class UserSession
     public function mayCreate(
         string $path
     ): bool {
-        return $this->username === $this->superuser || $this->hasExplicitPermission($path, 'userCreate');
+        return $this->username === $this->superuser ||
+            $this->hasExplicitPermission($this->username, 'userCreate', $path);
     }
 
     /**
@@ -258,7 +262,8 @@ class UserSession
     public function mayRead(
         string $path
     ): bool {
-        return $this->username === $this->superuser || $this->hasExplicitPermission($path, 'userRead');
+        return $this->username === $this->superuser ||
+            $this->hasExplicitPermission($this->username, 'userRead', $path);
     }
 
     /**
@@ -270,7 +275,8 @@ class UserSession
     public function mayUpdate(
         string $path
     ): bool {
-        return $this->username === $this->superuser || $this->hasExplicitPermission($path, 'userUpdate');
+        return $this->username === $this->superuser ||
+            $this->hasExplicitPermission($this->username, 'userUpdate', $path);
     }
 
     /**
@@ -282,6 +288,7 @@ class UserSession
     public function mayDelete(
         string $path
     ): bool {
-        return $this->username === $this->superuser || $this->hasExplicitPermission($path, 'userDelete');
+        return $this->username === $this->superuser ||
+            $this->hasExplicitPermission($this->username, 'userDelete', $path);
     }
 }

@@ -20,7 +20,7 @@
 
 namespace at\nerdreich;
 
-require_once('Translate.php');          // simple file-diff implementation
+require_once('UDiff.php');              // simple file-diff implementation
 require_once('lib/spyc.php');           // yaml parser
 require_once('lib/Parsedown.php');      // markdown parser
 require_once('lib/ParsedownExtra.php'); // better markdown parser
@@ -52,7 +52,7 @@ class Wiki
      */
     public function __construct(
         array $config
-    ): void {
+    ) {
         $this->config = $config;
 
         // wiki path + files

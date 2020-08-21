@@ -90,6 +90,11 @@ class UDiff
         $arrayOut = [];
         $lineIn = 1;
 
+        // skip optional +++/--- lines at the beginning of diff
+        $diff = preg_replace('/^[+-][+-][+-].*\n/', '', $diff);
+        $diff = preg_replace('/^[+-][+-][+-].*\n/', '', $diff);
+
+        // find and apply chunks (starting with @@)
         foreach (explode("\n", str_replace("\r", '', $diff)) as $diffLine) {
             if (preg_match('/^@@/', $diffLine)) {
                 list($fromA, $lengthA, $fromB, $lengthB) = UDiff::parsePatch($diffLine);

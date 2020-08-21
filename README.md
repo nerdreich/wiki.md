@@ -64,7 +64,6 @@ wiki.md currently is beta software. It should work mostly fine, but you might mi
 * display warning when other user is editing a file at the same time
 * file uploads
 * comprehensive docs
-* unit tests for utility code
 * contributing and code guidelines
 
 ### Planned for v1.1.0

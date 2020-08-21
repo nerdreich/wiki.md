@@ -1,0 +1,5 @@
+---
+  userCreate: docs
+  userRead: *
+  userUpdate: docs
+  userDelete: docs
