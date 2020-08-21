@@ -365,13 +365,26 @@ class Wiki
      * @param string $macro The macro including curly braces.
      * @return array The components: name, primary parameter, secondary parameters.
      */
-    private function splitMacro(
+    public static function splitMacro(
         string $macro
     ): array {
-        $macro = str_replace("\n", ' ', $macro);
+        $macro = str_replace("\n", ' ', trim($macro));
 
-        // first check for macro with extended secondary parameter
-        if (preg_match_all('/{{([^\s]+)\s+([^|]+)\s*\|(.*)}}/', $macro, $matches)) {
+        // check for macros without parameter
+        if (preg_match_all('/{{\s*([^\s]+)\s*}}/', $macro, $matches)) {
+            $command = trim($matches[1][0]);
+            return [$command, null, null];
+        }
+
+        // now check for macro with only primary parameter
+        if (preg_match_all('/{{\s*([^\s|]+)\s+([^\s|]+)\s*}}/', $macro, $matches)) {
+            $command = trim($matches[1][0]);
+            $primary = trim($matches[2][0]);
+            return [$command, $primary, null];
+        }
+
+        // check for macro with extended secondary parameter
+        if (preg_match_all('/{{\s*([^\s]+)\s+([^|]+)\s*\|(.*)}}/', $macro, $matches)) {
             $command = trim($matches[1][0]);
             $primary = trim($matches[2][0]);
             $secondary = [];
@@ -383,20 +396,7 @@ class Wiki
             return [$command, $primary, $secondary];
         }
 
-        // now check for simple macro with only primary parameter
-        if (preg_match_all('/{{([^\s]+)\s+([^|]+)}}/', $macro, $matches)) {
-            $command = trim($matches[1][0]);
-            $primary = trim($matches[2][0]);
-            return [$command, $primary];
-        }
-
-        // and finally we check for macros without parameter
-        if (preg_match_all('/{{([^\s]+)}}/', $macro, $matches)) {
-            $command = trim($matches[1][0]);
-            return [$command];
-        }
-
-        return [];
+        return [null, null, null];
     }
 
     /**
