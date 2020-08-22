@@ -41,9 +41,13 @@ gulp.task('test-sass', function () {
 
 gulp.task('test-php', function () {
   const phpcs = require('gulp-phpcs')
+  const phplint = require('gulp-phplint')
+
   return gulp.src([
-    'src/php/*.php'
+    'src/php/*.php',
+    'src/php/core/*php'
   ])
+    .pipe(phplint('', { skipPassedFiles: true }))
     .pipe(phpcs({
       bin: 'tools/phpcs.phar',
       standard: 'PSR12',
@@ -55,9 +59,12 @@ gulp.task('test-php', function () {
 
 gulp.task('test-php-theme', function () {
   const phpcs = require('gulp-phpcs')
+  const phplint = require('gulp-phplint')
+
   return gulp.src([
     'src/theme/*php'
   ])
+    .pipe(phplint('', { skipPassedFiles: true }))
     .pipe(phpcs({
       bin: 'tools/phpcs.phar',
       standard: 'PSR12',
