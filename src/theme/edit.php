@@ -18,7 +18,7 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
-outputHeader($config, ___('Edit') . ': ' . $wiki->getTitle(), 'page editor');
+outputHeader($config, ___('Edit') . ': ' . $wiki->getTitle(), ' page editor');
 outputNavbar($wiki, $user);
 outputBanner($wiki);
 

@@ -18,7 +18,7 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
-outputHeader($config, ___('Not found'), '');
+outputHeader($config, ___('Forbidden'), '');
 outputNavbar($wiki, $user);
 outputBanner($wiki);
 
@@ -26,12 +26,7 @@ outputBanner($wiki);
 <section class="section-main container">
   <div class="row">
     <div class="col-12">
-      <p><?php __('Page %s does not exist.', $wiki->getLocation()); ?></p>
-      <?php if ($user->mayCreate($wiki->getLocation())) { ?>
-        <form action="?action=createPage" method="post">
-          <input type="submit" class="primary" value="<?php __('Create page'); ?>">
-        </form>
-      <?php } ?>
+      <p><?php __('You do not have the necessary permissions to do this.'); ?></p>
     </div>
   </div>
 </section>

@@ -33,6 +33,7 @@ class Wiki
     private $version = '$VERSION$';
     private $repo = '$URL$';
     private $config = [];
+    private UserSession $user;
 
     private $filename = 'na'; // fs-path to content file, e.g. /var/www/www.mysite.com/mywiki/data/animals/lion.md
     private $wikiroot = '';   // fs-path to wiki code, e.g. /var/www/www.mysite.com/mywiki
@@ -51,9 +52,11 @@ class Wiki
      * @param array $config Array with loaded config.ini as key => value entries.
      */
     public function __construct(
-        array $config
+        array $config,
+        UserSession $user
     ) {
         $this->config = $config;
+        $this->user = $user;
 
         // wiki path + files
         $this->wikiroot = dirname(dirname(__FILE__)); // Wiki.php is in the ../core folder
@@ -67,18 +70,19 @@ class Wiki
     }
 
     /**
-     * Load a page.
+     * Prepare processing of a page.
      *
-     * Will also fix invalid/hidden dir/README combinations.
+     * Will also detect invalid/hidden dir/README combinations.
      *
      * @param string $urlPath The URI path for the wiki page to load/process.
+     * @return string Cannonical path to redirect to.
      */
-    public function load(
+    public function init(
         string $urlPath
-    ): void {
+    ): string {
         // hide /dir/README.md behind /dir/
         if (preg_match('/README$/', $urlPath)) {
-            $this->redirect(dirname($urlPath) . '/');
+            return dirname($urlPath) . '/';
         }
 
         // assemble absolute fs url
@@ -87,30 +91,18 @@ class Wiki
 
         // if this is both a file and a folder, redirect to the folder instead
         if (is_dir(preg_replace('/\.md$/', '/', $this->filename))) {
-            $this->redirect($urlPath . '/');
+            return $urlPath . '/';
         }
 
-        list($this->metadata, $this->content) = $this->loadFile($this->filename, true);
+        return $urlPath;
     }
 
     /**
-     * Redirect to a wiki path, e.g. /animals/lion.
-     *
-     * If wiki.md is installed in a sub-folder, it will prefix the location
-     * with it, e.g. /mywiki/animals/lion.
-     *
-     * @param string $urlPath The URI path for the wiki page.
+     * Load the content for this page from the filesystem.
      */
-    private function redirect(
-        string $path
-    ): void {
-        if ($this->urlRoot . $path === '') {
-            header('Location: /');
-        } else {
-            $path = preg_replace('/\/+/', '/', $path); // remove double slashed
-            header('Location: ' . $this->urlRoot . $path);
-        }
-        die();
+    private function loadFS(): void
+    {
+        list($this->metadata, $this->content) = $this->loadFile($this->filename, true);
     }
 
     // ----------------------------------------------------------------------
@@ -310,19 +302,24 @@ class Wiki
     public function revertToVersion(
         int $version
     ): bool {
-        if ($this->isDirty()) {
-            // direct changes in the FS prevent the history from working
-            return false;
-        }
-        $historySize = count($this->metadata['history']);
-        if ($version > 0 && $version <= $historySize) {
-            // reverse-apply all diffs up to to the requested version
-            for ($revertTo = $historySize; $revertTo >= $version; $revertTo--) {
-                $diffToApply = $revertTo - 1;
-                $diff = gzuncompress(base64_decode($this->metadata['history'][$diffToApply]['diff']));
-                $this->content = \at\nerdreich\UDiff::patch($this->content, $diff, true);
+        if ($this->user->mayRead($this->urlPath) && $this->user->mayUpdate($this->urlPath)) {
+            $this->loadFS();
+
+            if ($this->isDirty()) {
+                // direct changes in the FS prevent the history from working
+                return false;
             }
-            return true;
+
+            $historySize = count($this->metadata['history']);
+            if ($version > 0 && $version <= $historySize) {
+                // reverse-apply all diffs up to to the requested version
+                for ($revertTo = $historySize; $revertTo >= $version; $revertTo--) {
+                    $diffToApply = $revertTo - 1;
+                    $diff = gzuncompress(base64_decode($this->metadata['history'][$diffToApply]['diff']));
+                    $this->content = \at\nerdreich\UDiff::patch($this->content, $diff, true);
+                }
+                return true;
+            }
         }
 
         return false;
@@ -514,6 +511,20 @@ class Wiki
     }
 
     /**
+     * Prepare to edit a page. Will not save anything!
+     *
+     * @return bool True, if the user may edit this page.
+     */
+    public function editPage(): bool
+    {
+        if ($this->user->mayRead($this->urlPath) && $this->user->mayUpdate($this->urlPath)) {
+            $this->loadFS();
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Save a page. Create a new diff/history on the fly if it already existed.
      *
      * @param $content New markdown content for this page.
@@ -526,74 +537,81 @@ class Wiki
         string $title,
         string $author
     ): bool {
-        $author = $this->cleanupSingeLineText($author);
-        $title = $this->cleanupSingeLineText($title);
+        if ($this->user->mayUpdate($this->urlPath)) {
+            $author = $this->cleanupSingeLineText($author);
+            $title = $this->cleanupSingeLineText($title);
 
-        // check if this is yet another quick save by the same author
-        if ($this->metadata['author'] === $author) {
-            if (array_key_exists('date', $this->metadata)) {
-                $lastSaveDate = \DateTime::createFromFormat(\DateTimeInterface::ATOM, $this->metadata['date']);
-                $seconds = (new \DateTime())->getTimestamp() - $lastSaveDate->getTimestamp();
-                if ($seconds < $this->config['autosquash_interval'] ?? -1) {
-                    // this is a quick (re)save. undo last history to merge the saves into one.
-                    if ($this->revertToPreviousVersion()) {
-                        if ($this->metadata['history'] === []) {
-                            unset($this->metadata['history']);
+            // load old content
+            $this->loadFS();
+
+            // check if this is yet another quick save by the same author
+            if ($this->metadata['author'] === $author) {
+                if (array_key_exists('date', $this->metadata)) {
+                    $lastSaveDate = \DateTime::createFromFormat(\DateTimeInterface::ATOM, $this->metadata['date']);
+                    $seconds = (new \DateTime())->getTimestamp() - $lastSaveDate->getTimestamp();
+                    if ($seconds < $this->config['autosquash_interval'] ?? -1) {
+                        // this is a quick (re)save. undo last history to merge the saves into one.
+                        if ($this->revertToPreviousVersion()) {
+                            if ($this->metadata['history'] === []) {
+                                unset($this->metadata['history']);
+                            } else {
+                                array_pop($this->metadata['history']);
+                            }
                         } else {
-                            array_pop($this->metadata['history']);
+                            return false;
                         }
-                    } else {
-                        return false;
                     }
                 }
             }
-        }
 
-        // calculate diff & hash
-        $diff = \at\nerdreich\UDiff::diff($this->content, $content);
-        $hash = hash('sha1', $content);
+            // calculate diff & hash
+            $diff = \at\nerdreich\UDiff::diff($this->content, $content);
+            $hash = hash('sha1', $content);
 
-        if (array_key_exists('history', $this->metadata)) {
-            // page has a history -> add to that
+            if (array_key_exists('history', $this->metadata)) {
+                // page has a history -> add to that
 
-            // create a new history entry
-            $historyEntry = [];
-            $historyEntry['author'] = $this->metadata['author'] ?? 'unknown';
-            $historyEntry['date'] =
-                $this->metadata['date'] ?? date(\DateTimeInterface::ATOM, filemtime($this->filename));
-            $diff = preg_replace('/^.+\n/', '', $diff); // remove first line (---)
-            $diff = preg_replace('/^.+\n/', '', $diff); // remove second line (+++)
-            $historyEntry['diff'] = chunk_split(base64_encode(gzcompress($diff)), 64, "\n");
+                // create a new history entry
+                $historyEntry = [];
+                $historyEntry['author'] = $this->metadata['author'] ?? 'unknown';
+                $historyEntry['date'] =
+                    $this->metadata['date'] ?? date(\DateTimeInterface::ATOM, filemtime($this->filename));
+                $diff = preg_replace('/^.+\n/', '', $diff); // remove first line (---)
+                $diff = preg_replace('/^.+\n/', '', $diff); // remove second line (+++)
+                $historyEntry['diff'] = chunk_split(base64_encode(gzcompress($diff)), 64, "\n");
 
-            $this->metadata['history'][] = $historyEntry;
+                $this->metadata['history'][] = $historyEntry;
+            } else {
+                // no history exists -> this is the first save, just start a new/empty one
+                $this->metadata['history'] = [];
+            }
+
+            // update yaml front matter / metadata
+            $this->metadata['date'] = date(\DateTimeInterface::ATOM);
+            if ($title !== '') {
+                $this->metadata['title'] = $title;
+            }
+            if ($author !== '') {
+                $this->metadata['author'] = $author;
+            } else {
+                $this->metadata['author'] = 'unknown';
+            }
+            $this->metadata['hash'] = $hash;
+
+            // create parent dir if necessary
+            if (!\file_exists(dirname($this->filename))) {
+                mkdir(dirname($this->filename), 0777, true);
+            }
+
+            // write out & redirect to new content
+            $frontmatter = \Spyc::YAMLDump($this->metadata);
+            $this->fileWriteContent($this->filename, $frontmatter . "---\n" . trim($content) . "\n");
+            $this->addToChangelog();
+
+            return true;
         } else {
-            // no history exists -> this is the first save, just start a new/empty one
-            $this->metadata['history'] = [];
+            return false;
         }
-
-        // update yaml front matter / metadata
-        $this->metadata['date'] = date(\DateTimeInterface::ATOM);
-        if ($title !== '') {
-            $this->metadata['title'] = $title;
-        }
-        if ($author !== '') {
-            $this->metadata['author'] = $author;
-        } else {
-            $this->metadata['author'] = 'unknown';
-        }
-        $this->metadata['hash'] = $hash;
-
-        // create parent dir if necessary
-        if (!\file_exists(dirname($this->filename))) {
-            mkdir(dirname($this->filename), 0777, true);
-        }
-
-        // write out & redirect to new content
-        $frontmatter = \Spyc::YAMLDump($this->metadata);
-        $this->fileWriteContent($this->filename, $frontmatter . "---\n" . trim($content) . "\n");
-        $this->addToChangelog();
-
-        return true;
     }
 
     /**
@@ -601,18 +619,30 @@ class Wiki
      *
      * Will only reset internal data to a blank page, to be picked up by the
      * editor.
+     *
+     * @return True if page was created. False if user is not allowed.
      */
-    public function createPage(): void
+    public function createPage(): bool
     {
-        // reset internal data to empty page
-        $this->metadata = [];
-        $this->metadata['date'] = date(\DateTimeInterface::ATOM);
-        $this->content = '';
-        $this->filename = $this->dataPath . '/' . $this->urlPath . '.md';
+        if ($this->user->mayCreate($this->urlPath)) {
+            // reset internal data to empty page
+            $this->metadata = [];
+            $this->metadata['date'] = date(\DateTimeInterface::ATOM);
+            $this->content = '';
+            $this->filename = $this->dataPath . '/' . $this->urlPath . '.md';
 
-        // prefill title
-        $this->metadata['title'] = str_replace('_', ' ', basename($this->urlPath)); // underscore to spaces
-        $this->metadata['title'] = preg_replace('/([a-z])([A-Z])/', '$1 $2', $this->metadata['title']); // unCamelCase
+            // prefill title
+            $this->metadata['title'] = str_replace('_', ' ', basename($this->urlPath)); // underscore to spaces
+            $this->metadata['title'] = preg_replace(
+                '/([a-z])([A-Z])/',
+                '$1 $2',
+                $this->metadata['title']
+            ); // unCamelCase
+
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -620,16 +650,51 @@ class Wiki
      *
      * Will rename the markdownfile to '.deleted', making it invisible to the
      * wiki.
+     *
+     * @param dryRun If true, all checks are made but the file is not deleted.
+     * @return True if page was deleted. False if user is not allowed.
      */
-    public function deletePage(): void
+    public function deletePage(bool $dryRun = false): bool
     {
-        if ($this->exists()) {
-            rename(
-                $this->filename,
-                $this->filename . '.deleted'
-            );
+        if ($this->user->mayDelete($this->urlPath)) {
+            if ($this->exists()) {
+                if (!$dryRun) {
+                    rename(
+                        $this->filename,
+                        $this->filename . '.deleted'
+                    );
+                }
+                return true;
+            }
         }
-        $this->redirect($this->urlPath);
+
+        return false;
+    }
+
+    /**
+     * Prepare page for history viewing.
+     *
+     * @return True if history is ready, false if user is not allowed.
+     */
+    public function history(): bool
+    {
+        // does currently not more than load the page
+        return $this->readPage();
+    }
+
+    /**
+     * Prepare page for viewing.
+     *
+     * @return True if history is ready, false if user is not allowed.
+     */
+    public function readPage(): bool
+    {
+        if ($this->user->mayRead($this->urlPath)) {
+            $this->loadFS();
+            return true;
+        }
+
+        return false;
     }
 
     // ----------------------------------------------------------------------
