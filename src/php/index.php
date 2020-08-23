@@ -64,12 +64,30 @@ function sanitizePath(
  * global-declared variables.
  *
  * @param string $filename Theme file to load, e.g. 'edit.php'.
+ * @param int $httpResponseCode Code to send this page with to the client.
  */
-function renderThemeFile(string $filename): void
+function renderThemeFile(string $filename, $httpResponseCode = 200): void
 {
     global $config, $wiki, $user;
+    http_response_code($httpResponseCode);
     require($config['themeRoot'] . $filename);
     exit;
+}
+
+/**
+ * Show a permission-denied message for logged-in users or the login screen for
+ * logged out users.
+ */
+function renderLoginOrDenied()
+{
+    global $user;
+    if ($user->isLoggedIn()) {
+        // as this user is logged in, (s)he just has insufficient permissions
+        renderThemeFile('403.php', 403);
+    } else {
+        // user has to login-first
+        renderThemeFile('login.php', 401);
+    }
 }
 
 // --- setup wiki --------------------------------------------------------------
@@ -106,8 +124,7 @@ switch ($_GET['auth']) {
             redirect($wiki->getPathRoot() . $contentPath, $action);
         } else {
             // unsuccessful -> show login again
-            include($config['themeRoot'] . 'login.php');
-            exit;
+            renderThemeFile('login.php', 401);
         }
         break;
     case 'logout':
@@ -130,8 +147,6 @@ switch ($_GET['action']) {
             )
         ) {
             redirect($wiki->getLocation());
-        } else {
-            renderThemeFile('403.php');
         };
         break;
 }
@@ -141,12 +156,10 @@ if (!$wiki->exists()) {
         case 'createPage':
             if ($wiki->createPage()) {
                 renderThemeFile('edit.php');
-            } else {
-                renderThemeFile('403.php');
             }
             break;
         default:
-            renderThemeFile('404.php');
+            renderThemeFile('404.php', 404);
             exit;
     }
 } else {
@@ -154,29 +167,21 @@ if (!$wiki->exists()) {
         case 'delete':
             if ($wiki->deletePage(true)) {
                 renderThemeFile('delete.php');
-            } else {
-                renderThemeFile('403.php');
             }
             break;
         case 'deleteOK':
             if ($wiki->deletePage()) {
                 redirect($wiki->getLocation());
-            } else {
-                renderThemeFile('403.php');
             }
             break;
         case 'edit':
             if ($wiki->editPage()) {
                 renderThemeFile('edit.php');
-            } else {
-                renderThemeFile('403.php');
             }
             break;
         case 'history':
             if ($wiki->history()) {
                 renderThemeFile('history.php');
-            } else {
-                renderThemeFile('403.php');
             }
             break;
         case 'restore':
@@ -184,20 +189,20 @@ if (!$wiki->exists()) {
             if ($version > 0) {
                 if ($wiki->revertToVersion($version)) {
                     renderThemeFile('edit.php');
-                } else {
-                    renderThemeFile('403.php');
                 }
+            } else {
+                renderThemeFile('error.php', 400);
             }
-            renderThemeFile('error.php');
+            break;
+        case 'createPage':
+            renderThemeFile('error.php', 400); // can't recreate existing page
             break;
         default:
             if ($wiki->readPage()) {
                 renderThemeFile('view.php');
-            } else {
-                renderThemeFile('403.php');
             }
     }
 }
 
 // if we got here, then no 'exit' fired - probably a permission error
-renderThemeFile('login.php');
+renderLoginOrDenied();

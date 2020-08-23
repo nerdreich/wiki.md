@@ -62,14 +62,14 @@ wiki.md currently is beta software. It should work mostly fine, but you might mi
 
 * permission check for {{include}}
 * display warning when other user is editing a file at the same time
-* file uploads
+* better page history browser
 * comprehensive docs
 * contributing and code guidelines
 
 ### Planned for v1.1.0
 
+* file/media uploads
 * plugin mechanism
-* better page history browser
 * rename-page feature
 * configure date/time format + timezone
 

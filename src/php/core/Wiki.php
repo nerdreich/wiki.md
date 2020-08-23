@@ -657,6 +657,7 @@ class Wiki
     public function deletePage(bool $dryRun = false): bool
     {
         if ($this->user->mayDelete($this->urlPath)) {
+            $this->loadFS();
             if ($this->exists()) {
                 if (!$dryRun) {
                     rename(
