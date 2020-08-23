@@ -28,7 +28,7 @@ outputBanner($wiki);
 ?><section class="section-main container page-history">
   <div class="row">
     <div class="col-12 col-md-8 col-lg-9">
-      <h2><?php __('History for %s', $wiki->getPath()); ?></h2>
+      <h2><?php __('History for %s', $wiki->getWikiPath()); ?></h2>
       <?php if ($wiki->isDirty()) { ?>
         <p><?php __('The checksum of this page is invalid. Save the page in wiki.md again to correct this.') ?>
       <?php } ?>

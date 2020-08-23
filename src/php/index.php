@@ -99,7 +99,7 @@ $wiki = new at\nerdreich\Wiki($config, $user);
 
 // --- setup theme --------------------------------------------------------------
 
-$config['themePath'] = $wiki->getPathRoot() . '/themes/' . $config['theme'] . '/';
+$config['themePath'] = $wiki->getWikiRoot() . '/themes/' . $config['theme'] . '/';
 $config['themeRoot'] = dirname(__FILE__) . '/themes/' . $config['theme'] . '/';
 require_once($config['themeRoot'] . 'setup.php');
 
@@ -108,11 +108,11 @@ require_once($config['themeRoot'] . 'setup.php');
 // determine content path. will trim folder if wiki.md is installed in a sub-folder.
 $contentPath = substr(sanitizePath(
     parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)
-), strlen($wiki->getPathRoot()));
+), strlen($wiki->getWikiRoot()));
 
-$cannonicalPath = $wiki->init($contentPath);
-if ($contentPath != $cannonicalPath) {
-    redirect($cannonicalPath);
+$canonicalPath = $wiki->init($contentPath);
+if ($contentPath != $canonicalPath) {
+    redirect($canonicalPath);
 }
 
 // first we check for any authentication related stuff
@@ -121,7 +121,7 @@ switch ($_GET['auth']) {
         if ($user->login(trim($_POST['password']))) {
             // successfull -> redirect back
             $action = array_key_exists('action', $_GET) ? '?action=' . urlencode($_GET['action']) : '';
-            redirect($wiki->getPathRoot() . $contentPath, $action);
+            redirect($wiki->getWikiRoot() . $contentPath, $action);
         } else {
             // unsuccessful -> show login again
             renderThemeFile('login.php', 401);
@@ -130,7 +130,7 @@ switch ($_GET['auth']) {
     case 'logout':
         $user->logout();
         $action = array_key_exists('action', $_GET) ? '?action=' . urlencode($_GET['action']) : '';
-        redirect($wiki->getPathRoot() . $contentPath, $action);
+        redirect($wiki->getWikiRoot() . $contentPath, $action);
 }
 
 // now check for regular wiki operations

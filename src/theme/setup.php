@@ -67,17 +67,17 @@ $wiki->registerMacro('paginate', function (
 function getPageLinksHTML($user, $wiki)
 {
     $html = '';
-    if ($user->mayUpdate($wiki->getPath())) {
+    if ($user->mayUpdate($wiki->getWikiPath())) {
         if ($wiki->exists()) {
             $html .= '<a href="?action=edit">' . ___('Edit') . '</a><br>';
         } else {
             $html .= '<a href="?action=createPage">' . ___('Create') . '</a><br>';
         }
     }
-    if ($wiki->exists() && $user->mayRead($wiki->getPath()) && $user->mayUpdate($wiki->getPath())) {
+    if ($wiki->exists() && $user->mayRead($wiki->getWikiPath()) && $user->mayUpdate($wiki->getWikiPath())) {
         $html .= '<a href="?action=history">' . ___('History') . '</a><br>';
     }
-    if ($wiki->exists() && $user->mayDelete($wiki->getPath())) {
+    if ($wiki->exists() && $user->mayDelete($wiki->getWikiPath())) {
         $html .= '<a href="?action=delete">' . ___('Delete') . '</a><br>';
     }
     if ($user->isLoggedIn()) {

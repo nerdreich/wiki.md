@@ -60,7 +60,6 @@ wiki.md currently is beta software. It should work mostly fine, but you might mi
 
 ### Planned for v1.0.0
 
-* permission check for {{include}}
 * display warning when other user is editing a file at the same time
 * better page history browser
 * comprehensive docs
