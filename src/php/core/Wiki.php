@@ -30,11 +30,11 @@ require_once('lib/ParsedownExtra.php'); // better markdown parser
  */
 class Wiki
 {
-    private string $version = '$VERSION$';
-    private string $repo = '$URL$';
-    private array $config = [];
-    private UserSession $user;
-    private string $pregMedia =
+    private $version = '$VERSION$';
+    private $repo = '$URL$';
+    private $config = [];
+    private $user;
+    private $pregMedia =
         '/\.(gif|jpe?g|png)$/i'; // files matching this are considered media
 
     private $wikiDirFS = '';       // e.g. /var/www/www.mysite.com/mywiki
