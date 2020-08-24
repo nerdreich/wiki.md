@@ -1,8 +1,28 @@
 # wiki.md content format
 
+## Filesystem
+
+Every page in wiki.md is a Markdown file (`*.md`) in the content directory on the server. Every URL that does not end in a slash ('/') maps to a file of the same name:
+
+```
+https://wiki.example.org/about        # /about.md
+https://wiki.example.org/animal/lion  # /animal/lion.md
+https://wiki.example.org/plant/rose   # /plant/rose.md
+```
+
+Even folders are pages that are automatically mapped to a `README.md`:
+
+```
+https://wiki.example.org/             # /README.md
+https://wiki.example.org/animal/      # /animal/README.md
+https://wiki.example.org/plant/       # /plant/README.md
+```
+
+You can find these `*.md` files in the `data/content/` folder of your wiki.md installation.
+
 ## Content example
 
-Each page is essentially a YFM & Markdown file that keeps its own history as base64 encoded, gzipped, unified diffs. Here's an example:
+Each `*.md` file is a YFM & [Markdown](https://en.wikipedia.org/wiki/Markdown) file that keeps its own history as base64 encoded, gzipped, [unified diffs](https://en.wikipedia.org/wiki/Diff_utility#Unified_format). Here's an example:
 
 ```
 ---

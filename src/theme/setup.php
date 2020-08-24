@@ -20,8 +20,8 @@
 
 // --- setup I18N --------------------------------------------------------------
 
-require_once('wiki.i18n.php');
-at\nerdreich\i18n\Translate::loadLanguage(dirname(__FILE__) . '/I18N/' . $config['language'] . '.yaml');
+require_once('core/Translate.php');
+at\nerdreich\Translate::loadLanguage(dirname(__FILE__) . '/I18N/' . $config['language'] . '.yaml');
 
 // --- register theme macros ---------------------------------------------------
 
@@ -67,17 +67,17 @@ $wiki->registerMacro('paginate', function (
 function getPageLinksHTML($user, $wiki)
 {
     $html = '';
-    if ($user->mayUpdate($wiki->getPath())) {
+    if ($user->mayUpdate($wiki->getWikiPath())) {
         if ($wiki->exists()) {
             $html .= '<a href="?action=edit">' . ___('Edit') . '</a><br>';
         } else {
             $html .= '<a href="?action=createPage">' . ___('Create') . '</a><br>';
         }
     }
-    if ($wiki->exists() && $user->mayRead($wiki->getPath()) && $user->mayUpdate($wiki->getPath())) {
+    if ($wiki->exists() && $user->mayRead($wiki->getWikiPath()) && $user->mayUpdate($wiki->getWikiPath())) {
         $html .= '<a href="?action=history">' . ___('History') . '</a><br>';
     }
-    if ($wiki->exists() && $user->mayDelete($wiki->getPath())) {
+    if ($wiki->exists() && $user->mayDelete($wiki->getWikiPath())) {
         $html .= '<a href="?action=delete">' . ___('Delete') . '</a><br>';
     }
     if ($user->isLoggedIn()) {
@@ -89,12 +89,37 @@ function getPageLinksHTML($user, $wiki)
 }
 
 /**
+ * Convert a wiki path into a series of CSS classes.
+ *
+ * This is usefull to style pages depending on their folder or name. E.g.
+ * `/animal/lion` -> `page page-animal page-animal-lion`
+ *
+ * @param string Wiki path to convert.
+ * @return string Class string to be added to class="".
+ */
+function pathToClasses(
+    string $wikiPath
+): string {
+    $css = '';
+    $prefix = 'page';
+    foreach (explode('/', $wikiPath) as $element) {
+        if ($element === '') {
+            $css = $prefix;
+        } else {
+            $css .= ' ' . $prefix . '-' . $element;
+            $prefix = $prefix . '-' . $element;
+        }
+    }
+    return trim($css);
+}
+
+/**
  * Generate the HTML header and open the <body>.
  *
  * @param at\nerdreich\Wiki $wiki Current CMS object.
  * @param array $config Wiki configuration.
  */
-function outputHeader(array $config, string $title, string $description = '')
+function outputHeader(array $config, string $path, string $title, string $description = '')
 {
     ?><!doctype html>
 <html class="no-js" lang="">
@@ -108,7 +133,7 @@ function outputHeader(array $config, string $title, string $description = '')
   <link rel="icon" href="<?php echo $config['themePath']; ?>favicon.ico"  type="image/x-icon">
   <link rel="stylesheet" href="<?php echo $config['themePath']; ?>style.css?v=$VERSION$">
 </head>
-<body>
+<body class="<?php echo htmlspecialchars(pathToClasses($path)); ?>">
     <?php
 }
 
@@ -128,7 +153,7 @@ function outputNavbar(at\nerdreich\Wiki $wiki, at\nerdreich\UserSession $user)
         <?php echo $wiki->getSnippetHTML('topnav'); ?>
         <div>
           <input id="wiki-burger" type="checkbox">
-          <label for="wiki-burger">[=]</label>
+          <label for="wiki-burger"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></label>
           <div class="wiki-menu">
             <?php echo getPageLinksHTML($user, $wiki); ?>
           </div>

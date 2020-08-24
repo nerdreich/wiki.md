@@ -1,7 +1,5 @@
 # Installation
 
-## Requirements
-
 Before you install, make sure the following requirements are met:
 
 * Apache httpd (`.htaccess` and `mod_rewrite` enabled)
@@ -51,7 +49,7 @@ wiki.md comes with a single basic theme. See [Themes](themes.md) page how to ins
 
 ### Language
 
-To set the menu language, edit `data/.config.ini` and set the `language =` line. The default theme support:
+To set the menu language, edit `data/config.ini` and set the `language =` line. The default theme support:
 
 |Code|Language|
 |----|--------|
@@ -62,7 +60,7 @@ wiki.md only supports a single, site-wide language.
 
 ### Search engines
 
-wiki.md instructs search engines to not index your content per default. If you want your content to be found, change `robots.txt`'s contents to:
+wiki.md instructs search engines to **not** index your content per default. If you want your content to be found, change `robots.txt`'s contents to:
 
 ```
 User-agent: *
@@ -78,3 +76,13 @@ Be aware that `.htaccess-full` might or might not work out-of-the-box depending 
 ### More users / passwords
 
 The default installation only knows a single `admin` user. See [Permissions](permissions.md) how to add more.
+
+### History auto-squashing
+
+When users save pages very often in short intervals, they can fill up the page history quickly with minor versions. History squashing will detect repeated saves within a defined time intervall and combine those minor saves into one history entry. Per default, saves of the same page from the same author within 120 seconds will be auto-squashed. You can change this interval by editing `data/config.ini`:
+
+```
+autosquash_interval = 120
+```
+
+A value of `-1` disables auto-squashing.

@@ -41,9 +41,13 @@ gulp.task('test-sass', function () {
 
 gulp.task('test-php', function () {
   const phpcs = require('gulp-phpcs')
+  const phplint = require('gulp-phplint')
+
   return gulp.src([
-    'src/php/*.php'
+    'src/php/*.php',
+    'src/php/core/*php'
   ])
+    .pipe(phplint('', { skipPassedFiles: true }))
     .pipe(phpcs({
       bin: 'tools/phpcs.phar',
       standard: 'PSR12',
@@ -55,9 +59,12 @@ gulp.task('test-php', function () {
 
 gulp.task('test-php-theme', function () {
   const phpcs = require('gulp-phpcs')
+  const phplint = require('gulp-phplint')
+
   return gulp.src([
     'src/theme/*php'
   ])
+    .pipe(phplint('', { skipPassedFiles: true }))
     .pipe(phpcs({
       bin: 'tools/phpcs.phar',
       standard: 'PSR12',
@@ -162,13 +169,18 @@ gulp.task('data', function () {
     .pipe(gulp.dest(dirs.data))
 })
 
-gulp.task('docs', function () {
+gulp.task('docs', gulp.series(function () {
   return gulp.src([
     'docs/**/*.md'
   ])
     .pipe(replace('.md)', ')', { skipBinary: true })) // wiki.md does not use extensions
     .pipe(gulp.dest(dirs.data + '/content/docs'))
-})
+}, function () {
+  return gulp.src([
+    'docs/**/*.png'
+  ])
+    .pipe(gulp.dest(dirs.data + '/content/docs/_media'))
+}))
 
 gulp.task('dist', gulp.series(gulp.parallel('php', 'meta', 'theme', 'data'), 'docs'))
 

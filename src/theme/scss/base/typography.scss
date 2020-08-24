@@ -139,8 +139,12 @@ samp {
   padding: .1em .25em;
 }
 
-pre code {
-  padding: 0;
+pre {
+  padding: .75em;
+
+  code {
+    padding: 0;
+  }
 }
 
 .h0,

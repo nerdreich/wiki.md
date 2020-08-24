@@ -21,23 +21,23 @@
 // load history
 $history = $wiki->getHistory();
 
-outputHeader($config, ___('History') . ': ' . $wiki->getTitle(), 'page history');
+outputHeader($config, $wiki->getWikiPath(), ___('History') . ': ' . $wiki->getTitle(), 'page history');
 outputNavbar($wiki, $user);
 outputBanner($wiki);
 
 ?><section class="section-main container page-history">
   <div class="row">
     <div class="col-12 col-md-8 col-lg-9">
-      <h2><?php __('History for %s', $wiki->getPath()); ?></h2>
+      <h2><?php __('History for %s', $wiki->getWikiPath()); ?></h2>
       <?php if ($wiki->isDirty()) { ?>
         <p><?php __('The checksum of this page is invalid. Save the page in wiki.md again to correct this.') ?>
       <?php } ?>
       <?php if ($history === null) { ?>
-        <div class="card"><p><?php __('No history available.'); ?></p></div>
+        <div id="history-0" class="card"><p><?php __('No history available.'); ?></p></div>
       <?php } else {
           $version = count($history) + 1;
             ?>
-        <div class="card">
+        <div id="history-<?php echo $version; ?>" class="card">
             <h3><?php __('Version'); ?> v<?php echo $version; ?> (<?php __('current'); ?>)</h3>
             <p><?php __('Date'); ?>: <?php echo htmlspecialchars($wiki->getDate()); ?></p>
             <p><?php __('Author'); ?>: <?php echo htmlspecialchars($wiki->getAuthor()); ?></p>
@@ -55,7 +55,7 @@ outputBanner($wiki);
                     <pre><?php echo $diff; ?></pre>
                   </div>
 
-                  <div class='card'>
+                  <div id="history-<?php echo $version; ?>" class='card'>
                     <h3><?php __('Version'); ?> v<?php echo $version; ?></h3>
                     <p><?php __('Date'); ?>: <?php echo htmlspecialchars($date); ?></p>
                     <p><?php __('Author'); ?>: <?php echo htmlspecialchars($author); ?></p>

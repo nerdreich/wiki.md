@@ -1,6 +1,6 @@
 {
   "name": "wiki.md",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "A file-based, responsive Markdown wiki, written in PHP.",
   "keywords": [
     "wiki",
@@ -30,6 +30,7 @@
     "gulp-gzip": "1",
     "gulp-imagemin": "7",
     "gulp-phpcs": "3",
+    "gulp-phplint": "^0.9.0",
     "gulp-replace": "1",
     "gulp-sass": "4",
     "gulp-sass-lint": "1",

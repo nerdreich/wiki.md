@@ -18,7 +18,7 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
-outputHeader($config, ___('Not found'), '');
+outputHeader($config, $wiki->getWikiPath(), ___('Not found'), '');
 outputNavbar($wiki, $user);
 outputBanner($wiki);
 
@@ -26,8 +26,8 @@ outputBanner($wiki);
 <section class="section-main container">
   <div class="row">
     <div class="col-12">
-      <p><?php __('Page %s does not exist.', $contentPath); ?></p>
-      <?php if ($user->mayCreate($contentPath)) { ?>
+      <p><?php __('Page %s does not exist.', $wiki->getLocation()); ?></p>
+      <?php if ($user->mayCreate($wiki->getLocation())) { ?>
         <form action="?action=createPage" method="post">
           <input type="submit" class="primary" value="<?php __('Create page'); ?>">
         </form>

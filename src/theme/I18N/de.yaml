@@ -30,6 +30,7 @@ Difference vs.: Unterschied zu
 Do you really want to delete this page?: Möchtest du diese Seite wirklich löschen?
 Edit: Bearbeiten
 Error: Fehler
+Forbidden: Unzulässig
 Headlines: Überschriften
 History: Protokoll
 italic: kursiv
@@ -57,3 +58,4 @@ target: Ziel
 The checksum of this page is invalid. Save the page in wiki.md again to correct this.: Die Prüfsumme dieser Seite ist nicht korrekt. Speichere die Seite in wiki.md erneut ab, um sie zu korrigieren.
 Title - may remain empty: Titel – darf auch leer bleiben
 Version: Version
+You do not have the necessary permissions to do this.: Du verfügst nicht über die nötigen Rechte, diese Aktion auszuführen.

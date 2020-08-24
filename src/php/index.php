@@ -20,12 +20,7 @@
 
 // --- load config -------------------------------------------------------------
 
-$config = parse_ini_file('data/.config.ini');
-
-// --- setup user session ------------------------------------------------------
-
-require_once('wiki.usersession.php');
-$user = new at\nerdreich\UserSession('data/content');
+$config = parse_ini_file('data/config.ini');
 
 // --- frontend helpers --------------------------------------------------------
 
@@ -62,14 +57,64 @@ function sanitizePath(
     return $path;
 }
 
+/**
+ * Output a theme file and terminate further execution.
+ *
+ * This puts the the theme file into a function scope, so it can only access
+ * global-declared variables.
+ *
+ * @param string $filename Theme file to load, e.g. 'edit.php'.
+ * @param int $httpResponseCode Code to send this page with to the client.
+ */
+function renderThemeFile(string $filename, $httpResponseCode = 200): void
+{
+    global $config, $wiki, $user;
+    http_response_code($httpResponseCode);
+    require($config['themeRoot'] . $filename);
+    exit;
+}
+
+/**
+ * Show a permission-denied message for logged-in users or the login screen for
+ * logged out users.
+ */
+function renderLoginOrDenied()
+{
+    global $user;
+    if ($user->isLoggedIn()) {
+        // as this user is logged in, (s)he just has insufficient permissions
+        renderThemeFile('403.php', 403);
+    } else {
+        // user has to login-first
+        renderThemeFile('login.php', 401);
+    }
+}
+
+/**
+ * Deliver a file, usually an image or uploaded file, to the client.
+ *
+ * Will set proper HTTP headers and terminate execution after sending the blob.
+ *
+ * @param string $pathFS Absolute path of file to send.
+ */
+function renderMedia(string $pathFS): void
+{
+    header('Content-Type:' . mime_content_type($pathFS));
+    header('Content-Length: ' . filesize($pathFS));
+    readfile($pathFS);
+    exit;
+}
+
 // --- setup wiki --------------------------------------------------------------
 
-require_once('wiki.cms.php');
-$wiki = new at\nerdreich\Wiki('data/content');
+require_once('core/Wiki.php');
+require_once('core/UserSession.php');
+$user = new at\nerdreich\UserSession($config);
+$wiki = new at\nerdreich\Wiki($config, $user);
 
 // --- setup theme --------------------------------------------------------------
 
-$config['themePath'] = $wiki->getPathRoot() . '/themes/' . $config['theme'] . '/';
+$config['themePath'] = $wiki->getWikiRoot() . '/themes/' . $config['theme'] . '/';
 $config['themeRoot'] = dirname(__FILE__) . '/themes/' . $config['theme'] . '/';
 require_once($config['themeRoot'] . 'setup.php');
 
@@ -78,9 +123,16 @@ require_once($config['themeRoot'] . 'setup.php');
 // determine content path. will trim folder if wiki.md is installed in a sub-folder.
 $contentPath = substr(sanitizePath(
     parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)
-), strlen($wiki->getPathRoot()));
+), strlen($wiki->getWikiRoot()));
 
-$wiki->load($contentPath);
+$canonicalPath = $wiki->init($contentPath);
+if ($contentPath != $canonicalPath) {
+    redirect($canonicalPath);
+}
+
+if ($wiki->isMedia() && $user->mayRead($wiki->getWikiPath())) {
+    renderMedia($wiki->getContentFileFS());
+}
 
 // first we check for any authentication related stuff
 switch ($_GET['auth']) {
@@ -88,112 +140,88 @@ switch ($_GET['auth']) {
         if ($user->login(trim($_POST['password']))) {
             // successfull -> redirect back
             $action = array_key_exists('action', $_GET) ? '?action=' . urlencode($_GET['action']) : '';
-            redirect($wiki->getPathRoot() . $contentPath, $action);
+            redirect($wiki->getWikiRoot() . $contentPath, $action);
         } else {
             // unsuccessful -> show login again
-            include($config['themeRoot'] . 'login.php');
-            exit;
+            renderThemeFile('login.php', 401);
         }
         break;
     case 'logout':
         $user->logout();
         $action = array_key_exists('action', $_GET) ? '?action=' . urlencode($_GET['action']) : '';
-        redirect($wiki->getPathRoot() . $contentPath, $action);
+        redirect($wiki->getWikiRoot() . $contentPath, $action);
 }
 
 // now check for regular wiki operations
+
+// actions that work on existing & non-existing pages
+switch ($_GET['action']) {
+    case 'save': // saving new pages
+        $user->setAlias(trim($_POST['author']));
+        if (
+            $wiki->savePage(
+                trim(str_replace("\r", '', $_POST['content'])),
+                trim($_POST['title']),
+                trim($user->getAlias())
+            )
+        ) {
+            redirect($wiki->getLocation());
+        };
+        break;
+}
+
 if (!$wiki->exists()) {
     switch ($_GET['action']) {
         case 'createPage':
-            if ($user->mayCreate($contentPath)) {
-                $wiki->createPage();
-                include($config['themeRoot'] . 'edit.php');
-                exit;
-            }
-            break;
-        case 'save': // saving new pages
-            if ($user->mayUpdate($contentPath)) {
-                $user->setAlias(trim($_POST['author']));
-                if (
-                    $wiki->savePage(
-                        trim(str_replace("\r", '', $_POST['content'])),
-                        trim($_POST['title']),
-                        trim($user->getAlias())
-                    )
-                ) {
-                    redirect($wiki->getLocation());
-                } else {
-                    include($config['themeRoot'] . 'error.php');
-                };
-                exit;
+            if ($wiki->createPage()) {
+                renderThemeFile('edit.php');
             }
             break;
         default:
-            include($config['themeRoot'] . '404.php');
+            renderThemeFile('404.php', 404);
             exit;
     }
 } else {
     switch ($_GET['action']) {
         case 'delete':
-            if ($user->mayDelete($contentPath)) {
-                include($config['themeRoot'] . 'delete.php');
-                exit;
+            if ($wiki->deletePage(true)) {
+                renderThemeFile('delete.php');
             }
             break;
         case 'deleteOK':
-            if ($user->mayDelete($contentPath)) {
-                $wiki->deletePage();
-                exit;
+            if ($wiki->deletePage()) {
+                redirect($wiki->getLocation());
             }
             break;
         case 'edit':
-            if ($user->mayRead($contentPath) && $user->mayUpdate($contentPath)) {
-                include($config['themeRoot'] . 'edit.php');
-                exit;
-            }
-            break;
-        case 'save': // saving existing pages
-            if ($user->mayUpdate($contentPath)) {
-                $user->setAlias(trim($_POST['author']));
-                if (
-                    $wiki->savePage(
-                        trim(str_replace("\r", '', $_POST['content'])),
-                        trim($_POST['title']),
-                        trim($user->getAlias())
-                    )
-                ) {
-                    redirect($wiki->getLocation());
-                } else {
-                    include($config['themeRoot'] . 'error.php');
-                };
+            if ($wiki->editPage()) {
+                renderThemeFile('edit.php');
             }
             break;
         case 'history':
-            if ($user->mayRead($contentPath) && $user->mayUpdate($contentPath)) {
-                include($config['themeRoot'] . 'history.php');
-                exit;
+            if ($wiki->history()) {
+                renderThemeFile('history.php');
             }
             break;
         case 'restore':
-            if ($user->mayRead($contentPath) && $user->mayUpdate($contentPath)) {
-                $version = (int) preg_replace('/[^0-9]/', '', $_GET['version']);
-                if ($version > 0) {
-                    if (!$wiki->revertToVersion($version)) {
-                        include($config['themeRoot'] . 'error.php');
-                        exit;
-                    };
+            $version = (int) preg_replace('/[^0-9]/', '', $_GET['version']);
+            if ($version > 0) {
+                if ($wiki->revertToVersion($version)) {
+                    renderThemeFile('edit.php');
                 }
-                include($config['themeRoot'] . 'edit.php');
-                exit;
+            } else {
+                renderThemeFile('error.php', 400);
             }
             break;
+        case 'createPage':
+            renderThemeFile('error.php', 400); // can't recreate existing page
+            break;
         default:
-            if ($user->mayRead($contentPath)) {
-                include($config['themeRoot'] . 'view.php');
-                exit;
+            if ($wiki->readPage()) {
+                renderThemeFile('view.php');
             }
     }
 }
 
 // if we got here, then no 'exit' fired - probably a permission error
-include($config['themeRoot'] . 'login.php');
+renderLoginOrDenied();

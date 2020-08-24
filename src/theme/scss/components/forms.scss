@@ -39,10 +39,6 @@ textarea {
     opacity: 1;
   }
 
-  &:required::placeholder {
-    color: $color-error;
-  }
-
   &:invalid {
     border-color: $color-error;
   }

@@ -47,6 +47,7 @@ h6,
 hr,
 li,
 p,
+img,
 pre,
 blockquote,
 ul,
@@ -56,4 +57,8 @@ form,
 input,
 textarea {
   @include layout-top-margin($spacing);
+}
+
+img {
+  max-width: 100%;
 }

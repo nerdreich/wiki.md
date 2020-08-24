@@ -18,7 +18,7 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
-outputHeader($config, ___('Delete page') . ': ' . $wiki->getTitle(), 'page editor');
+outputHeader($config, $wiki->getWikiPath(), ___('Delete page') . ': ' . $wiki->getTitle(), 'page editor');
 outputNavbar($wiki, $user);
 outputBanner($wiki);
 
@@ -28,9 +28,9 @@ outputBanner($wiki);
     <div class="row">
       <div class="col-12">
         <p><?php __('Do you really want to delete this page?'); ?></p>
-        <?php if ($user->mayDelete($wiki->getPath())) { ?>
+        <?php if ($user->mayDelete($wiki->getWikiPath())) { ?>
           <form action="?action=deleteOK" method="post">
-            <input type="submit" class="error" value="<?php __('Delete page'); ?>"><a class="btn" href="<?php echo $wiki->getPath(); ?>"><?php __('Cancel'); ?></a>
+            <input type="submit" class="error" value="<?php __('Delete page'); ?>"><a class="btn" href="<?php echo $wiki->getWikiPath(); ?>"><?php __('Cancel'); ?></a>
           </form>
         <?php } ?>
       </div>

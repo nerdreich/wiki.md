@@ -32,6 +32,10 @@ $navbar-text-color: $color-white-100;
     margin-right: $spacing;
   }
 
+  svg {
+    stroke: $navbar-text-color;
+  }
+
   .col-12 {
     display: flex;
     justify-content: space-between;

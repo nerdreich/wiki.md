@@ -1,3 +1,23 @@
+# v0.4.0
+
+* added more documentation
+* added page-path css classes
+* added support for media files
+* added burger icon
+* added permission check & tests for {{include}}
+* added integration tests
+* added phplinter checks to gulpfile
+* moved permission checks into Wiki class
+* added more unit tests
+* added phpunit & unit tests
+* introduced core/ folder for main files
+* fixed hash-wrong warning for yet unversioned pages
+* changed theme favicon color
+* added history auto-squashing
+* added autofocus on primary form fields
+* added default title for pages based on URL
+* added preview image to README.md
+
 # v0.3.0
 
 * added Markdown quickhelp to edit page
