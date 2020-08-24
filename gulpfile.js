@@ -169,13 +169,18 @@ gulp.task('data', function () {
     .pipe(gulp.dest(dirs.data))
 })
 
-gulp.task('docs', function () {
+gulp.task('docs', gulp.series(function () {
   return gulp.src([
     'docs/**/*.md'
   ])
     .pipe(replace('.md)', ')', { skipBinary: true })) // wiki.md does not use extensions
     .pipe(gulp.dest(dirs.data + '/content/docs'))
-})
+}, function () {
+  return gulp.src([
+    'docs/**/*.png'
+  ])
+    .pipe(gulp.dest(dirs.data + '/content/docs/_media'))
+}))
 
 gulp.task('dist', gulp.series(gulp.parallel('php', 'meta', 'theme', 'data'), 'docs'))
 

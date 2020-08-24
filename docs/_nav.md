@@ -1,14 +1,17 @@
 ## Setup
 
-[Install & Config](install)  
-[Permissions](permissions)  
-[Themes](themes)
+[Install & Config](install.md)  
+[Permissions](permissions.md)  
+[Themes](themes.md)
 
 ## Usage
 
-[Pages](pages)  
-[Markdown](markdown)
+[Primer](primer.md)  
+[Markdown](markdown.md)
 
 ## Advanced Topics
 
-[Content format](content)
+[Snippets & Navigation](snippets.md)  
+[Macros](macros.md)  
+[Creating themes](themes_create.md)  
+[Content format](content.md)

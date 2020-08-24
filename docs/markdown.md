@@ -39,3 +39,14 @@ Paragraph
 Use `[an absolute link](/path/to/file)` to create [an absolute link](/path/to/file) and `[a relative link](another/pat/to/file)` to create [a relative link](another/pat/to/file). No new page will be created by linking to a non-existing page - but as soon as you follow the link, you will have the opportunity to do so.
 
 If you use `[external link](https://example.org/)` to place an [external link](https://example.org/), it will automatically be marked with a small arrow.
+
+## Tables
+
+wiki.md supports Markdown Extra styled tables:
+
+```
+| Column A    | Column B    |
+| ----------- | ----------- |
+| Row 1.1     | Row 1.2     |
+| Row 2.1     | Row 2.2     |
+```

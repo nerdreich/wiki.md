@@ -1,7 +1,5 @@
 # Installation
 
-## Requirements
-
 Before you install, make sure the following requirements are met:
 
 * Apache httpd (`.htaccess` and `mod_rewrite` enabled)
