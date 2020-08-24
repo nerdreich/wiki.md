@@ -192,9 +192,9 @@ class IntegratePHP
      */
     public function assertPage(int $statusCode = 200): IntegratePHP
     {
-        $this->code == $statusCode || abort($this->code . ' is not a ' . $statusCode . '.');
-        preg_match('/Stack trace/', $this->payload) && abort('PHP error found.');
-        preg_match('/<\/html>\s+$/', $this->payload) || abort('Not a complete page.');
+        $this->code == $statusCode || $this->abort($this->code . ' is not a ' . $statusCode . '.');
+        preg_match('/Stack trace/', $this->payload) && $this->abort('PHP error found.');
+        preg_match('/<\/html>\s+$/', $this->payload) || $this->abort('Not a complete page.');
         $this->successes++;
 
         return $this;
@@ -208,13 +208,13 @@ class IntegratePHP
      */
     public function assertRedirect(string $path): IntegratePHP
     {
-        $this->code == 302 || abort($this->code . ' is not a 302.');
-        preg_match('/Stack trace/', $this->payload) && abort('PHP error found.');
-        preg_match('/^\s*$/', $this->payload) || abort('Not an empty page.');
+        $this->code == 302 || $this->abort($this->code . ' is not a 302.');
+        preg_match('/Stack trace/', $this->payload) && $this->abort('PHP error found.');
+        preg_match('/^\s*$/', $this->payload) || $this->abort('Not an empty page.');
         preg_match(
             '/^location: ' . str_replace('/', '\/', $path) . '\s+$/m',
             $this->headers
-        ) || abort('Location is not ' . $path . '.');
+        ) || $this->abort('Location is not ' . $path . '.');
         $this->successes++;
 
         return $this;
@@ -281,7 +281,7 @@ class IntegratePHP
      */
     public function assertContains(string $preg): IntegratePHP
     {
-        preg_match($preg, $this->payload) || abort('Regular expression ' . $preg . ' not found.');
+        preg_match($preg, $this->payload) || $this->abort('Regular expression ' . $preg . ' not found.');
         $this->successes++;
 
         return $this;
@@ -295,7 +295,7 @@ class IntegratePHP
      */
     public function assertContainsNot(string $preg): IntegratePHP
     {
-        preg_match($preg, $this->payload) && abort('Regular expression ' . $preg . ' found.');
+        preg_match($preg, $this->payload) && $this->abort('Regular expression ' . $preg . ' found.');
         $this->successes++;
 
         return $this;
@@ -309,9 +309,9 @@ class IntegratePHP
     public function assertNoCookies(): IntegratePHP
     {
         if (array_key_exists('PHPSESSID', $this->cookies) && $this->cookies['PHPSESSID'] === 'deleted') {
-            count($this->cookies) === 1 || abort('Expected no cookies, but found some.');
+            count($this->cookies) === 1 || $this->abort('Expected no cookies, but found some.');
         } else {
-            count($this->cookies) === 0 || abort('Expected no cookies, but found some.');
+            count($this->cookies) === 0 || $this->abort('Expected no cookies, but found some.');
         }
         $this->successes++;
 
@@ -326,8 +326,8 @@ class IntegratePHP
      */
     public function assertSessionCookie(): IntegratePHP
     {
-        count($this->cookies) === 1 || abort('Expected one cookie, but ' . count($this->cookies) . ' found.');
-        strlen($this->cookies['PHPSESSID']) > 16 || abort('No PHPSESSID cookie found.');
+        count($this->cookies) === 1 || $this->abort('Expected one cookie, but ' . count($this->cookies) . ' found.');
+        strlen($this->cookies['PHPSESSID']) > 16 || $this->abort('No PHPSESSID cookie found.');
         $this->successes++;
 
         return $this;

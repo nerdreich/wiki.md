@@ -197,7 +197,8 @@ $it->get('/')
     ->assertContainsNot('/<a href="\?action=edit">/')    // edit button
     ->assertContainsNot('/<a href="\?action=history">/') // history button
     ->assertContainsNot('/<a href="\?action=delete">/')  // delete button
-    ->assertContains('/<a href="\?auth=logout">/');      // logout button
+    ->assertContains('/<a href="\?auth=logout">/')       // logout button
+    ->assertContains('/"page"/');                        // css
 
 $it->get('/docs/install')
     ->assertPage()
@@ -206,7 +207,8 @@ $it->get('/docs/install')
     ->assertContains('/<a href="\?action=edit">/')    // edit button
     ->assertContains('/<a href="\?action=history">/') // history button
     ->assertContains('/<a href="\?action=delete">/')  // delete button
-    ->assertContains('/<a href="\?auth=logout">/');   // logout button
+    ->assertContains('/<a href="\?auth=logout">/')    // logout button
+    ->assertContains('/"page page-docs page-docs-install"/');   // css
 
 $it->get('/?auth=logout')
     ->assertRedirect('/')
