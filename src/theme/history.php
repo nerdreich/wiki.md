@@ -21,7 +21,7 @@
 // load history
 $history = $wiki->getHistory();
 
-outputHeader($config, ___('History') . ': ' . $wiki->getTitle(), 'page history');
+outputHeader($config, $wiki->getWikiPath(), ___('History') . ': ' . $wiki->getTitle(), 'page history');
 outputNavbar($wiki, $user);
 outputBanner($wiki);
 

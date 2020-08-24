@@ -18,7 +18,7 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
-outputHeader($config, ___('Login'), 'wiki.md login page');
+outputHeader($config, $wiki->getWikiPath(), ___('Login'), 'wiki.md login page');
 outputNavbar($wiki, $user);
 outputBanner($wiki);
 

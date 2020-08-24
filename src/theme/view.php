@@ -18,7 +18,7 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
-outputHeader($config, $wiki->getTitle(), $wiki->getDescription());
+outputHeader($config, $wiki->getWikiPath(), $wiki->getTitle(), $wiki->getDescription());
 outputNavbar($wiki, $user);
 outputBanner($wiki);
 

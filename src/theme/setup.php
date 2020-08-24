@@ -89,12 +89,37 @@ function getPageLinksHTML($user, $wiki)
 }
 
 /**
+ * Convert a wiki path into a series of CSS classes.
+ *
+ * This is usefull to style pages depending on their folder or name. E.g.
+ * `/animal/lion` -> `page page-animal page-animal-lion`
+ *
+ * @param string Wiki path to convert.
+ * @return string Class string to be added to class="".
+ */
+function pathToClasses(
+    string $wikiPath
+): string {
+    $css = '';
+    $prefix = 'page';
+    foreach (explode('/', $wikiPath) as $element) {
+        if ($element === '') {
+            $css = $prefix;
+        } else {
+            $css .= ' ' . $prefix . '-' . $element;
+            $prefix = $prefix . '-' . $element;
+        }
+    }
+    return trim($css);
+}
+
+/**
  * Generate the HTML header and open the <body>.
  *
  * @param at\nerdreich\Wiki $wiki Current CMS object.
  * @param array $config Wiki configuration.
  */
-function outputHeader(array $config, string $title, string $description = '')
+function outputHeader(array $config, string $path, string $title, string $description = '')
 {
     ?><!doctype html>
 <html class="no-js" lang="">
@@ -108,7 +133,7 @@ function outputHeader(array $config, string $title, string $description = '')
   <link rel="icon" href="<?php echo $config['themePath']; ?>favicon.ico"  type="image/x-icon">
   <link rel="stylesheet" href="<?php echo $config['themePath']; ?>style.css?v=$VERSION$">
 </head>
-<body>
+<body class="<?php echo htmlspecialchars(pathToClasses($path)); ?>">
     <?php
 }
 

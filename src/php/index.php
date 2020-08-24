@@ -130,7 +130,7 @@ if ($contentPath != $canonicalPath) {
     redirect($canonicalPath);
 }
 
-if ($wiki->isMedia()) {
+if ($wiki->isMedia() && $user->mayRead($wiki->getWikiPath())) {
     renderMedia($wiki->getContentFileFS());
 }
 

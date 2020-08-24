@@ -18,7 +18,7 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
-outputHeader($config, ___('Forbidden'), '');
+outputHeader($config, $wiki->getWikiPath(), ___('Forbidden'), '');
 outputNavbar($wiki, $user);
 outputBanner($wiki);
 

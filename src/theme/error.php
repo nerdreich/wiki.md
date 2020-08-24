@@ -18,7 +18,7 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
-outputHeader($config, ___('Error'), '');
+outputHeader($config, $wiki->getWikiPath(), ___('Error'), '');
 outputNavbar($wiki, $user);
 outputBanner($wiki);
 

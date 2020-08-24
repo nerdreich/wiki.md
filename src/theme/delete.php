@@ -18,7 +18,7 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
-outputHeader($config, ___('Delete page') . ': ' . $wiki->getTitle(), 'page editor');
+outputHeader($config, $wiki->getWikiPath(), ___('Delete page') . ': ' . $wiki->getTitle(), 'page editor');
 outputNavbar($wiki, $user);
 outputBanner($wiki);
 
