@@ -30,10 +30,12 @@ require_once('lib/ParsedownExtra.php'); // better markdown parser
  */
 class Wiki
 {
-    private $version = '$VERSION$';
-    private $repo = '$URL$';
-    private $config = [];
+    private string $version = '$VERSION$';
+    private string $repo = '$URL$';
+    private array $config = [];
     private UserSession $user;
+    private string $pregMedia =
+        '/\.(gif|jpe?g|png)$/i'; // files matching this are considered media
 
     private $wikiDirFS = '';       // e.g. /var/www/www.mysite.com/mywiki
     private $contentDirFS = '';    // e.g. /var/www/www.mysite.com/mywiki/data/content
@@ -87,7 +89,7 @@ class Wiki
 
         // assemble absolute fs url
         $this->wikiPath = $wikiPath;
-        $this->contentFileFS = $this->findContentFileForURLPath($this->wikiPath);
+        $this->contentFileFS = $this->wikiPathToContentFile($this->wikiPath);
 
         // if this is both a file and a folder, redirect to the folder instead
         if (is_dir(preg_replace('/\.md$/', '/', $this->contentFileFS))) {
@@ -140,6 +142,31 @@ class Wiki
     }
 
     /**
+     * Check if the current wiki page is a media object (image, ...).
+     *
+     * @return boolean True, if so. False if not.
+     */
+    public function isMedia(): bool
+    {
+        if (preg_match($this->pregMedia, $this->contentFileFS)) {
+            if (is_file($this->contentFileFS)) {
+                return true;
+            };
+        }
+        return false;
+    }
+
+    /**
+     * Get the full filesystem path to the current item.
+     *
+     * @return string URI Path, e.g. '/var/www/www.mysite.com/mywiki/data/content/animal/lion.md'.
+     */
+    public function getContentFileFS(): string
+    {
+        return $this->contentFileFS;
+    }
+
+    /**
      * Get the user-visible path for the current wiki page.
      *
      * In case wiki.md was installed in a sub-directory, this path does not
@@ -160,6 +187,18 @@ class Wiki
     public function getWikiRoot(): string
     {
         return $this->wikiRoot;
+    }
+
+    /**
+     * Return the absolute server path wiki.md is installed in.
+     *
+     * This might be the docroot or a subfolder.
+     *
+     * @return string URL Path, e.g. '/var/www/www.mysite.com/mywiki'.
+     */
+    public function getWikiDirFS(): string
+    {
+        return $this->wikiDirFS;
     }
 
     /**
@@ -430,7 +469,7 @@ class Wiki
      * @param string $path Path to convert, e.g. `animal/../rock/granite`.
      * @return string Resolved path, e.g. `/rock/granite`.
      */
-    public function canonicalWikiPath(string $wikiPath): string
+    private function canonicalWikiPath(string $wikiPath): string
     {
         $absPath = preg_replace('/\/$/', '/.', $wikiPath); // treat folder as dot-file
         if (strpos($absPath, '/') === 0) {
@@ -947,16 +986,19 @@ class Wiki
      * @param string $wikiPath Path to lookup.
      * @return mixed Path (string) to file or FALSE if not found.
      */
-    private function findContentFileForURLPath(
+    private function wikiPathToContentFile(
         string $wikiPath
     ): string {
-        if (preg_match('/\/$/', $wikiPath)) { // folder
-            $postfix = 'README.md';
-        } else { // page
-            $postfix = '.md';
+        if (preg_match($this->pregMedia, $wikiPath)) { // image etc.
+            return $this->contentDirFS . dirname($wikiPath) . '/_media/' . basename($wikiPath);
+        } else { // Markdown file
+            if (preg_match('/\/$/', $wikiPath)) { // folder
+                $postfix = 'README.md';
+            } else { // page
+                $postfix = '.md';
+            }
+            return $this->contentDirFS . $wikiPath . $postfix;
         }
-
-        return $this->contentDirFS . $wikiPath . $postfix;
     }
 
     /**

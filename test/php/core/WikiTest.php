@@ -80,31 +80,75 @@ final class WikiTest extends \PHPUnit\Framework\TestCase
         $this->assertIsString($wiki->getContentMarkup());
     }
 
+    public function testWikiPathToContentFile(): void
+    {
+        $wiki = $this->getNewWiki();
+        $method = $this->getAsPublicMethod('wikiPathToContentFile');
+
+        $this->assertEquals(
+            $wiki->getWikiDirFS() . '/data/content/README.md',
+            $method->invokeArgs($wiki, ['/'])
+        );
+        $this->assertEquals(
+            $wiki->getWikiDirFS() . '/data/content/about.md',
+            $method->invokeArgs($wiki, ['/about'])
+        );
+        $this->assertEquals(
+            $wiki->getWikiDirFS() . '/data/content/animal/README.md',
+            $method->invokeArgs($wiki, ['/animal/'])
+        );
+        $this->assertEquals(
+            $wiki->getWikiDirFS() . '/data/content/animal/lion.md',
+            $method->invokeArgs($wiki, ['/animal/lion'])
+        );
+        $this->assertEquals(
+            $wiki->getWikiDirFS() . '/data/content/animal/_media/lion.png',
+            $method->invokeArgs($wiki, ['/animal/lion.png'])
+        );
+        $this->assertEquals(
+            $wiki->getWikiDirFS() . '/data/content/animal/_media/LION.JPG.PNG',
+            $method->invokeArgs($wiki, ['/animal/LION.JPG.PNG'])
+        );
+        $this->assertEquals(
+            $wiki->getWikiDirFS() . '/data/content/animal/_media/lion.jpg',
+            $method->invokeArgs($wiki, ['/animal/lion.jpg'])
+        );
+        $this->assertEquals(
+            $wiki->getWikiDirFS() . '/data/content/animal/_media/lion.JPEG',
+            $method->invokeArgs($wiki, ['/animal/lion.JPEG'])
+        );
+        $this->assertEquals(
+            $wiki->getWikiDirFS() . '/data/content/animal/_media/lion.gif',
+            $method->invokeArgs($wiki, ['/animal/lion.gif'])
+        );
+    }
+
     public function testCanonicalWikiPath(): void
     {
         $wiki = $this->getNewWiki();
         $wiki->init('/animal/lion');
+        $method = $this->getAsPublicMethod('canonicalWikiPath');
 
         // absolute
-        $this->assertEquals('/animal/lion', $wiki->canonicalWikiPath('/animal/lion'));
-        $this->assertEquals('/animal/ape', $wiki->canonicalWikiPath('/animal/ape'));
-        $this->assertEquals('/plant/rose', $wiki->canonicalWikiPath('/plant/rose'));
-        $this->assertEquals('/plant/', $wiki->canonicalWikiPath('/plant/'));
-        $this->assertEquals('/plant', $wiki->canonicalWikiPath('/plant'));
-        $this->assertEquals('/', $wiki->canonicalWikiPath('/'));
+        $this->assertEquals('/animal/lion', $method->invokeArgs($wiki, ['/animal/lion']));
+        $this->assertEquals('/animal/ape', $method->invokeArgs($wiki, ['/animal/ape']));
+        $this->assertEquals('/plant/rose', $method->invokeArgs($wiki, ['/plant/rose']));
+        $this->assertEquals('/plant/', $method->invokeArgs($wiki, ['/plant/']));
+        $this->assertEquals('/plant', $method->invokeArgs($wiki, ['/plant']));
+        $this->assertEquals('/', $method->invokeArgs($wiki, ['/']));
 
-        // relative
-        $this->assertEquals('/animal/ape', $wiki->canonicalWikiPath('ape'));
-        $this->assertEquals('/animal/lion', $wiki->canonicalWikiPath('lion'));
-        $this->assertEquals('/animal/lion/claws', $wiki->canonicalWikiPath('lion/claws'));
-        $this->assertEquals('/plant', $wiki->canonicalWikiPath('../plant'));
-        $this->assertEquals('/plant/', $wiki->canonicalWikiPath('../plant/'));
-        $this->assertEquals('/plant/rose', $wiki->canonicalWikiPath('../plant/rose'));
-        $this->assertEquals('/animal', $wiki->canonicalWikiPath('ape/../ape/../ape/..'));
-        $this->assertEquals('/animal', $wiki->canonicalWikiPath('ape/ape/../../ape/..'));
-        $this->assertEquals('/plant', $wiki->canonicalWikiPath('../animal/ape/../../plant'));
-        $this->assertEquals('/plant/', $wiki->canonicalWikiPath('../animal/ape/../../plant/'));
-        $this->assertEquals('/', $wiki->canonicalWikiPath('../../../../../../../../etc/passwd'));
+        // relat]ive
+        $this->assertEquals('/animal/ape', $method->invokeArgs($wiki, ['ape']));
+        $this->assertEquals('/animal/lion', $method->invokeArgs($wiki, ['lion']));
+        $this->assertEquals('/animal/lion/claws', $method->invokeArgs($wiki, ['lion/claws']));
+        $this->assertEquals('/plant', $method->invokeArgs($wiki, ['../plant']));
+        $this->assertEquals('/plant/', $method->invokeArgs($wiki, ['../plant/']));
+        $this->assertEquals('/plant/rose', $method->invokeArgs($wiki, ['../plant/rose']));
+        $this->assertEquals('/animal', $method->invokeArgs($wiki, ['ape/../ape/../ape/..']));
+        $this->assertEquals('/animal', $method->invokeArgs($wiki, ['ape/ape/../../ape/..']));
+        $this->assertEquals('/plant', $method->invokeArgs($wiki, ['../animal/ape/../../plant']));
+        $this->assertEquals('/plant/', $method->invokeArgs($wiki, ['../animal/ape/../../plant/']));
+        $this->assertEquals('/', $method->invokeArgs($wiki, ['../../../../../../../../etc/passwd']));
     }
 
     public function testSplitMacro(): void
@@ -211,101 +255,101 @@ final class WikiTest extends \PHPUnit\Framework\TestCase
         $method = $this->getAsPublicMethod('resolveMacros');
 
         // no macro
-        $this->assertEquals('body', $method->invokeArgs($wiki, array('body', '/path')));
+        $this->assertEquals('body', $method->invokeArgs($wiki, ['body', '/path']));
 
         // invalid macro
-        $this->assertEquals('{{include README}', $method->invokeArgs($wiki, array('{{include README}', '/path')));
-        $this->assertEquals('{include README}', $method->invokeArgs($wiki, array('{include README}', '/path')));
-        $this->assertEquals('include README', $method->invokeArgs($wiki, array('include README', '/path')));
+        $this->assertEquals('{{include README}', $method->invokeArgs($wiki, ['{{include README}', '/path']));
+        $this->assertEquals('{include README}', $method->invokeArgs($wiki, ['{include README}', '/path']));
+        $this->assertEquals('include README', $method->invokeArgs($wiki, ['include README', '/path']));
 
         // missing filename
-        $this->assertEquals('{{error include-not-found}}', $method->invokeArgs($wiki, array('{{include}}', '/')));
-        $this->assertEquals('{{error include-not-found}}', $method->invokeArgs($wiki, array('{{ include }}', '/')));
+        $this->assertEquals('{{error include-not-found}}', $method->invokeArgs($wiki, ['{{include}}', '/']));
+        $this->assertEquals('{{error include-not-found}}', $method->invokeArgs($wiki, ['{{ include }}', '/']));
 
         // include same-level
         $this->assertMatchesRegularExpression(
             '/This is the homepage/',
-            $method->invokeArgs($wiki, array('{{include README}}', '/'))
+            $method->invokeArgs($wiki, ['{{include README}}', '/'])
         );
         $this->assertMatchesRegularExpression(
             '/This is the homepage/',
-            $method->invokeArgs($wiki, array('{{include /README}}', '/'))
+            $method->invokeArgs($wiki, ['{{include /README}}', '/'])
         );
         $this->assertMatchesRegularExpression(
             '/{{error include-not-found}}/',
-            $method->invokeArgs($wiki, array('{{include meow}}', '/'))
+            $method->invokeArgs($wiki, ['{{include meow}}', '/'])
         );
         $this->assertMatchesRegularExpression(
             '/{{error include-not-found}}/',
-            $method->invokeArgs($wiki, array('{{include /meow}}', '/'))
+            $method->invokeArgs($wiki, ['{{include /meow}}', '/'])
         );
 
         // include higher-level
         $this->assertMatchesRegularExpression(
             '/This is the homepage/',
-            $method->invokeArgs($wiki, array('{{include ../README}}', '/docs/'))
+            $method->invokeArgs($wiki, ['{{include ../README}}', '/docs/'])
         );
         $this->assertMatchesRegularExpression(
             '/This is the homepage/',
-            $method->invokeArgs($wiki, array('{{include /README}}', '/docs/'))
+            $method->invokeArgs($wiki, ['{{include /README}}', '/docs/'])
         );
         $this->assertMatchesRegularExpression(
             '/{{error include-not-found}}/',
-            $method->invokeArgs($wiki, array('{{include ../meow}}', '/docs/'))
+            $method->invokeArgs($wiki, ['{{include ../meow}}', '/docs/'])
         );
         $this->assertMatchesRegularExpression(
             '/{{error include-not-found}}/',
-            $method->invokeArgs($wiki, array('{{include /meow}}', '/docs/'))
+            $method->invokeArgs($wiki, ['{{include /meow}}', '/docs/'])
         );
         $this->assertMatchesRegularExpression(
             '/{{error include-not-found}}/',
-            $method->invokeArgs($wiki, array('{{include ../../README}}', '/docs/'))
+            $method->invokeArgs($wiki, ['{{include ../../README}}', '/docs/'])
         );
 
         // include deeper-level
         $this->assertMatchesRegularExpression(
             '/wiki.md Documentation/',
-            $method->invokeArgs($wiki, array('{{include docs/README}}', '/'))
+            $method->invokeArgs($wiki, ['{{include docs/README}}', '/'])
         );
         $this->assertMatchesRegularExpression(
             '/wiki.md Documentation/',
-            $method->invokeArgs($wiki, array('{{include /docs/README}}', '/'))
+            $method->invokeArgs($wiki, ['{{include /docs/README}}', '/'])
         );
         $this->assertMatchesRegularExpression(
             '/{{error include-not-found}}/',
-            $method->invokeArgs($wiki, array('{{include docs/meow}}', '/'))
+            $method->invokeArgs($wiki, ['{{include docs/meow}}', '/'])
         );
         $this->assertMatchesRegularExpression(
             '/{{error include-not-found}}/',
-            $method->invokeArgs($wiki, array('{{include /docs/meow}}', '/'))
+            $method->invokeArgs($wiki, ['{{include /docs/meow}}', '/'])
         );
 
         // include protected file
         $this->assertMatchesRegularExpression(
             '/{{error include-permission-denied}}/',
-            $method->invokeArgs($wiki, array('{{include docs/protected/README}}', '/'))
+            $method->invokeArgs($wiki, ['{{include docs/protected/README}}', '/'])
         );
         $this->assertMatchesRegularExpression(
             '/{{error include-permission-denied}}/',
-            $method->invokeArgs($wiki, array('{{include /docs/protected/README}}', '/'))
+            $method->invokeArgs($wiki, ['{{include /docs/protected/README}}', '/'])
         );
         $this->assertMatchesRegularExpression(
             '/{{error include-permission-denied}}/',
-            $method->invokeArgs($wiki, array('{{include protected/README}}', '/docs/'))
+            $method->invokeArgs($wiki, ['{{include protected/README}}', '/docs/'])
         );
         $this->assertMatchesRegularExpression(
             '/{{error include-permission-denied}}/',
-            $method->invokeArgs($wiki, array('{{include README}}', '/docs/protected/'))
+            $method->invokeArgs($wiki, ['{{include README}}', '/docs/protected/'])
         );
         $this->assertMatchesRegularExpression(
             '/{{error include-permission-denied}}/',
-            $method->invokeArgs($wiki, array('{{include ../README}}', '/docs/protected/too/'))
+            $method->invokeArgs($wiki, ['{{include ../README}}', '/docs/protected/too/'])
         );
 
         // ignore secondary params
         $this->assertMatchesRegularExpression(
             '/This is the homepage/',
-            $method->invokeArgs($wiki, array('{{include README | a=b | c=d }}', '/'))
+            $method->invokeArgs($wiki, ['{{include README | a=b | c=d }}', '/'])
         );
     }
 }

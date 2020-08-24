@@ -90,6 +90,21 @@ function renderLoginOrDenied()
     }
 }
 
+/**
+ * Deliver a file, usually an image or uploaded file, to the client.
+ *
+ * Will set proper HTTP headers and terminate execution after sending the blob.
+ *
+ * @param string $pathFS Absolute path of file to send.
+ */
+function renderMedia(string $pathFS): void
+{
+    header('Content-Type:' . mime_content_type($pathFS));
+    header('Content-Length: ' . filesize($pathFS));
+    readfile($pathFS);
+    exit;
+}
+
 // --- setup wiki --------------------------------------------------------------
 
 require_once('core/Wiki.php');
@@ -113,6 +128,10 @@ $contentPath = substr(sanitizePath(
 $canonicalPath = $wiki->init($contentPath);
 if ($contentPath != $canonicalPath) {
     redirect($canonicalPath);
+}
+
+if ($wiki->isMedia()) {
+    renderMedia($wiki->getContentFileFS());
 }
 
 // first we check for any authentication related stuff
