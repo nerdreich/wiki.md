@@ -72,10 +72,7 @@ final class WikiTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals('Welcome!', $wiki->getTitle());
         $this->assertEquals($wiki->getTitle(), $wiki->getDescription());
         $this->assertEquals('wiki.md', $wiki->getAuthor());
-        $this->assertMatchesRegularExpression(
-            '/^[0-9][0-9]\.[0-9][0-9]\.[0-9][0-9][0-9][0-9] [0-9][0-9]:[0-9][0-9]/',
-            $wiki->getDate()
-        );
+        $this->assertIsObject($wiki->getDate());
         $this->assertIsString($wiki->getContentHTML());
         $this->assertIsString($wiki->getContentMarkup());
     }

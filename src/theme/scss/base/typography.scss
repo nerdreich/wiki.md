@@ -132,10 +132,14 @@ body {
 }
 
 pre,
-code,
 kbd,
 samp {
   @include typography-font($typography-font-list-courier, 400, px(16), 1.4em);
+  padding: .1em .25em;
+}
+
+code {
+  @include typography-font($typography-font-list-courier, 400, 1em, 1.4em);
   padding: .1em .25em;
 }
 
@@ -206,6 +210,10 @@ li {
 strong {
   color: $color-text-bold;
   font-weight: 700;
+}
+
+.minor {
+  opacity: .5;
 }
 
 hr {

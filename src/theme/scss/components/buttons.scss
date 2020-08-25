@@ -53,14 +53,14 @@ input[type='submit'] {
   }
 
   &.error {
-    background-color: $color-error;
-    border-color: $color-error;
+    background-color: $color-negative;
+    border-color: $color-negative;
     color: $color-white-100;
 
     &:visited,
     &:active,
     &:hover {
-      background-color: $color-error;
+      background-color: $color-negative;
       color: $color-white-100;
     }
   }

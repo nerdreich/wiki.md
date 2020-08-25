@@ -114,6 +114,38 @@ function pathToClasses(
 }
 
 /**
+ * Beautify a udiff as html.
+ *
+ * @param string $diff The diff's content
+ * @return string HTML markup for the diff.
+ */
+function diff2html(
+    string $diff
+): string {
+    $html = '';
+    $chunk = '';
+    foreach (explode("\n", $diff) as $line) {
+        switch ($line[0]) {
+            case '@':
+                $html .= $chunk . "\n<span class=\"info\">" . $line . "</span>\n";
+                $chunk = '';
+                break;
+            case '-':
+                $chunk = $chunk . '<span class="removed">' . substr($line, 1) . "</span>\n";
+                break;
+            case '+':
+                $chunk = $chunk . '<span class="added">' . substr($line, 1) . "</span>\n";
+                break;
+                // $chunk = '<code class="added">' . $line . "</code>\n" . $chunk;
+                // break;
+        }
+    }
+    $html .= $chunk;
+    return '<pre><code>' . substr($html, 1) . '</code></pre>';
+}
+
+
+/**
  * Generate the HTML header and open the <body>.
  *
  * @param at\nerdreich\Wiki $wiki Current CMS object.
@@ -190,7 +222,7 @@ function outputBanner(at\nerdreich\Wiki $wiki)
  *
  * @param at\nerdreich\Wiki $wiki Current CMS object.
  */
-function outputFooter(at\nerdreich\Wiki $wiki)
+function outputFooter(at\nerdreich\Wiki $wiki, array $config)
 {
     ?>
 <footer class="container">
@@ -198,7 +230,9 @@ function outputFooter(at\nerdreich\Wiki $wiki)
     <div class="col-12">
       <p>
         <a class="no-icon" href="<?php echo $wiki->getRepo(); ?>">wiki.md v<?php echo $wiki->getVersion(); ?></a>
-        - <?php __('Last saved %s', $wiki->getDate()); ?>
+        <?php if ($wiki->getDate() !== null) {
+            echo '- ' . htmlspecialchars(___('Last saved %s', $wiki->getDate()->format($config['datetime'])));
+        } ?>
         - <a href="/<?php __('Privacy'); ?>"><?php __('Privacy'); ?></a>
       </p>
     </div>

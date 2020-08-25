@@ -60,7 +60,7 @@ wiki.md currently is beta software. It is automatically tested before each relea
 
 ### Planned for v1.0.0
 
-* better page history browser
+* mark direkt fs changes as 'unknown' author in history
 * password manager
 
 ### Planned for v1.1.0
@@ -69,7 +69,6 @@ wiki.md currently is beta software. It is automatically tested before each relea
 * real users instead of page passwords
 * plugin mechanism
 * rename-page feature
-* configure date/time format + timezone
 
 ### Unscheduled ideas
 

@@ -251,12 +251,12 @@ class Wiki
      *
      * @return string Date string in UTC / 'd.m.Y H:i' format.
      */
-    public function getDate(): string
+    public function getDate(): ?\DateTime
     {
         if (array_key_exists('date', $this->metadata)) {
-            return \DateTime::createFromFormat(\DateTimeInterface::ATOM, $this->metadata['date'])->format('d.m.Y H:i');
+            return \DateTime::createFromFormat(\DateTimeInterface::ATOM, $this->metadata['date']);
         }
-        return 'n/a';
+        return null;
     }
 
     /**
