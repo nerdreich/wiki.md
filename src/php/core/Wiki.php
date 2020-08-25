@@ -601,7 +601,7 @@ class Wiki
      * page history will no longer work. (To correct this, the page just has
      * to be re-saved and the hash re-calculated.)
      *
-     * @return True, if content in filesystem does not match with our hash.
+     * @return bool True, if content in filesystem does not match with our hash.
      */
     public function isDirty(): bool
     {
@@ -610,6 +610,24 @@ class Wiki
             return $hash !== $this->metadata['hash'];
         }
         return false; // no hash in headers -> this page has not yet been saved by wiki.md
+    }
+
+    /** Determine if the file is being edited (work in progress) by someone else.
+     *
+     * @return int 0 if this ist not a Wip or seconds since edit started.
+     */
+    public function isWip(): int
+    {
+        if ($this->metadata['author'] !== $this->user->getAlias()) { // we only care about other authors
+            if (array_key_exists('edit', $this->metadata)) {
+                $lastEditDate = \DateTime::createFromFormat(\DateTimeInterface::ATOM, $this->metadata['edit']);
+                $deltaSeconds = (new \DateTime())->getTimestamp() - $lastEditDate->getTimestamp();
+                if ($deltaSeconds < $this->config['edit_warning_interval'] ?? -1) {
+                    return $deltaSeconds;
+                }
+            }
+        }
+        return 0;
     }
 
     /**
@@ -621,6 +639,10 @@ class Wiki
     {
         if ($this->user->mayRead($this->wikiPath) && $this->user->mayUpdate($this->wikiPath)) {
             $this->loadFS();
+            if (!array_key_exists('edit', $this->metadata)) {
+                $this->metadata['edit'] = date(\DateTimeInterface::ATOM); // mark wip
+                $this->persist();
+            }
             return true;
         }
         return false;
@@ -650,8 +672,8 @@ class Wiki
             if ($this->metadata['author'] === $author) {
                 if (array_key_exists('date', $this->metadata)) {
                     $lastSaveDate = \DateTime::createFromFormat(\DateTimeInterface::ATOM, $this->metadata['date']);
-                    $seconds = (new \DateTime())->getTimestamp() - $lastSaveDate->getTimestamp();
-                    if ($seconds < $this->config['autosquash_interval'] ?? -1) {
+                    $deltaSeconds = (new \DateTime())->getTimestamp() - $lastSaveDate->getTimestamp();
+                    if ($deltaSeconds < $this->config['autosquash_interval'] ?? -1) {
                         // this is a quick (re)save. undo last history to merge the saves into one.
                         if ($this->revertToPreviousVersion()) {
                             if ($this->metadata['history'] === []) {
@@ -666,10 +688,10 @@ class Wiki
                 }
             }
 
-            // calculate diff & hash
+            // update content, history & hash
             $diff = \at\nerdreich\UDiff::diff($this->content, $content);
-            $hash = hash('sha1', $content);
-
+            $this->content = $content;
+            $hash = hash('sha1', $this->content);
             if (array_key_exists('history', $this->metadata)) {
                 // page has a history -> add to that
 
@@ -699,21 +721,32 @@ class Wiki
                 $this->metadata['author'] = 'unknown';
             }
             $this->metadata['hash'] = $hash;
+            unset($this->metadata['edit']);
 
-            // create parent dir if necessary
-            if (!\file_exists(dirname($this->contentFileFS))) {
-                mkdir(dirname($this->contentFileFS), 0777, true);
-            }
-
-            // write out & redirect to new content
-            $frontmatter = \Spyc::YAMLDump($this->metadata);
-            $this->fileWriteContent($this->contentFileFS, $frontmatter . "---\n" . trim($content) . "\n");
+            $this->persist();
             $this->addToChangelog();
 
             return true;
         } else {
             return false;
         }
+    }
+
+    /**
+     * Write the current page back to file.
+     */
+    private function persist(): void
+    {
+        // create parent dir if necessary
+        if (!\file_exists(dirname($this->contentFileFS))) {
+            mkdir(dirname($this->contentFileFS), 0777, true);
+        }
+
+        // write out new content
+        $this->fileWriteContent(
+            $this->contentFileFS,
+            \Spyc::YAMLDump($this->metadata) . "---\n" . trim($this->content) . "\n"
+        );
     }
 
     /**

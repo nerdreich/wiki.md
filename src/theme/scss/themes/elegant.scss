@@ -37,8 +37,12 @@ $color-panel-bg: $theme-color4;
 $color-text: $theme-color2;
 $color-text-bold: $theme-color1;
 $color-headline: $theme-color5;
-$color-error: #ed0006;
 $color-hr: $color-black-10a;
+
+$color-error: #a40606;
+$color-error-bg: #a47a7a;
+$color-warning: #d5a021;
+$color-warning-bg: #d5c59e;
 
 pre,
 code,
@@ -46,4 +50,12 @@ kbd,
 samp {
   background-color: $theme-color4;
   border-radius: $var-border-radius;
+}
+
+.error {
+  color: $color-error;
+}
+
+.warning {
+  color: $color-warning;
 }

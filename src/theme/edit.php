@@ -27,7 +27,10 @@ outputBanner($wiki);
   <div class="row">
     <form class="col-12" action="?action=save" method="post">
       <?php if ($wiki->isDirty()) { ?>
-        <p><?php __('The checksum of this page is invalid. Save the page in wiki.md again to correct this.') ?></p>
+        <p class="warning"><?php __('Warning') ?>: <?php __('The checksum of this page is invalid. Save the page in wiki.md again to correct this.') ?></p>
+      <?php } ?>
+      <?php if ($wip = $wiki->isWip()) { ?>
+        <p class="warning"><?php __('Warning') ?>: <?php __('Someone started editing this file %s minutes ago.', ceil($wip / 60.)) ?></p>
       <?php } ?>
       <?php echo $wiki->getTitle() !== '' ? '<h1>' . htmlspecialchars($wiki->getTitle()) . '</h1>' : ''; ?>
       <input type="text" name="title" placeholder="<?php __('Title - may remain empty'); ?>" value="<?php echo $wiki->getTitle(); ?>">

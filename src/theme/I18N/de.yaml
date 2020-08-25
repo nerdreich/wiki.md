@@ -52,10 +52,12 @@ restore %s: %s wiederherstellen
 Save & Edit: Speichern & Editieren
 Save: Speichern
 Separator: Trennlinie
+Someone started editing this file %s minutes ago.: Jemand editiert diese Seite seit %s Minuten.
 Sorry, an error occured.: Es ist leider ein Fehler aufgetreten.
 strike through: durchgestrichen
 target: Ziel
 The checksum of this page is invalid. Save the page in wiki.md again to correct this.: Die Prüfsumme dieser Seite ist nicht korrekt. Speichere die Seite in wiki.md erneut ab, um sie zu korrigieren.
 Title - may remain empty: Titel – darf auch leer bleiben
 Version: Version
-You do not have the necessary permissions to do this.: Du verfügst nicht über die nötigen Rechte, diese Aktion auszuführen.
+Warning: Warnung
+You do not have the necessary permissions to do this.: Du verfügst nicht über die nötigen Rechte, um diese Aktion auszuführen.

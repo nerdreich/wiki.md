@@ -224,6 +224,10 @@ $it->post('/?auth=login', ['password' => 'invalid'])
 
 // --- CRUD docs ---------------------------------------------------------------
 
+$it->get('/?auth=logout')
+    ->assertRedirect('/')
+    ->assertNoCookies();
+
 $it->post('/?auth=login', ['password' => 'doc'])
     ->assertRedirect('/')
     ->assertSessionCookie();
@@ -309,6 +313,52 @@ $it->get('/docs/meow')
     ->assertPageNotFound()
     ->assertSessionCookie()
     ->assertContains('/value="Create page"/'); // create button
+
+// --- Editor warning ----------------------------------------------------------
+
+$it->get('/?auth=logout')
+    ->assertRedirect('/')
+    ->assertNoCookies();
+
+$it->post('/?auth=login', ['password' => 'doc'])
+    ->assertRedirect('/')
+    ->assertSessionCookie();
+
+// put first page in edit mode
+$it->get('/docs/install?action=edit')
+    ->assertPage()
+    ->assertContainsNot('/Someone started editing/');
+
+// change different page to change alias to xyz
+$it->post('/docs/themes?action=save', [
+    'title' => 'destructive save',
+    'content' => 'oops',
+    'author' => 'xyz'
+])
+    ->assertRedirect('/docs/themes');
+
+sleep(2); // avoid this going so fast that the server won't recognize
+
+// now we should get the warning
+$it->get('/docs/install?action=edit')
+    ->assertPage()
+    ->assertContains('/Someone started editing/');
+
+// we save anyway
+$it->post('/docs/install?action=save', [
+    'title' => 'destructive save 2',
+    'content' => 'oops',
+    'author' => 'xyz'
+])
+    ->assertRedirect('/docs/install');
+
+// warning gone
+$it->get('/docs/install?action=edit')
+    ->assertPage()
+    ->assertContains('/value="destructive save 2"/')
+    ->assertContains('/>oops</')
+    ->assertContains('/value="xyz"/')
+    ->assertContainsNot('/Someone started editing/');
 
 // -----------------------------------------------------------------------------
 
