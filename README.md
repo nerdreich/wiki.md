@@ -56,12 +56,11 @@ Read the [Documentation](docs/) to learn more.
 
 ## Roadmap
 
-wiki.md currently is beta software. It should work mostly fine, but you might miss features or hit some bugs. Feel free to report any [issues](https://github.com/nerdreich/wiki.md/issues) you find.
+wiki.md currently is beta software. It is automatically tested before each release and should work mostly fine, but you might miss features or hit some bugs. Feel free to report any [issues](https://github.com/nerdreich/wiki.md/issues) you find.
 
 ### Planned for v1.0.0
 
 * better page history browser
-* contributing and code guidelines
 * password manager
 
 ### Planned for v1.1.0
