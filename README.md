@@ -60,8 +60,6 @@ wiki.md currently is beta software. It should work mostly fine, but you might mi
 
 ### Planned for v1.0.0
 
-* display warning when other user is editing a file at the same time
-* do not save history for empty diffs
 * better page history browser
 * contributing and code guidelines
 * password manager

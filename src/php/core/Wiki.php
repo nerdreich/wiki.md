@@ -695,16 +695,18 @@ class Wiki
             if (array_key_exists('history', $this->metadata)) {
                 // page has a history -> add to that
 
-                // create a new history entry
-                $historyEntry = [];
-                $historyEntry['author'] = $this->metadata['author'] ?? 'unknown';
-                $historyEntry['date'] =
-                    $this->metadata['date'] ?? date(\DateTimeInterface::ATOM, filemtime($this->contentFileFS));
-                $diff = preg_replace('/^.+\n/', '', $diff); // remove first line (---)
-                $diff = preg_replace('/^.+\n/', '', $diff); // remove second line (+++)
-                $historyEntry['diff'] = chunk_split(base64_encode(gzcompress($diff)), 64, "\n");
+                if ($diff !== null) { // ignore non-changing saves
+                    // create a new history entry
+                    $historyEntry = [];
+                    $historyEntry['author'] = $this->metadata['author'] ?? 'unknown';
+                    $historyEntry['date'] =
+                        $this->metadata['date'] ?? date(\DateTimeInterface::ATOM, filemtime($this->contentFileFS));
+                    $diff = preg_replace('/^.+\n/', '', $diff); // remove first line (---)
+                    $diff = preg_replace('/^.+\n/', '', $diff); // remove second line (+++)
+                    $historyEntry['diff'] = chunk_split(base64_encode(gzcompress($diff)), 64, "\n");
 
-                $this->metadata['history'][] = $historyEntry;
+                    $this->metadata['history'][] = $historyEntry;
+                }
             } else {
                 // no history exists -> this is the first save, just start a new/empty one
                 $this->metadata['history'] = [];

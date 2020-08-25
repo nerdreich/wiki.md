@@ -256,21 +256,6 @@ class IntegrationTest extends IntegrationTestCase
         $this->assertPayloadContainsPreg('/<h1>second title<\/h1>/');
         $this->assertPayloadContainsPreg('/<p>second save<\/p>/');
 
-        $this->get('/docs/meow?action=history');
-        $this->assertPage();
-        $this->assertSessionCookie();
-        $this->assertPayloadContainsPreg('/id="history-1"/');
-        $this->assertPayloadContainsPreg('/id="history-2"/');
-        $this->assertPayloadContainsNotPreg('/id="history-3"/');
-
-        // restore history
-        $this->post('/docs/meow?action=restore&version=1');
-        $this->assertPage();
-        $this->assertSessionCookie();
-        $this->assertPayloadContainsPreg('/value="second title"/');
-        $this->assertPayloadContainsPreg('/>first save</');// only body gets restored
-        $this->assertPayloadContainsPreg('/value="second author"/');
-
         $this->get('/docs/meow?action=delete');
         $this->assertPage();
         $this->assertSessionCookie();
@@ -286,6 +271,90 @@ class IntegrationTest extends IntegrationTestCase
         $this->assertPageNotFound();
         $this->assertSessionCookie();
         $this->assertPayloadContainsPreg('/value="Create page"/'); // create button
+    }
+
+    public function testHistory(): void
+    {
+        // login
+        $this->post('/?auth=login', ['password' => 'doc']);
+        $this->assertRedirect('/');
+
+        // nonexisiting page does not have history
+        $this->get('/docs/meow_history?action=history');
+        $this->assertPageNotFound();
+        $this->assertPayloadContainsPreg('/value="Create page"/'); // create button
+
+        // create page
+        $this->post('/docs/meow_history?action=save', [
+            'title' => 'first title',
+            'content' => 'first save',
+            'author' => 'first author'
+        ]);
+        $this->assertRedirect('/docs/meow_history');
+
+        // one history entry
+        $this->get('/docs/meow_history?action=history');
+        $this->assertPage();
+        $this->assertPayloadContainsPreg('/id="history-1"/');
+        $this->assertPayloadContainsNotPreg('/id="history-2"/');
+
+        // save again - same user
+        $this->post('/docs/meow_history?action=save', [
+            'title' => 'second title',
+            'content' => 'second save',
+            'author' => 'first author'
+        ]);
+        $this->assertRedirect('/docs/meow_history');
+
+        // still one history entry - got squashed
+        $this->get('/docs/meow_history?action=history');
+        $this->assertPage();
+        $this->assertPayloadContainsPreg('/id="history-1"/');
+        $this->assertPayloadContainsNotPreg('/id="history-2"/');
+
+        // save again - different user
+        $this->post('/docs/meow_history?action=save', [
+            'title' => 'third title',
+            'content' => 'third save',
+            'author' => 'second author'
+        ]);
+        $this->assertRedirect('/docs/meow_history');
+
+        // two history entries
+        $this->get('/docs/meow_history?action=history');
+        $this->assertPage();
+        $this->assertPayloadContainsPreg('/id="history-1"/');
+        $this->assertPayloadContainsPreg('/id="history-2"/');
+        $this->assertPayloadContainsNotPreg('/id="history-3"/');
+
+        // save again - no changes - yet another different user
+        $this->post('/docs/meow_history?action=save', [
+            'title' => '4th title',
+            'content' => 'third save',
+            'author' => 'third author'
+        ]);
+        $this->assertRedirect('/docs/meow_history');
+
+        // still two history entries - no-diff change did not get saved
+        $this->get('/docs/meow_history?action=history');
+        $this->assertPage();
+        $this->assertPayloadContainsPreg('/id="history-1"/');
+        $this->assertPayloadContainsPreg('/id="history-2"/');
+        $this->assertPayloadContainsNotPreg('/id="history-3"/');
+
+        // restore history - will return to second save as the first one was squashed
+        $this->post('/docs/meow_history?action=restore&version=1');
+        $this->assertPage();
+        $this->assertPayloadContainsPreg('/value="4th title"/');
+        $this->assertPayloadContainsPreg('/>second save</');// only body gets restored
+        $this->assertPayloadContainsPreg('/value="third author"/');
+
+        // we did not save the revert, so no change to page
+        $this->get('/docs/meow_history?action=history');
+        $this->assertPage();
+        $this->assertPayloadContainsPreg('/id="history-1"/');
+        $this->assertPayloadContainsPreg('/id="history-2"/');
+        $this->assertPayloadContainsNotPreg('/id="history-3"/');
     }
 
     public function testEditor(): void
