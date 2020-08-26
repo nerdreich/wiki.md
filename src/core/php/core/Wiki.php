@@ -435,7 +435,7 @@ class Wiki
         return [null, null, null];
     }
 
-    protected function realpath(string $filename): string
+    protected function realpath(string $filename): ?string
     {
         if (preg_match('/\/$/', $filename)) {
             // if this is a file, we switch to it's folder
@@ -451,7 +451,7 @@ class Wiki
             } elseif (count($path) > 0) { // going up via '..'
                 array_pop($path);
             } else { // can't go beyond root
-                return '/';
+                return null;
             }
         }
         $path = '/' . join('/', $path);
@@ -469,7 +469,7 @@ class Wiki
      * @param string $path Path to convert, e.g. `animal/../rock/granite`.
      * @return string Resolved path, e.g. `/rock/granite`.
      */
-    private function canonicalWikiPath(string $wikiPath): string
+    private function canonicalWikiPath(string $wikiPath): ?string
     {
         $absPath = preg_replace('/\/$/', '/.', $wikiPath); // treat folder as dot-file
         if (strpos($absPath, '/') === 0) {
@@ -478,6 +478,10 @@ class Wiki
         } else {
             // (probably) relative path
             $absPath = $this->realpath(dirname($this->wikiPath) . '/' . $absPath);
+        }
+
+        if ($absPath === null) { // relative path went out of wiki dir
+            return null;
         }
 
         // keep a trailing slash but avoid doubles for the root
@@ -492,43 +496,62 @@ class Wiki
      * Expand a {{include ...}} macro.
      *
      * @param string $primary The primary parameter. Path to file to include. Can be relative.
-     * @param array $secondary The secondary parameters. Not used.
-     * @param string $path Absolute path to file containing the macro (for relative processing).
+     * @param array $options The secondary parameters. Not used.
+     * @param string $pathFS Absolute path to file containing the macro (for relative processing).
      * @return string Expanded macro.
      */
     private function resolveMacroInclude(
-        ?string $primary,
-        ?array $secondary,
-        string $path
+        ?string $includePath,
+        ?array $options,
+        string $pathFS
     ): string {
-        if (strpos($primary, '/') === 0) {
-            // absolute include
-            $includePath = $this->canonicalWikiPath($primary);
-        } else {
-            // relative include
-            $includePath = $this->canonicalWikiPath($path . '/' . $primary);
+        if ($includePath === null || $includePath === '') {
+            return '{{error include-invalid}}';
         }
-        if ($this->user->mayRead($includePath)) {
-            $includePath = $this->contentDirFS . $includePath . '.md';
-            if (is_file($includePath)) {
-                return $this->getHTML($includePath);
+
+        // first we convert the caller (an absolute path to a content file) back to its wikiPath
+        $wikiPathCaller = substr(preg_replace('/.md$/', '', $pathFS), strlen($this->contentDirFS));
+        $wikiPathCaller = preg_replace('/README$/', '', $wikiPathCaller);
+
+        // now we need to convert the potentially relative $includePath in an absolute $wikiPath
+        if (strpos($includePath, '/') === 0) { // absolute include
+            $wikiPath = $this->canonicalWikiPath($includePath);
+        } else { // relative include
+            if (preg_match('/\/$/', $wikiPathCaller)) { // included by a folder
+                $wikiPath = $this->canonicalWikiPath($wikiPathCaller . '/' . $includePath);
+            } else { // included by a file/page
+                $wikiPath = $this->canonicalWikiPath(dirname($wikiPathCaller) . '/' . $includePath);
+            }
+        }
+
+        // deny caller walking up too far / outside the wiki dir
+        if ($wikiPath === null) {
+            return '{{error include-permission-denied}}';
+        }
+
+        // now we fetch the included file's content if possible
+        $includeFileFS = $this->wikiPathToContentFile($wikiPath);
+        if ($this->user->mayRead($wikiPath)) {
+            if (is_file($includeFileFS)) {
+                return $this->getHTML($includeFileFS);
             } else {
                 return '{{error include-not-found}}';
             }
+        } else {
+            return '{{error include-permission-denied}}';
         }
-        return '{{error include-permission-denied}}';
     }
 
     /**
      * Expand all {{...}} macros with their dynamic content.
      *
      * @param string $markdown A markdown body of a page or snippet.
-     * @param string $path Absolute path to file containing the macros (for relative processing).
+     * @param string $pathFS Absolute path to file containing the macros (for relative processing).
      * @return string New markdown with all macros expanded.
      */
     private function resolveMacros(
         string $body,
-        string $path
+        string $pathFS
     ): string {
         if (preg_match_all('/{{[^}]*}}/', $body, $matches)) {
             foreach ($matches[0] as $macro) {
@@ -536,7 +559,7 @@ class Wiki
                 if (array_key_exists($command, $this->macros)) {
                     $body = str_replace(
                         $macro,
-                        $this->macros[$command]($primary, $secondary, $path),
+                        $this->macros[$command]($primary, $secondary, $pathFS),
                         $body
                     );
                 }
