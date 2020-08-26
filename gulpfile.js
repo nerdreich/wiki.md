@@ -31,21 +31,21 @@ const dirs = {
 
 // --- testing targets ---------------------------------------------------
 
-gulp.task('test-sass', function () {
+gulp.task('test-theme-sass', function () {
   const sassLint = require('gulp-sass-lint')
-  return gulp.src(['src/**/*.s+(a|c)ss'])
+  return gulp.src(['src/theme/**/*.s+(a|c)ss'])
     .pipe(sassLint({ configFile: '.sass-lint.yml' }))
     .pipe(sassLint.format())
     .pipe(sassLint.failOnError())
 })
 
-gulp.task('test-php', function () {
+gulp.task('test-core-php', function () {
   const phpcs = require('gulp-phpcs')
   const phplint = require('gulp-phplint')
 
   return gulp.src([
-    'src/php/*.php',
-    'src/php/core/*php'
+    'src/core/php/*.php',
+    'src/core/php/core/*php'
   ])
     .pipe(phplint('', { skipPassedFiles: true }))
     .pipe(phpcs({
@@ -57,7 +57,7 @@ gulp.task('test-php', function () {
     .pipe(phpcs.reporter('log'))
 })
 
-gulp.task('test-php-theme', function () {
+gulp.task('test-theme-php', function () {
   const phpcs = require('gulp-phpcs')
   const phplint = require('gulp-phplint')
 
@@ -74,15 +74,17 @@ gulp.task('test-php-theme', function () {
     .pipe(phpcs.reporter('log'))
 })
 
-gulp.task('tests', gulp.series('test-sass', 'test-php', 'test-php-theme'))
+gulp.task('tests', gulp.series('test-theme-sass', 'test-core-php', 'test-theme-php'))
 
 // --- build targets -----------------------------------------------------
 
 gulp.task('clean', function () {
   const del = require('del')
   return del([
-    [dirs.site] + '/**/*',
-    [dirs.site] + '/**/.*'
+    dirs.site + '/**/*',
+    dirs.site + '/**/.*',
+    dirs.build + '/*.gz',
+    dirs.build + '/*.zip'
   ])
 })
 
@@ -94,7 +96,7 @@ gulp.task('theme-fonts', function () {
     .pipe(gulp.dest(dirs.theme + '/fonts/'))
 })
 
-gulp.task('theme-scss', gulp.series('test-sass', function () {
+gulp.task('theme-scss', gulp.series('test-theme-sass', function () {
   const sass = require('gulp-sass')
   const concat = require('gulp-concat')
   const autoprefixer = require('gulp-autoprefixer')
@@ -110,7 +112,7 @@ gulp.task('theme-scss', gulp.series('test-sass', function () {
     .pipe(gulp.dest(dirs.theme))
 }))
 
-gulp.task('theme-php', gulp.series('test-php-theme', function () {
+gulp.task('theme-php', gulp.series('test-theme-php', function () {
   return gulp.src([
     'src/theme/**/*.php'
   ])
@@ -143,18 +145,18 @@ gulp.task('theme-favicon', function () {
 
 gulp.task('theme', gulp.parallel('theme-fonts', 'theme-scss', 'theme-php', 'theme-I18N', 'theme-favicon'))
 
-gulp.task('meta', function () {
+gulp.task('core-meta', function () {
   return gulp.src([
-    'src/robots.txt',
-    'src/.htaccess',
-    'src/.htaccess-full'
+    'src/core/robots.txt',
+    'src/core/.htaccess',
+    'src/core/.htaccess-full'
   ])
     .pipe(gulp.dest(dirs.site))
 })
 
-gulp.task('php', gulp.series('test-php', function () {
+gulp.task('core-php', gulp.series('test-core-php', function () {
   return gulp.src([
-    'src/php/**/*.php'
+    'src/core/php/**/*.php'
   ])
     .pipe(replace('$VERSION$', p.version, { skipBinary: true }))
     .pipe(replace('$URL$', p.homepage, { skipBinary: true }))
@@ -182,7 +184,7 @@ gulp.task('docs', gulp.series(function () {
     .pipe(gulp.dest(dirs.data + '/content/docs/_media'))
 }))
 
-gulp.task('dist', gulp.series(gulp.parallel('php', 'meta', 'theme', 'data'), 'docs'))
+gulp.task('dist', gulp.series(gulp.parallel('core-php', 'core-meta', 'theme', 'data'), 'docs'))
 
 gulp.task('package-tgz', function () {
   const tar = require('gulp-tar')

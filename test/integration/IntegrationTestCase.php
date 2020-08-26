@@ -25,25 +25,23 @@ namespace at\nerdreich;
  *
  * Can call and test URLs via CURL. Takes care of PHPSESSID cookie handling.
  */
-class IntegratePHP
+class IntegrationTestCase extends \PHPUnit\Framework\TestCase
 {
-    private $server = '';
+    private $server = 'https://wiki.local'; // no trailing slash
     private $url = '';
     private $code = 0;
     private $payload = '';
     private $headers = '';
-    private $successes = 0;
     private $cookies = [];
 
-    /**
-     * Constructor
-     *
-     * @param array $server URL of server to test. No trailing slash.
-     */
-    public function __construct(
-        string $server
-    ) {
-        $this->server = $server;
+    protected function reset(): void
+    {
+        $this->server = 'https://wiki.local'; // no trailing slash
+        $this->url = '';
+        $this->code = 0;
+        $this->payload = '';
+        $this->headers = '';
+        $this->cookies = [];
     }
 
     // --- HTTP calls via CURL -------------------------------------------------
@@ -107,8 +105,7 @@ class IntegratePHP
      */
     public function get(
         string $path
-    ): IntegratePHP {
-        echo 'GET : ' . $path . PHP_EOL;
+    ): IntegrationTestCase {
         $ch = $this->prepareRequest($path);
         $this->parseRequest($ch);
 
@@ -124,8 +121,7 @@ class IntegratePHP
     public function post(
         string $path,
         array $fields = []
-    ): IntegratePHP {
-        echo 'POST: ' . $path . PHP_EOL;
+    ): IntegrationTestCase {
         $ch = $this->prepareRequest($path);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
         $this->parseRequest($ch);
@@ -140,43 +136,12 @@ class IntegratePHP
      */
     public function delete(
         string $path
-    ): IntegratePHP {
-        echo 'DEL : ' . $path . PHP_EOL;
+    ): IntegrationTestCase {
         $ch = $this->prepareRequest($path);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
         $this->parseRequest($ch);
 
         return $this;
-    }
-
-    // --- helpers -------------------------------------------------------------
-
-    /**
-     * Abort testing and print error message.
-     *
-     * Will terminate execution of the calling script.
-     *
-     * @param string $message Message to print.
-     */
-    private function abort(string $message)
-    {
-        echo '----------------------------------------------------------' . PHP_EOL;
-        echo 'ERR : ' . $message . PHP_EOL;
-        echo 'URL : ' . $this->url . PHP_EOL;
-        echo 'HEAD: ' . PHP_EOL . $this->headers . PHP_EOL;
-        echo 'BODY: ' . PHP_EOL . $this->payload . PHP_EOL;
-        exit;
-    }
-
-    /**
-     * Print success message after a test run.
-     *
-     * Will terminate execution of the calling script.
-     */
-    public function success(): void
-    {
-        echo 'Success! ' . $this->successes . ' tests positive.' . PHP_EOL;
-        exit;
     }
 
     // --- asserts & checks ----------------------------------------------------
@@ -188,148 +153,106 @@ class IntegratePHP
      * (missing end tag).
      *
      * @param int $statusCode Expected HTTP status code.
-     * @return IntegratePHP Current instance of this class for chaining.
      */
-    public function assertPage(int $statusCode = 200): IntegratePHP
+    public function assertPage(int $statusCode = 200): void
     {
-        $this->code == $statusCode || $this->abort($this->code . ' is not a ' . $statusCode . '.');
-        preg_match('/Stack trace/', $this->payload) && $this->abort('PHP error found.');
-        preg_match('/<\/html>\s+$/', $this->payload) || $this->abort('Not a complete page.');
-        $this->successes++;
-
-        return $this;
+        $this->assertEquals($statusCode, $this->code);
+        $this->assertStringNotContainsString('Stack trace', $this->payload);
+        $this->assertMatchesRegularExpression('/<\/html>\s+$/', $this->payload);
     }
 
     /**
      * Assert that last HTTP request returned a 302 redirect.
      *
      * @param string $path Expected location for redirect.
-     * @return IntegratePHP Current instance of this class for chaining.
      */
-    public function assertRedirect(string $path): IntegratePHP
+    public function assertRedirect(string $path): void
     {
-        $this->code == 302 || $this->abort($this->code . ' is not a 302.');
-        preg_match('/Stack trace/', $this->payload) && $this->abort('PHP error found.');
-        preg_match('/^\s*$/', $this->payload) || $this->abort('Not an empty page.');
-        preg_match(
+        $this->assertEquals(302, $this->code);
+        $this->assertStringNotContainsString('Stack trace', $this->payload);
+        $this->assertMatchesRegularExpression('/^\s*$/', $this->payload);
+        $this->assertMatchesRegularExpression(
             '/^location: ' . str_replace('/', '\/', $path) . '\s+$/m',
             $this->headers
-        ) || $this->abort('Location is not ' . $path . '.');
-        $this->successes++;
-
-        return $this;
+        );
     }
 
     /**
      * Assert that last HTTP request returned the wiki.md error page.
-     *
-     * @return IntegratePHP Current instance of this class for chaining.
      */
-    public function assertPageError(): IntegratePHP
+    public function assertPageError(): void
     {
         $this->assertPage(400);
-        $this->assertContains('/an error occured/');
-
-        return $this;
+        $this->assertPayloadContainsPreg('/an error occured/');
     }
 
     /**
      * Assert that last HTTP request returned the wiki.md login page.
-     *
-     * @return IntegratePHP Current instance of this class for chaining.
      */
-    public function assertPageLogin(): IntegratePHP
+    public function assertPageLogin(): void
     {
         $this->assertPage(401);
-        $this->assertContains('/Password required/');
-
-        return $this;
+        $this->assertPayloadContainsPreg('/Password required/');
     }
 
     /**
      * Assert that last HTTP request returned the wiki.md permission-denied
      * page for logged-in users.
-     *
-     * @return IntegratePHP Current instance of this class for chaining.
      */
-    public function assertPageDenied(): IntegratePHP
+    public function assertPageDenied(): void
     {
         $this->assertPage(403);
-        $this->assertContains('/You do not have the necessary permissions/');
-
-        return $this;
+        $this->assertPayloadContainsPreg('/You do not have the necessary permissions/');
     }
 
     /**
      * Assert that last HTTP request returned the wiki.md 404 page.
-     *
-     * @return IntegratePHP Current instance of this class for chaining.
      */
-    public function assertPageNotFound(): IntegratePHP
+    public function assertPageNotFound(): void
     {
         $this->assertPage(404);
-        $this->assertContains('/does not exist/');
-
-        return $this;
+        $this->assertPayloadContainsPreg('/does not exist/');
     }
 
     /**
      * Assert that last HTTP request's body contained a regular expression.
      *
      * @param $preg Regular expression (including /'s).
-     * @return IntegratePHP Current instance of this class for chaining.
      */
-    public function assertContains(string $preg): IntegratePHP
+    public function assertPayloadContainsPreg(string $preg): void
     {
-        preg_match($preg, $this->payload) || $this->abort('Regular expression ' . $preg . ' not found.');
-        $this->successes++;
-
-        return $this;
+        $this->assertMatchesRegularExpression($preg, $this->payload);
     }
 
     /**
      * Assert that last HTTP request's body did not contain a regular expression.
      *
      * @param $preg Regular expression (including /'s).
-     * @return IntegratePHP Current instance of this class for chaining.
      */
-    public function assertContainsNot(string $preg): IntegratePHP
+    public function assertPayloadContainsNotPreg(string $preg): void
     {
-        preg_match($preg, $this->payload) && $this->abort('Regular expression ' . $preg . ' found.');
-        $this->successes++;
-
-        return $this;
+        $this->assertDoesNotMatchRegularExpression($preg, $this->payload);
     }
 
     /**
      * Assert that our internal HTTP session does not contain any cookies (yet).
-     *
-     * @return IntegratePHP Current instance of this class for chaining.
      */
-    public function assertNoCookies(): IntegratePHP
+    public function assertNoCookies(): void
     {
         if (array_key_exists('PHPSESSID', $this->cookies) && $this->cookies['PHPSESSID'] === 'deleted') {
-            count($this->cookies) === 1 || $this->abort('Expected no cookies, but found some.');
+            $this->assertCount(1, $this->cookies);
         } else {
-            count($this->cookies) === 0 || $this->abort('Expected no cookies, but found some.');
+            $this->assertCount(0, $this->cookies);
         }
-        $this->successes++;
-
-        return $this;
     }
 
     /**
      * Assert that our internal HTTP session does contain the PHP session cookie
      * (and only that cookie).
-     *
-     * @return IntegratePHP Current instance of this class for chaining.
      */
-    public function assertSessionCookie(): IntegratePHP
+    public function assertSessionCookie(): void
     {
-        count($this->cookies) === 1 || $this->abort('Expected one cookie, but ' . count($this->cookies) . ' found.');
-        strlen($this->cookies['PHPSESSID']) > 16 || $this->abort('No PHPSESSID cookie found.');
-        $this->successes++;
-
-        return $this;
+        $this->assertCount(1, $this->cookies);
+        $this->assertNotEmpty($this->cookies['PHPSESSID']);
     }
 }

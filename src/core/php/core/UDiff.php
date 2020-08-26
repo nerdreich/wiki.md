@@ -37,18 +37,16 @@ class UDiff
      * @param string $b The second / right text.
      * @param string $filenameA Optional filename to use in diff output.
      * @param string $filenameB Optional filename to use in diff output.
-     * @return string Diff in unified diff (udiff) format.
+     * @return string Diff in unified diff (udiff) format, or null if there are
+     *                no changes.
      */
     public static function diff(
         string $a,
         string $b,
         string $filenameA = 'old',
         string $filenameB = 'new'
-    ): string {
+    ): ?string {
         $diff = '';
-
-        $diff .= "--- $filenameA\n";
-        $diff .= "+++ $filenameB\n";
 
         $arrayA = explode("\n", str_replace("\r", '', $a));
         $arrayB = explode("\n", str_replace("\r", '', $b));
@@ -67,7 +65,11 @@ class UDiff
             count($arrayB) - 1,
         );
 
-        return $diff;
+        if ($diff !== '') {
+            return "--- $filenameA\n+++ $filenameB\n" . $diff;
+        }
+
+        return null;
     }
 
     /**

@@ -24,7 +24,7 @@ Due its file-based nature, wiki.md works best for small to medium traffic sites.
 
 ## Requirements
 
-* PHP 7.1+
+* PHP 7.2+
 * Apache `.htaccess` / `mod_rewrite`
 
 ## Supported Browsers
@@ -39,7 +39,7 @@ Extract the `*.tar.gz`/`*.zip` into a folder on your web-server and you are (alm
 
 This is only recommended for advanced use-cases. For most users the pre-packaged `*.tar.gz`/`*.zip` should be fine.
 
-To build wiki.md yourself, you'll need `git`, `php` v7.1+, `npm` v6.5+ and `gulp` v4. Assuming all requirements are met, just:
+To build wiki.md yourself, you'll need `git`, `php` v7.2+, `npm` v6.5+ and `gulp` v4. Assuming all requirements are met, just:
 
 ```
 git clone --depth 1 https://github.com/nerdreich/wiki.md
@@ -56,13 +56,12 @@ Read the [Documentation](docs/) to learn more.
 
 ## Roadmap
 
-wiki.md currently is beta software. It should work mostly fine, but you might miss features or hit some bugs. Feel free to report any [issues](https://github.com/nerdreich/wiki.md/issues) you find.
+wiki.md currently is beta software. It is automatically tested before each release and should work mostly fine, but you might miss features or hit some bugs. Feel free to report any [issues](https://github.com/nerdreich/wiki.md/issues) you find.
 
 ### Planned for v1.0.0
 
-* display warning when other user is editing a file at the same time
-* better page history browser
-* contributing and code guidelines
+* mark direkt fs changes as 'unknown' author in history
+* fix unnecessary checksum-failed warnings
 * password manager
 
 ### Planned for v1.1.0
@@ -71,7 +70,6 @@ wiki.md currently is beta software. It should work mostly fine, but you might mi
 * real users instead of page passwords
 * plugin mechanism
 * rename-page feature
-* configure date/time format + timezone
 
 ### Unscheduled ideas
 

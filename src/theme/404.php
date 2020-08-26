@@ -35,4 +35,4 @@ outputBanner($wiki);
     </div>
   </div>
 </section>
-<?php outputFooter($wiki); ?>
+<?php outputFooter($wiki, $config); ?>

@@ -37,8 +37,14 @@ $color-panel-bg: $theme-color4;
 $color-text: $theme-color2;
 $color-text-bold: $theme-color1;
 $color-headline: $theme-color5;
-$color-error: #ed0006;
 $color-hr: $color-black-10a;
+
+$color-negative: #be4f4e;
+$color-info: #496a81;
+$color-warning: #d5a021;
+$color-positive: #5fad41;
+
+// #5D2E8C
 
 pre,
 code,
@@ -46,4 +52,12 @@ kbd,
 samp {
   background-color: $theme-color4;
   border-radius: $var-border-radius;
+}
+
+.error {
+  color: $color-negative;
+}
+
+.warning {
+  color: $color-warning;
 }

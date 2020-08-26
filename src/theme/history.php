@@ -25,6 +25,17 @@ outputHeader($config, $wiki->getWikiPath(), ___('History') . ': ' . $wiki->getTi
 outputNavbar($wiki, $user);
 outputBanner($wiki);
 
+function historyDate($date, $config): string
+{
+    if ($date === null) {
+        return ___('unknown');
+    }
+    if (is_string($date)) { // transparently convert string date (from history)
+        $date = \DateTime::createFromFormat(\DateTimeInterface::ATOM, $date);
+    }
+    return $date->format($config['datetime']);
+}
+
 ?><section class="section-main container page-history">
   <div class="row">
     <div class="col-12 col-md-8 col-lg-9">
@@ -32,45 +43,38 @@ outputBanner($wiki);
       <?php if ($wiki->isDirty()) { ?>
         <p><?php __('The checksum of this page is invalid. Save the page in wiki.md again to correct this.') ?>
       <?php } ?>
-      <?php if ($history === null) { ?>
-        <div id="history-0" class="card"><p><?php __('No history available.'); ?></p></div>
-      <?php } else {
-          $version = count($history) + 1;
-            ?>
-        <div id="history-<?php echo $version; ?>" class="card">
-            <h3><?php __('Version'); ?> v<?php echo $version; ?> (<?php __('current'); ?>)</h3>
-            <p><?php __('Date'); ?>: <?php echo htmlspecialchars($wiki->getDate()); ?></p>
-            <p><?php __('Author'); ?>: <?php echo htmlspecialchars($wiki->getAuthor()); ?></p>
-        </div>
-          <?php
-            $cards = '';
-            foreach (array_reverse($history) as $change) { // hint: history is reverse-sorted
-                $version--;
-                $date = $change['date'];
-                $author = $change['author'];
-                $diff = gzuncompress(base64_decode($change['diff'])); ?>
 
-                  <div class='card diff'>
-                    <h4><?php __('Changes'); ?></h4>
-                    <pre><?php echo $diff; ?></pre>
-                  </div>
-
-                  <div id="history-<?php echo $version; ?>" class='card'>
-                    <h3><?php __('Version'); ?> v<?php echo $version; ?></h3>
-                    <p><?php __('Date'); ?>: <?php echo htmlspecialchars($date); ?></p>
-                    <p><?php __('Author'); ?>: <?php echo htmlspecialchars($author); ?></p>
-                    <?php if (!$wiki->isDirty()) { ?>
-                    <form action='?action=restore&version=<?php echo $version; ?>' method='post'>
-                      <input class="btn primary" type="submit" value="<?php __('restore %s', 'v' . $version); ?>">
-                    </form>
-                    <?php } ?>
-                  </div>
-            <?php } ?>
-      <?php } ?>
+      <dl class="timeline">
+        <?php if ($history === null) { ?>
+          <dt id="history-0">
+            <p><?php __('No history available.'); ?></p>
+          </dt>
+        <?php } else { ?>
+            <?php $version = count($history) + 1; ?>
+            <dt id="history-<?php echo $version; ?>">
+              <h2 class="h4"><?php __('Version'); ?> <?php echo $version--; ?> (<?php __('current'); ?>)</h2>
+              <p>
+                <span class="minor"><?php __('by %s at %s', $wiki->getAuthor(), historyDate($wiki->getDate(), $config)); ?></span>
+              </p>
+            </dt>
+        <?php } ?>
+        <?php foreach (array_reverse($wiki->getHistory() ?? []) as $change) { ?>
+          <dd><?php echo diff2html(gzuncompress(base64_decode($change['diff']))); ?></dd>
+          <dt id="history-<?php echo $version; ?>">
+            <h2 class="h4"><?php __('Version'); ?> <?php echo $version; ?></h2>
+            <p>
+              <span class="minor"><?php __('by %s at %s', $change['author'], historyDate($change['date'], $config)); ?></span>
+              <?php if (!$wiki->isDirty()) { ?>
+                - <a href="?action=restore&version=<?php echo $version--; ?>"><?php __('restore'); ?></a>
+              <?php } ?>
+            </p>
+          </dt>
+        <?php } ?>
+      </dl>
     </div>
     <nav class="col-12 col-md-4 col-lg-3 sidenav">
       <?php echo $wiki->getSnippetHTML('nav'); ?>
     </nav>
   </div>
 </section>
-<?php outputFooter($wiki); ?>
+<?php outputFooter($wiki, $config); ?>

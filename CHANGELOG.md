@@ -1,3 +1,13 @@
+# v0.5.0
+
+* added default value for empty history
+* changed history page layout to a timeline view
+* added CONTRIBUTING.md and cleaned up src dir
+* added detection of empty diffs in page history
+* use PHPUnit for integration tests
+* added warning if someone else is editing a page
+* removed PHP 7.4 dependencies
+
 # v0.4.0
 
 * added more documentation

@@ -16,6 +16,7 @@
 
 Author: Autor
 bold: fett
+by %s at %s: von %s am %s
 Cancel: Abbrechen
 Changes: Änderungen
 Content: Inhalt
@@ -33,6 +34,7 @@ Error: Fehler
 Forbidden: Unzulässig
 Headlines: Überschriften
 History: Protokoll
+History for %s: Protokoll für %s
 italic: kursiv
 Last saved %s: zuletzt gespeichert %s
 link title: Link Titel
@@ -49,13 +51,17 @@ Please enter your password to continue.: Bitte gib dein Passwort ein, um fortzuf
 Privacy: Datenschutz
 Quickhelp: Kleine Hilfe
 restore %s: %s wiederherstellen
+restore: wiederherstellen
 Save & Edit: Speichern & Editieren
 Save: Speichern
 Separator: Trennlinie
+Someone started editing this file %s minutes ago.: Jemand editiert diese Seite seit %s Minuten.
 Sorry, an error occured.: Es ist leider ein Fehler aufgetreten.
 strike through: durchgestrichen
 target: Ziel
 The checksum of this page is invalid. Save the page in wiki.md again to correct this.: Die Prüfsumme dieser Seite ist nicht korrekt. Speichere die Seite in wiki.md erneut ab, um sie zu korrigieren.
 Title - may remain empty: Titel – darf auch leer bleiben
+unknown: unbekannt
 Version: Version
-You do not have the necessary permissions to do this.: Du verfügst nicht über die nötigen Rechte, diese Aktion auszuführen.
+Warning: Warnung
+You do not have the necessary permissions to do this.: Du verfügst nicht über die nötigen Rechte, um diese Aktion auszuführen.

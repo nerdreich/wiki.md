@@ -1,9 +1,9 @@
 # Installation
 
-Before you install, make sure the following requirements are met:
+Before installing, make sure the following requirements are met:
 
 * Apache httpd (`.htaccess` and `mod_rewrite` enabled)
-* PHP 7.1+
+* PHP 7.2+
 
 ## Basic installation
 
@@ -39,6 +39,14 @@ $ htpasswd -B /path/to/wiki/data/.htpasswd admin
 
 wiki.md adds its documentation as /docs to your installation. You can safely delete this folder if you don't need it.
 
+## Upgrading
+
+While wiki.md is still in its v0.* stage, there is no specific upgrade documentation provided. Breaking changes in the file-system or data structures are unlikely but might occur. Assuming they don't, upgrading boils down to:
+
+* Replace `index.html` and `core/` with the new version.
+* Replace `themes/elegant` with the new version.
+* Check `data/config.ini` if there are new entries you need to add to your config file.
+
 ## Advanced configuration
 
 After basic installation, you might want to do one or more of the following...
@@ -49,12 +57,12 @@ wiki.md comes with a single basic theme. See [Themes](themes.md) page how to ins
 
 ### Language
 
-To set the menu language, edit `data/config.ini` and set the `language =` line. The default theme support:
+To set the menu language, edit `data/config.ini` and set the `language =` and `datetime =` lines. The default theme support:
 
-|Code|Language|
-|----|--------|
-|`de`|German  |
-|`en`|English |
+|Language|code|datetime   |
+|--------|----|-----------|
+|German  |de  |d.m.Y H:i  |
+|English |en  |m/d/Y H:i a|
 
 wiki.md only supports a single, site-wide language.
 
@@ -82,7 +90,15 @@ The default installation only knows a single `admin` user. See [Permissions](per
 When users save pages very often in short intervals, they can fill up the page history quickly with minor versions. History squashing will detect repeated saves within a defined time intervall and combine those minor saves into one history entry. Per default, saves of the same page from the same author within 120 seconds will be auto-squashed. You can change this interval by editing `data/config.ini`:
 
 ```
-autosquash_interval = 120
+autosquash_interval = 120 ; seconds
 ```
 
 A value of `-1` disables auto-squashing.
+
+### Editor warnings
+
+When users open a page editor that another user/session has opened and have not saved yet, wiki.md will show a warning. Since users occasionally just don't save, you can set the interval this warning keeps showing up in your `config.ini` file:
+
+```
+edit_warning_interval = 900 ; seconds
+```
