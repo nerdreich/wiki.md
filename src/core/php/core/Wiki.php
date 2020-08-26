@@ -349,7 +349,7 @@ class Wiki
                 return false;
             }
 
-            $historySize = count($this->metadata['history']);
+            $historySize = count($this->metadata['history'] ?? []);
             if ($version > 0 && $version <= $historySize) {
                 // reverse-apply all diffs up to to the requested version
                 for ($revertTo = $historySize; $revertTo >= $version; $revertTo--) {

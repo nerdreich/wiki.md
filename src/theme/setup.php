@@ -144,7 +144,6 @@ function diff2html(
     return '<pre><code>' . substr($html, 1) . '</code></pre>';
 }
 
-
 /**
  * Generate the HTML header and open the <body>.
  *

@@ -61,6 +61,7 @@ wiki.md currently is beta software. It is automatically tested before each relea
 ### Planned for v1.0.0
 
 * mark direkt fs changes as 'unknown' author in history
+* fix unnecessary checksum-failed warnings
 * password manager
 
 ### Planned for v1.1.0
