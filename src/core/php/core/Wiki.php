@@ -657,7 +657,7 @@ class Wiki
      */
     public function isWip(): int
     {
-        if ($this->metadata['author'] !== $this->user->getAlias()) { // we only care about other authors
+        if ($this->metadata['editBy'] !== $this->user->getSessionToken()) { // we don't care about our own session
             if (array_key_exists('edit', $this->metadata)) {
                 $lastEditDate = \DateTime::createFromFormat(\DateTimeInterface::ATOM, $this->metadata['edit']);
                 $deltaSeconds = (new \DateTime())->getTimestamp() - $lastEditDate->getTimestamp();
@@ -684,6 +684,7 @@ class Wiki
                 $this->loadFS();
                 if (!array_key_exists('edit', $this->metadata)) {
                     $this->metadata['edit'] = date(\DateTimeInterface::ATOM); // mark wip
+                    $this->metadata['editBy'] = $this->user->getSessionToken();
                     $this->persist(true);
                 }
             }
@@ -819,6 +820,7 @@ class Wiki
             $author = $this->cleanupSingeLineText($author);
             $this->metadata['author'] = $author !== '' ? $author : '???';
             unset($this->metadata['edit']);
+            unset($this->metadata['editBy']);
 
             $this->persist();
             $this->addToChangelog();

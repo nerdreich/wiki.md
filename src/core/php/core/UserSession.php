@@ -175,6 +175,18 @@ class UserSession
     }
 
     /**
+     * Get something unique for this session.
+     *
+     * Only to be used for non-critical things.
+     *
+     * @return string One-way-hash value of the session ID.
+     */
+    public function getSessionToken(): string
+    {
+        return md5($_COOKIE['PHPSESSID']);
+    }
+
+    /**
      * Get the logged-in username (if any).
      *
      * @return string Author name, e.g. 'Yuki'.

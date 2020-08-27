@@ -60,7 +60,6 @@ wiki.md currently is beta software. It is automatically tested before each relea
 
 ### Planned for v1.0.0
 
-* fix unnecessary checksum-failed warnings in history
 * password manager
 
 ### Planned for v1.1.0
