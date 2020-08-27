@@ -41,7 +41,7 @@ link title: Link Titel
 Login: Anmelden
 Logout: Abmelden
 Löschen: Delete
-No history available.: Kein Protokoll verfügbar.
+No history is available.: Es ist kein Protokoll verfügbar.
 Not found: Nicht gefunden
 Page %d of %d: Seite %d von %d
 Page %d: Seite %d
@@ -60,6 +60,7 @@ Sorry, an error occured.: Es ist leider ein Fehler aufgetreten.
 strike through: durchgestrichen
 target: Ziel
 The checksum of this page is invalid. Save the page in wiki.md again to correct this.: Die Prüfsumme dieser Seite ist nicht korrekt. Speichere die Seite in wiki.md erneut ab, um sie zu korrigieren.
+This page has not been saved by wiki.md.: Diese Seite wurde nicht durch wiki.md gespeichert.
 Title - may remain empty: Titel – darf auch leer bleiben
 unknown: unbekannt
 Version: Version

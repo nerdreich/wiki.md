@@ -209,9 +209,8 @@ if (!$wiki->exists()) {
                 if ($wiki->revertToVersion($version)) {
                     renderThemeFile('edit.php');
                 }
-            } else {
-                renderThemeFile('error.php', 400);
             }
+            renderThemeFile('error.php', 400);
             break;
         case 'createPage':
             renderThemeFile('error.php', 400); // can't recreate existing page

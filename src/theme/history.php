@@ -36,6 +36,8 @@ function historyDate($date, $config): string
     return $date->format($config['datetime']);
 }
 
+$restoreEnabled = true;
+
 ?><section class="section-main container page-history">
   <div class="row">
     <div class="col-12 col-md-8 col-lg-9">
@@ -47,7 +49,10 @@ function historyDate($date, $config): string
       <dl class="timeline">
         <?php if ($history === null) { ?>
           <dt id="history-0">
-            <p><?php __('No history available.'); ?></p>
+            <p>
+              <?php __('This page has not been saved by wiki.md.'); ?>
+              <?php __('No history is available.'); ?>
+            </p>
           </dt>
         <?php } else { ?>
             <?php $version = count($history) + 1; ?>
@@ -59,17 +64,23 @@ function historyDate($date, $config): string
             </dt>
         <?php } ?>
         <?php foreach (array_reverse($wiki->getHistory() ?? []) as $change) { ?>
-          <dd><?php echo diff2html(gzuncompress(base64_decode($change['diff']))); ?></dd>
+          <dd><?php if ($change['diff'] !== null) {
+                    echo diff2html(gzuncompress(base64_decode($change['diff'])));
+              } else {
+                    echo ___('No record available.');
+                    $restoreEnabled = false;
+              } ?></dd>
           <dt id="history-<?php echo $version; ?>">
             <h2 class="h4"><?php __('Version'); ?> <?php echo $version; ?></h2>
             <p>
               <span class="minor"><?php __('by %s at %s', $change['author'], historyDate($change['date'], $config)); ?></span>
-              <?php if (!$wiki->isDirty()) { ?>
-                - <a href="?action=restore&version=<?php echo $version--; ?>"><?php __('restore'); ?></a>
+              <?php if ($restoreEnabled && !$wiki->isDirty()) { ?>
+                - <a href="?action=restore&version=<?php echo $version; ?>"><?php __('restore'); ?></a>
               <?php } ?>
             </p>
           </dt>
-        <?php } ?>
+            <?php $version--;
+        } ?>
       </dl>
     </div>
     <nav class="col-12 col-md-4 col-lg-3 sidenav">

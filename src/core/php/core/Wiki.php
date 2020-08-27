@@ -354,8 +354,12 @@ class Wiki
                 // reverse-apply all diffs up to to the requested version
                 for ($revertTo = $historySize; $revertTo >= $version; $revertTo--) {
                     $diffToApply = $revertTo - 1;
-                    $diff = gzuncompress(base64_decode($this->metadata['history'][$diffToApply]['diff']));
-                    $this->content = \at\nerdreich\UDiff::patch($this->content, $diff, true);
+                    $diff = $this->metadata['history'][$diffToApply]['diff'];
+                    if ($diff !== null) {
+                        $this->applyEncodedDiffToContent($this->metadata['history'][$diffToApply]['diff']);
+                    } else {
+                        return false; // broken history, probably due to fs-change. we can't go back from here.
+                    }
                 }
                 return true;
             }
@@ -365,23 +369,33 @@ class Wiki
     }
 
     /**
+     * Decode the given diff and apply it to the content.
+     *
+     * @param string $encodedDiff Diff to apply.
+     */
+    private function applyEncodedDiffToContent(string $encodedDiff): void
+    {
+        if ($encodedDiff !== null) {
+            $diff = gzuncompress(base64_decode($encodedDiff));
+            $this->content = \at\nerdreich\UDiff::patch($this->content, $diff, true);
+        }
+    }
+
+    /**
      * Undo one / the last version of this page.
      *
      * Will update class data to reflect this version. Will silently fail if
      * the given version number does not exist.
-     *
-     * @return string True if version could be applied.
      */
-    private function revertToPreviousVersion(): bool
+    private function revertToPreviousVersion(): void
     {
+        $this->content = ''; // without history the previous version was empty
         if (array_key_exists('history', $this->metadata)) {
             $count = count($this->metadata['history']);
             if ($count > 0) {
-                return $this->revertToVersion(count($this->metadata['history']));
+                $this->applyEncodedDiffToContent($this->metadata['history'][$count - 1]['diff']);
             }
         }
-        $this->content = ''; // without history the previous version was empty
-        return true;
     }
 
     // ----------------------------------------------------------------------
@@ -617,7 +631,8 @@ class Wiki
     // --- page management --------------------------------------------------
     // ----------------------------------------------------------------------
 
-    /** Determine if the file has been changed on disk.
+    /**
+     * Determine if the file has been changed on disk.
      *
      * wiki.md assumes that only this class makes changes to .md files. If
      * someone else does, the page content hash will no longer match and the
@@ -632,10 +647,11 @@ class Wiki
             $hash = hash('sha1', $this->content);
             return $hash !== $this->metadata['hash'];
         }
-        return false; // no hash in headers -> this page has not yet been saved by wiki.md
+        return true;
     }
 
-    /** Determine if the file is being edited (work in progress) by someone else.
+    /**
+     * Determine if the file is being edited (work in progress) by someone else.
      *
      * @return int 0 if this ist not a Wip or seconds since edit started.
      */
@@ -654,17 +670,22 @@ class Wiki
     }
 
     /**
-     * Prepare to edit a page. Will not save anything!
+     * Prepare to edit a page.
      *
-     * @return bool True, if the user may edit this page.
+     * Won't save any content, but if page already exists, it will mark it as
+     * being edited.
+     *
+     * @return bool True, if the user may continue to edit this page.
      */
     public function editPage(): bool
     {
         if ($this->user->mayRead($this->wikiPath) && $this->user->mayUpdate($this->wikiPath)) {
-            $this->loadFS();
-            if (!array_key_exists('edit', $this->metadata)) {
-                $this->metadata['edit'] = date(\DateTimeInterface::ATOM); // mark wip
-                $this->persist();
+            if (is_file($this->contentFileFS)) {
+                $this->loadFS();
+                if (!array_key_exists('edit', $this->metadata)) {
+                    $this->metadata['edit'] = date(\DateTimeInterface::ATOM); // mark wip
+                    $this->persist(true);
+                }
             }
             return true;
         }
@@ -672,61 +693,62 @@ class Wiki
     }
 
     /**
-     * Save a page. Create a new diff/history on the fly if it already existed.
+     * Remove last history item if it was done by the same author in a short time.
      *
-     * @param $content New markdown content for this page.
-     * @param $title New title of this page.
-     * @param $author Name to store as author for this change.
-     * @return bool True, if the page could be saved.
+     * @param string $author Author to check against.
+     * @return bool True if successfull (squashed or not), false if an error occured.
      */
-    public function savePage(
-        string $content,
-        string $title,
+    private function squashLastHistoryItem(
         string $author
     ): bool {
-        if ($this->user->mayUpdate($this->wikiPath)) {
-            $author = $this->cleanupSingeLineText($author);
-            $title = $this->cleanupSingeLineText($title);
-
-            // load old content
-            $this->loadFS();
-
-            // check if this is yet another quick save by the same author
-            if ($this->metadata['author'] === $author) {
-                if (array_key_exists('date', $this->metadata)) {
-                    $lastSaveDate = \DateTime::createFromFormat(\DateTimeInterface::ATOM, $this->metadata['date']);
-                    $deltaSeconds = (new \DateTime())->getTimestamp() - $lastSaveDate->getTimestamp();
-                    if ($deltaSeconds < $this->config['autosquash_interval'] ?? -1) {
-                        // this is a quick (re)save. undo last history to merge the saves into one.
-                        if ($this->revertToPreviousVersion()) {
-                            if ($this->metadata['history'] === []) {
-                                unset($this->metadata['history']);
-                            } else {
-                                array_pop($this->metadata['history']);
-                            }
-                        } else {
-                            return false;
-                        }
+        if ($this->metadata['author'] === $author) {
+            if (array_key_exists('date', $this->metadata)) {
+                $lastSaveDate = \DateTime::createFromFormat(\DateTimeInterface::ATOM, $this->metadata['date']);
+                $deltaSeconds = (new \DateTime())->getTimestamp() - $lastSaveDate->getTimestamp();
+                if ($deltaSeconds < $this->config['autosquash_interval'] ?? -1) {
+                    // this is a quick (re)save. undo last history to merge the saves into one.
+                    $this->revertToPreviousVersion();
+                    if ($this->metadata['history'] === []) {
+                        unset($this->metadata['history']);
+                    } else {
+                        array_pop($this->metadata['history']);
                     }
                 }
             }
+        }
+        return true;
+    }
 
-            // update content, history & hash
-            $diff = \at\nerdreich\UDiff::diff($this->content, $content);
-            $this->content = $content;
-            $hash = hash('sha1', $this->content);
+    /**
+     * Put new content in this page.
+     *
+     * Will also set all corresponding meta fields: hash + diffs.
+     *
+     * @param string $newContent New content blob.
+     * @param bool $updateMetadata True (default), if meta fields should be populated.
+     */
+    private function setContent(
+        string $newContent,
+        bool $updateMetadata = true
+    ) {
+        $diff = \at\nerdreich\UDiff::diff($this->content, $newContent);
+        $this->content = $newContent;
+
+        if ($updateMetadata) {
+            $this->metadata['hash'] = hash('sha1', $this->content);
+
             if (array_key_exists('history', $this->metadata)) {
                 // page has a history -> add to that
 
                 if ($diff !== null) { // ignore non-changing saves
                     // create a new history entry
                     $historyEntry = [];
-                    $historyEntry['author'] = $this->metadata['author'] ?? 'unknown';
+                    $historyEntry['author'] = $this->metadata['author'] ?? '???';
                     $historyEntry['date'] =
                         $this->metadata['date'] ?? date(\DateTimeInterface::ATOM, filemtime($this->contentFileFS));
                     $diff = preg_replace('/^.+\n/', '', $diff); // remove first line (---)
                     $diff = preg_replace('/^.+\n/', '', $diff); // remove second line (+++)
-                    $historyEntry['diff'] = chunk_split(base64_encode(gzcompress($diff)), 64, "\n");
+                    $historyEntry['diff'] = chunk_split(base64_encode(gzcompress($diff, 9)), 64, "\n");
 
                     $this->metadata['history'][] = $historyEntry;
                 }
@@ -734,18 +756,68 @@ class Wiki
                 // no history exists -> this is the first save, just start a new/empty one
                 $this->metadata['history'] = [];
             }
+        }
+    }
 
-            // update yaml front matter / metadata
+    /**
+     * Correct dirty pages by adding history entries to represent external edits.
+     */
+    private function fixDirtyPage()
+    {
+        if (is_file($this->contentFileFS)) { // 2nd+ save
+            if ($this->metadata['history'] === null) { // no history = legacy .md file
+                // start a new history
+                $this->metadata['history'] = [];
+            } else { // regular wiki.md file
+                // add an interim history entry to represent the unknown edit
+                $historyEntry = [];
+                $historyEntry['author'] = $this->metadata['author'];
+                $historyEntry['date'] = $this->metadata['date'];
+                $this->metadata['history'][] = $historyEntry;
+            }
+            $this->metadata['date'] = date(\DateTimeInterface::ATOM, filemtime($this->contentFileFS));
+            $this->metadata['author'] = '???';
+            $this->metadata['title'] = '';
+            $this->metadata['hash'] = hash('sha1', $this->content);
+            $this->persist();
+            $this->loadFS();
+        }
+    }
+
+    /**
+     * Save a page. Create a new diff/history on the fly if it already existed.
+     *
+     * @param string $content New markdown content for this page.
+     * @param string $title New title of this page.
+     * @param string $author Name to store as author for this change.
+     * @return bool False if permissions are denied.
+     */
+    public function savePage(
+        string $content,
+        string $title,
+        string $author
+    ): bool {
+        if ($this->user->mayUpdate($this->wikiPath)) {
+            $this->loadFS();
+
+            // did someone edited the .md file directly in the filesystem?
+            if ($this->isDirty()) {
+                $this->fixDirtyPage();
+            }
+
+            // check if this is yet another quick save by the same author
+            if (!$this->squashLastHistoryItem($author)) {
+                return false;
+            }
+
+            // update content, history & hash
+            $this->setContent($content);
+
+            // update other metadata
             $this->metadata['date'] = date(\DateTimeInterface::ATOM);
-            if ($title !== '') {
-                $this->metadata['title'] = $title;
-            }
-            if ($author !== '') {
-                $this->metadata['author'] = $author;
-            } else {
-                $this->metadata['author'] = 'unknown';
-            }
-            $this->metadata['hash'] = $hash;
+            $this->metadata['title'] = $this->cleanupSingeLineText($title);
+            $author = $this->cleanupSingeLineText($author);
+            $this->metadata['author'] = $author !== '' ? $author : '???';
             unset($this->metadata['edit']);
 
             $this->persist();
@@ -759,8 +831,10 @@ class Wiki
 
     /**
      * Write the current page back to file.
+     *
+     * @param bool keepmtime Keep the modification time intact.
      */
-    private function persist(): void
+    private function persist(bool $keepmtime = false): void
     {
         // create parent dir if necessary
         if (!\file_exists(dirname($this->contentFileFS))) {
@@ -768,10 +842,12 @@ class Wiki
         }
 
         // write out new content
+        $mtime = $keepmtime && is_file($this->contentFileFS) ? filemtime($this->contentFileFS) : time();
         $this->fileWriteContent(
             $this->contentFileFS,
             \Spyc::YAMLDump($this->metadata) . "---\n" . trim($this->content) . "\n"
         );
+        touch($this->contentFileFS, $mtime);
     }
 
     /**

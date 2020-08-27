@@ -313,11 +313,11 @@ final class WikiTest extends \PHPUnit\Framework\TestCase
         );
         $this->assertMatchesRegularExpression(
             '/{{error include-not-found}}/',
-            $method->invokeArgs($wiki, ['{{include ../meow}}', $contentDirFS . '/docs/README.md'])
+            $method->invokeArgs($wiki, ['{{include ../moo}}', $contentDirFS . '/docs/README.md'])
         );
         $this->assertMatchesRegularExpression(
             '/{{error include-not-found}}/',
-            $method->invokeArgs($wiki, ['{{include /meow}}', $contentDirFS . '/docs/README.md'])
+            $method->invokeArgs($wiki, ['{{include /moo}}', $contentDirFS . '/docs/README.md'])
         );
         $this->assertMatchesRegularExpression(
             '/{{error include-permission-denied}}/',
@@ -335,11 +335,11 @@ final class WikiTest extends \PHPUnit\Framework\TestCase
         );
         $this->assertMatchesRegularExpression(
             '/{{error include-not-found}}/',
-            $method->invokeArgs($wiki, ['{{include docs/meow}}', $contentDirFS . '/README.md'])
+            $method->invokeArgs($wiki, ['{{include docs/moo}}', $contentDirFS . '/README.md'])
         );
         $this->assertMatchesRegularExpression(
             '/{{error include-not-found}}/',
-            $method->invokeArgs($wiki, ['{{include /docs/meow}}', $contentDirFS . '/README.md'])
+            $method->invokeArgs($wiki, ['{{include /docs/moo}}', $contentDirFS . '/README.md'])
         );
 
         // include protected file
