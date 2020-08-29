@@ -30,21 +30,29 @@ outputBanner($wiki);
         <p class="warning"><?php __('Warning') ?>: <?php __('Someone started editing this file %s minutes ago.', ceil($wip / 60.)) ?></p>
       <?php } ?>
       <?php echo $wiki->getTitle() !== '' ? '<h1>' . htmlspecialchars($wiki->getTitle()) . '</h1>' : ''; ?>
-      <input type="text" name="title" placeholder="<?php __('Title - may remain empty'); ?>" value="<?php echo $wiki->getTitle(); ?>">
-      <textarea name="content" placeholder="<?php __('Content'); ?>" required autofocus><?php echo $wiki->getContentMarkup(); ?></textarea>
-      <input type="text" name="author" placeholder="<?php __('Author'); ?>" value="<?php echo $user->getAlias(); ?>" required>
+      <label for="title" class="in-border"><?php __('Title - may remain empty'); ?></label>
+      <input id="title" type="text" name="title" value="<?php echo $wiki->getTitle(); ?>">
+      <label for="content" class="in-border"><?php __('Markdown'); ?></label>
+      <textarea id="content" name="content" required autofocus><?php echo $wiki->getContentMarkup(); ?></textarea>
+      <label for="author" class="in-border"><?php __('Author'); ?></label>
+      <input id="author" type="text" name="author" value="<?php echo $user->getAlias(); ?>" required>
       <input type="submit" class="primary" value="<?php __('Save'); ?>"><input type="submit"
       value="<?php __('Save & Edit'); ?>"><a class="btn" href="<?php echo $wiki->getWikiPath(); ?>"><?php __('Cancel'); ?></a>
     </form>
     <div class="col-12">
-        <p><strong><?php __('Quickhelp'); ?>:</strong>
-          <code>_<?php __('italic'); ?>_</code> |
-          <code>**<?php __('bold'); ?>**</code> |
-          <code>``<?php __('courier'); ?>``</code> |
-          <code>~~<?php __('strike through'); ?>~~</code> |
-          <code>[<?php __('link title'); ?>](<?php __('target'); ?>)</code> |
-          <code>#</code>/<code>##</code>/<code>###</code>&nbsp;<?php __('Headlines'); ?> |
-          <code>---</code>&nbsp;<?php __('Separator'); ?>
+      <hr>
+    </div>
+    <div class="col-12">
+      <p>
+        <strong><?php __('Quickhelp'); ?>:</strong>
+        <code>_<?php __('italic'); ?>_</code> |
+        <code>**<?php __('bold'); ?>**</code> |
+        <code>``<?php __('courier'); ?>``</code> |
+        <code>~~<?php __('strike through'); ?>~~</code> |
+        <code>[<?php __('link title'); ?>](<?php __('target'); ?>)</code> |
+        <code>#</code>/<code>##</code>/<code>###</code>&nbsp;<?php __('Headlines'); ?> |
+        <code>---</code>&nbsp;<?php __('Separator'); ?>
+      </p>
     </div>
   </div>
 </section>

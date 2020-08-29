@@ -8,6 +8,7 @@ However, if you want more control over the page layout and would like to write y
 setup.php
 403.php
 404.php
+admin_folder.php
 delete.php
 edit.php
 error.php
@@ -41,5 +42,7 @@ Each of the `*.php` files mentioned below has to output a complete HTML page, st
 * `403.php`, `404.php` and `error.php` contain error messages for the user. The numeric files corresponding to their HTTP status codes. `error.php` is a generic fallback page that is shown when wiki.md does not know how to handle an error.
 
 * `login.php` is used when the user needs to login to continue. This can happen at any page if the requested action is protected by a password. The login page should POST the field `password` back to the URL it was rendered by including the `?action=xyz` of the caller, adding a `auth=login` field.
+
+* `admin_folder.php` is used when the admin wants to change folder/user settings. This page contains two independent forms, one to update permissions and one to add/update users.
 
 There is no logout page. Logout can happen at any page by adding `?auth=logout` to the URL. This transparently logs-out the user and redirects back to the non-authorized version of that page - which then might be again a login screen.

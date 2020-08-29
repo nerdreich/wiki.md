@@ -155,6 +155,37 @@ switch ($_GET['auth']) {
 // now check for regular wiki operations
 
 // actions that work on existing & non-existing pages
+switch ($_GET['admin']) {
+    case 'folder': // folder administration
+        if ($user->adminFolder($contentPath) != null) {
+            renderThemeFile('admin_folder.php');
+        }
+        break;
+    case 'delete':
+        if ($user->deleteUser($_GET['user'])) {
+            redirect($wiki->getLocation() . '?admin=folder');
+        }
+        break;
+    case 'permissions':
+        if (
+            $user->setPermissions(
+                $contentPath,
+                preg_split('/,/', preg_replace('/\s+/', '', $_POST['userCreate'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
+                preg_split('/,/', preg_replace('/\s+/', '', $_POST['userRead'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
+                preg_split('/,/', preg_replace('/\s+/', '', $_POST['userUpdate'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
+                preg_split('/,/', preg_replace('/\s+/', '', $_POST['userDelete'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
+                preg_split('/,/', preg_replace('/\s+/', '', $_POST['userAdmin'] ?? ''), -1, PREG_SPLIT_NO_EMPTY)
+            )
+        ) {
+            redirect($wiki->getLocation() . '?admin=folder');
+        }
+        break;
+    case 'secret':
+        if ($user->addSecret($_POST['username'], $_POST['secret'])) {
+            redirect($wiki->getLocation() . '?admin=folder');
+        }
+        break;
+}
 switch ($_GET['action']) {
     case 'save': // saving new pages
         $user->setAlias(trim($_POST['author']));

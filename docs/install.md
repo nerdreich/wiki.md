@@ -35,6 +35,8 @@ To do so, replace the `admin`'s password in `.htpasswd` with a new one. You can 
 $ htpasswd -B /path/to/wiki/data/.htpasswd admin
 ```
 
+Once you have manually set an admin-password, you can login to wiki.md and use the [Permission Editor](permissions.md) from now on.
+
 ### Delete documentation
 
 wiki.md adds its documentation as /docs to your installation. You can safely delete this folder if you don't need it.
@@ -57,7 +59,7 @@ wiki.md comes with a single basic theme. See [Themes](themes.md) page how to ins
 
 ### Language
 
-To set the menu language, edit `data/config.ini` and set the `language =` and `datetime =` lines. The default theme support:
+To set the menu language, edit `data/config.ini` and set the `language =` and `datetime =` lines. The default theme supports:
 
 |Language|code|datetime   |
 |--------|----|-----------|

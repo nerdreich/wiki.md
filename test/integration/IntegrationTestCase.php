@@ -172,7 +172,7 @@ class IntegrationTestCase extends \PHPUnit\Framework\TestCase
         $this->assertStringNotContainsString('Stack trace', $this->payload);
         $this->assertMatchesRegularExpression('/^\s*$/', $this->payload);
         $this->assertMatchesRegularExpression(
-            '/^location: ' . str_replace('/', '\/', $path) . '\s+$/m',
+            '/^location: ' . str_replace('?', '\?', str_replace('/', '\/', $path)) . '\s+$/m',
             $this->headers
         );
     }
@@ -249,10 +249,16 @@ class IntegrationTestCase extends \PHPUnit\Framework\TestCase
     /**
      * Assert that our internal HTTP session does contain the PHP session cookie
      * (and only that cookie).
+     *
+     * @return string The current session token.
      */
-    public function assertSessionCookie(): void
+    public function assertSessionCookie(?string $token = null): string
     {
         $this->assertCount(1, $this->cookies);
         $this->assertNotEmpty($this->cookies['PHPSESSID']);
+        if ($token !== null) {
+            $this->assertEquals($this->cookies['PHPSESSID'], $token);
+        }
+        return $this->cookies['PHPSESSID'];
     }
 }

@@ -21,15 +21,20 @@
 
 $input-padding: $spacing / 2;
 
+form {
+  margin-top: 0;
+}
+
 input[type='text'],
 input[type='password'],
 textarea {
   @include typography-font($typography-font-list-courier, 400, px(18), 1.4em);
 
   background-color: $color-bg;
-  border: 2px solid $color-hr;
+  border: 2px solid $color-line;
   border-radius: $var-border-radius;
   color: $color-text;
+  outline: 0;
   padding: $input-padding;
   width: 100%;
 
@@ -39,10 +44,38 @@ textarea {
     opacity: 1;
   }
 
-  &:invalid {
+  &:focus {
+    border-color: $color-line-strong;
+    box-shadow: none;
+    outline: 0;
+  }
+
+  &:invalid,
+  &:out-of-range {
     border-color: $color-negative;
+    box-shadow: none;
+    outline: 0;
   }
 }
+
+label.in-border {
+  @include typography-font($typography-font-list-courier, 400, px(10), 1em);
+
+  background-color: $color-bg;
+  color: $color-gray-50;
+  display: block;
+  letter-spacing: .05em;
+  margin-left: 1rem;
+  margin-top: .5rem;
+  padding: .25rem;
+  position: absolute;
+  text-transform: uppercase;
+
+  &:first-child {
+    margin-top: .5rem; // enforce margin in containers
+  }
+}
+
 
 textarea {
   min-height: 20 * 1.5em + 1em; // 20x line height plus a bit padding
