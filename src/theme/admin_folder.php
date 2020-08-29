@@ -26,7 +26,7 @@ $infos = $user->adminFolder($wiki->getWikiPath());
 $userPattern = '(' . implode(',|', $infos['users']) . ',)*(' . implode('|', $infos['users']) . ')?|\*';
 
 ?>
-<section class="section-has-bg banner">
+<section class="banner">
   <nav class="container">
     <div class="row">
       <div class="col-12">
@@ -47,7 +47,7 @@ $userPattern = '(' . implode(',|', $infos['users']) . ',)*(' . implode('|', $inf
       <input type="text" name="userRead" value="<?php echo $infos['permissions']['userRead']; ?>"
         placeholder="<?php __('like parent'); ?>" pattern="<?php echo $userPattern; ?>">
       <label class="in-border"><?php __('Update'); ?></label>
-      <input type="text" name="userUpdate" value="<?php echo $infos['permissions']['userUpdate']; ?>" 
+      <input type="text" name="userUpdate" value="<?php echo $infos['permissions']['userUpdate']; ?>"
         placeholder="<?php __('like parent'); ?>" pattern="<?php echo $userPattern; ?>">
       <label class="in-border"><?php __('Delete'); ?></label>
       <input type="text" name="userDelete" value="<?php echo $infos['permissions']['userDelete']; ?>"
@@ -68,9 +68,9 @@ $userPattern = '(' . implode(',|', $infos['users']) . ',)*(' . implode('|', $inf
       <ul>
           <?php
             foreach ($infos['users'] as $entry) {
-                echo '<li><strong>' . $entry . '</strong>';
+                echo '<li>' . $entry;
                 if ($entry !== $user->getSuperuser()) {
-                    echo '- <a href="?admin=delete&amp;user=' . $entry . '">' . ___('Delete') . '</a>';
+                    echo ' - <a href="?admin=delete&amp;user=' . $entry . '">' . ___('Delete') . '</a>';
                 }
                 echo '</li>';
             } ?>
