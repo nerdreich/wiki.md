@@ -126,7 +126,7 @@ final class WikiTest extends \PHPUnit\Framework\TestCase
         $wiki->init('/animal/lion');
         $method = $this->getAsPublicMethod('canonicalWikiPath');
 
-        // absolute
+        // absolute pages
         $this->assertEquals('/animal/lion', $method->invokeArgs($wiki, ['/animal/lion']));
         $this->assertEquals('/animal/ape', $method->invokeArgs($wiki, ['/animal/ape']));
         $this->assertEquals('/plant/rose', $method->invokeArgs($wiki, ['/plant/rose']));
@@ -134,7 +134,7 @@ final class WikiTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals('/plant', $method->invokeArgs($wiki, ['/plant']));
         $this->assertEquals('/', $method->invokeArgs($wiki, ['/']));
 
-        // relat]ive
+        // relative pages
         $this->assertEquals('/animal/ape', $method->invokeArgs($wiki, ['ape']));
         $this->assertEquals('/animal/lion', $method->invokeArgs($wiki, ['lion']));
         $this->assertEquals('/animal/lion/claws', $method->invokeArgs($wiki, ['lion/claws']));
@@ -145,7 +145,10 @@ final class WikiTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals('/animal', $method->invokeArgs($wiki, ['ape/ape/../../ape/..']));
         $this->assertEquals('/plant', $method->invokeArgs($wiki, ['../animal/ape/../../plant']));
         $this->assertEquals('/plant/', $method->invokeArgs($wiki, ['../animal/ape/../../plant/']));
-        $this->assertEquals('/', $method->invokeArgs($wiki, ['../../../../../../../../etc/passwd']));
+        $this->assertEquals(null, $method->invokeArgs($wiki, ['../../../../../../../../etc/passwd']));
+
+        // folders
+        $this->assertEquals('/animal/', $method->invokeArgs($wiki, ['/animal/']));
     }
 
     public function testSplitMacro(): void
@@ -251,6 +254,8 @@ final class WikiTest extends \PHPUnit\Framework\TestCase
         $wiki = $this->getNewWiki();
         $method = $this->getAsPublicMethod('resolveMacros');
 
+        $contentDirFS = $wiki->getWikiDirFS() . '/data/content';
+
         // no macro
         $this->assertEquals('body', $method->invokeArgs($wiki, ['body', '/path']));
 
@@ -260,93 +265,109 @@ final class WikiTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals('include README', $method->invokeArgs($wiki, ['include README', '/path']));
 
         // missing filename
-        $this->assertEquals('{{error include-not-found}}', $method->invokeArgs($wiki, ['{{include}}', '/']));
-        $this->assertEquals('{{error include-not-found}}', $method->invokeArgs($wiki, ['{{ include }}', '/']));
+        $this->assertEquals('{{error include-invalid}}', $method->invokeArgs($wiki, ['{{include}}', $contentDirFS . '/']));
+        $this->assertEquals('{{error include-invalid}}', $method->invokeArgs($wiki, ['{{ include }}', $contentDirFS . '/']));
 
         // include same-level
         $this->assertMatchesRegularExpression(
             '/This is the homepage/',
-            $method->invokeArgs($wiki, ['{{include README}}', '/'])
+            $method->invokeArgs($wiki, ['{{include README}}', $contentDirFS . '/README.md'])
         );
         $this->assertMatchesRegularExpression(
             '/This is the homepage/',
-            $method->invokeArgs($wiki, ['{{include /README}}', '/'])
+            $method->invokeArgs($wiki, ['{{include /README}}', $contentDirFS . '/README.md'])
         );
         $this->assertMatchesRegularExpression(
             '/{{error include-not-found}}/',
-            $method->invokeArgs($wiki, ['{{include meow}}', '/'])
+            $method->invokeArgs($wiki, ['{{include meow}}', $contentDirFS . '/README.md'])
         );
         $this->assertMatchesRegularExpression(
             '/{{error include-not-found}}/',
-            $method->invokeArgs($wiki, ['{{include /meow}}', '/'])
+            $method->invokeArgs($wiki, ['{{include /meow}}', $contentDirFS . '/README.md'])
+        );
+        $this->assertMatchesRegularExpression(
+            '/A wiki.md primer/',
+            $method->invokeArgs($wiki, ['{{include primer}}', $contentDirFS . '/docs/README.md'])
+        );
+        $this->assertMatchesRegularExpression(// /docs/macros/install -> /docs/macros/install
+            '/A wiki.md primer/',
+            $method->invokeArgs($wiki, ['{{include primer}}', $contentDirFS . '/docs/macros'])
+        );
+        $this->assertMatchesRegularExpression(
+            '/A wiki.md primer/',
+            $method->invokeArgs($wiki, ['{{include primer}}', $contentDirFS . '/docs/README.md'])
+        );
+        $this->assertMatchesRegularExpression(
+            '/A wiki.md primer/',
+            $method->invokeArgs($wiki, ['{{include primer}}', $contentDirFS . '/docs/README.md'])
         );
 
         // include higher-level
         $this->assertMatchesRegularExpression(
             '/This is the homepage/',
-            $method->invokeArgs($wiki, ['{{include ../README}}', '/docs/'])
+            $method->invokeArgs($wiki, ['{{include ../README}}', $contentDirFS . '/docs/README.md'])
         );
         $this->assertMatchesRegularExpression(
             '/This is the homepage/',
-            $method->invokeArgs($wiki, ['{{include /README}}', '/docs/'])
+            $method->invokeArgs($wiki, ['{{include /README}}', $contentDirFS . '/docs/README.md'])
         );
         $this->assertMatchesRegularExpression(
             '/{{error include-not-found}}/',
-            $method->invokeArgs($wiki, ['{{include ../meow}}', '/docs/'])
+            $method->invokeArgs($wiki, ['{{include ../moo}}', $contentDirFS . '/docs/README.md'])
         );
         $this->assertMatchesRegularExpression(
             '/{{error include-not-found}}/',
-            $method->invokeArgs($wiki, ['{{include /meow}}', '/docs/'])
+            $method->invokeArgs($wiki, ['{{include /moo}}', $contentDirFS . '/docs/README.md'])
         );
         $this->assertMatchesRegularExpression(
-            '/{{error include-not-found}}/',
-            $method->invokeArgs($wiki, ['{{include ../../README}}', '/docs/'])
+            '/{{error include-permission-denied}}/',
+            $method->invokeArgs($wiki, ['{{include ../../README}}', $contentDirFS . '/docs/README.md'])
         );
 
         // include deeper-level
         $this->assertMatchesRegularExpression(
             '/wiki.md Documentation/',
-            $method->invokeArgs($wiki, ['{{include docs/README}}', '/'])
+            $method->invokeArgs($wiki, ['{{include docs/README}}', $contentDirFS . '/README.md'])
         );
         $this->assertMatchesRegularExpression(
             '/wiki.md Documentation/',
-            $method->invokeArgs($wiki, ['{{include /docs/README}}', '/'])
+            $method->invokeArgs($wiki, ['{{include /docs/README}}', $contentDirFS . '/README.md'])
         );
         $this->assertMatchesRegularExpression(
             '/{{error include-not-found}}/',
-            $method->invokeArgs($wiki, ['{{include docs/meow}}', '/'])
+            $method->invokeArgs($wiki, ['{{include docs/moo}}', $contentDirFS . '/README.md'])
         );
         $this->assertMatchesRegularExpression(
             '/{{error include-not-found}}/',
-            $method->invokeArgs($wiki, ['{{include /docs/meow}}', '/'])
+            $method->invokeArgs($wiki, ['{{include /docs/moo}}', $contentDirFS . '/README.md'])
         );
 
         // include protected file
         $this->assertMatchesRegularExpression(
             '/{{error include-permission-denied}}/',
-            $method->invokeArgs($wiki, ['{{include docs/protected/README}}', '/'])
+            $method->invokeArgs($wiki, ['{{include docs/protected/README}}', $contentDirFS . '/README.md'])
         );
         $this->assertMatchesRegularExpression(
             '/{{error include-permission-denied}}/',
-            $method->invokeArgs($wiki, ['{{include /docs/protected/README}}', '/'])
+            $method->invokeArgs($wiki, ['{{include /docs/protected/README}}', $contentDirFS . '/README.md'])
         );
         $this->assertMatchesRegularExpression(
             '/{{error include-permission-denied}}/',
-            $method->invokeArgs($wiki, ['{{include protected/README}}', '/docs/'])
+            $method->invokeArgs($wiki, ['{{include protected/README}}', $contentDirFS . '/docs/README.md'])
         );
         $this->assertMatchesRegularExpression(
             '/{{error include-permission-denied}}/',
-            $method->invokeArgs($wiki, ['{{include README}}', '/docs/protected/'])
+            $method->invokeArgs($wiki, ['{{include README}}', $contentDirFS . '/docs/protected/README.md'])
         );
         $this->assertMatchesRegularExpression(
             '/{{error include-permission-denied}}/',
-            $method->invokeArgs($wiki, ['{{include ../README}}', '/docs/protected/too/'])
+            $method->invokeArgs($wiki, ['{{include ../README}}', $contentDirFS . '/docs/protected/too/README.md'])
         );
 
         // ignore secondary params
         $this->assertMatchesRegularExpression(
             '/This is the homepage/',
-            $method->invokeArgs($wiki, ['{{include README | a=b | c=d }}', '/'])
+            $method->invokeArgs($wiki, ['{{include README | a=b | c=d }}', $contentDirFS . '/README.md'])
         );
     }
 }

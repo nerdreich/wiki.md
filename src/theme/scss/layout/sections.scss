@@ -23,7 +23,9 @@
 // sections based on their content/usage (mostly depending on if they do have
 // background images/colors).
 
-$section-spacing: $spacing * 2; // visual gap between sections
+// visual gap between sections - half of which is applied to the section and
+// half to cels - no spacing is applied to rows
+$section-spacing: $spacing * 2;
 
 section,
 footer {
@@ -44,10 +46,14 @@ footer {
 .col-1 {
   padding-bottom: $section-spacing / 2;
   padding-top: $section-spacing / 2;
-}
 
-section:not(.section-has-bg) + section:not(.section-has-bg) {
-  padding-top: 0;
+  *:first-child {
+    margin-top: 0;    // do not apply top spacing to first element in a cel
+  }
+
+  *:last-child {
+    margin-bottom: 0; // do not apply bottom spacing to last element in a cel
+  }
 }
 
 .section-main {

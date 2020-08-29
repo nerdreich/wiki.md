@@ -1,3 +1,10 @@
+# v1.0.0
+
+* added folder permission screen
+* improved dirty/hash warnings in editor
+* added history entries for non-wiki.md saves of pages
+* fixed include macro not finding the files
+
 # v0.5.0
 
 * added default value for empty history

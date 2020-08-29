@@ -27,11 +27,11 @@ outputBanner($wiki);
   <div class="row">
     <div class="col-12">
       <h2><?php __('Password required'); ?></h2>
-      <p><?php __('Please enter your password to continue.'); ?></p>
       <form action="?<?php
         echo array_key_exists('action', $_GET) ? 'action=' . urlencode($_GET['action']) . '&' : '';
         ?>auth=login" method="post">
-        <input type="password" name="password" placeholder='********' required autofocus>
+        <label for="password" class="in-border"><?php __('Password'); ?></label>
+        <input id="password" type="password" name="password" required autofocus>
         <input type="submit" class="primary" value="<?php __('Login'); ?>">
       </form>
     </div>

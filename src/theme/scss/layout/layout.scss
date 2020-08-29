@@ -26,10 +26,6 @@
 @mixin layout-top-margin ($top-margin) {
   margin-bottom: 0;
   margin-top: $top-margin;
-
-  &:first-child {
-    margin-top: 0; // do not apply top spacing to first element in a container
-  }
 }
 
 h1,

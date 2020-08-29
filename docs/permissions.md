@@ -6,37 +6,35 @@ wiki.md can restrict access to page actions (create, view, edit, delete) for cer
 * `userRead` - view/read pages
 * `userUpdate` - edit/update pages
 * `userDelete` - delete pages
+* `userAdmin` - administrate folders (passwords)
 
-**Note:** It is currently not possible to edit permissions via the Wiki. You'll have to manually edit files in the filesystem.
+## Folder Editor
 
-## Permissions
+To define permissions for a folder, navigate to any page and choose **Permissions** from the menu.
 
-To define permissions for a folder, create a file called `_.yaml` in it. The restrictions you define in it will be valid for that folder, as well as all its sub-folders. For example, take a look into the `data/content/_.yaml` file that wiki.md installs per default:
+<img src="permissions.png" alt="[Folder Editor]" width="512"/>
 
-```
----
-userCreate: admin
-userRead: *
-userUpdate: admin
-userDelete: admin
-```
+The restrictions you define for a folder will be valid for that folder, as well as all its sub-folders.
 
-This defines that, starting at the root, everyone (`*`) can read pages, but only an admin (`admin`) might create (`userCreate`), update (`userUpdate`) or delete (`userDelete`) pages. Since this definition is done at root-level, it applies to all the folder of your site.
+Just enter the usernames, separated by comma if necessary, in each field. Leave a field empty to inherit the permissions from the parent folder, or enter a single `*` to allow all users. For a list of users in the system, refer to the section at the bottom half of the screen. The form won't let you enter users that don't exist.
 
-Now look into `data/content/docs/_.yaml`:
+Using the UI shown above, you can add users and/or give them new passwords. Just enter a username and a password it will update the user file. You can also delete users via a link below, but once you click they are gone!
+
+## Manually changing permissions
+
+The UI will create a file called `_.yaml` in a folder you define permission for. You can also edit that file manually:
 
 ```
 ---
 userCreate: docs
+userRead: *
 userUpdate: docs
 userDelete: docs
 ```
 
-This defines, that in this folder - and all its sub-folders - the `docs` user might also create, edit and delete pages, in addition to the `admin` user defined at root level. Since there is no mention of `userRead` in this file, it derives that information from the root folder, resulting in everyone (`*`) still being able to view the pages.
+This defines that, everyone (`*`) can read pages, but only `docs` might create (`userCreate`), update (`userUpdate`) or delete (`userDelete`) pages. As there is no reference to `userAdmin`, the admin roles are inherited from the parent folder.
 
-If no `_.yaml` file exists in a directory, it derives all the permissions from the parent folder.
-
-## Passwords
+If no `_.yaml` file exists in a directory, it inherits all permissions from the parent folder.
 
 Passwords for users mentioned in the `_.yaml` files can be found in `data/.htpasswd`. They are stored in bcrypt format. To add a user/password, just add a new line. To change a password, enter the corresponding bcrypt hash in its line. You can use the `htpassd` provided by Apache's httpd package for that:
 

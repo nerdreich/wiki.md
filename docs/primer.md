@@ -47,9 +47,9 @@ wiki.md will record all changes to each page. You can view a page's history by c
 
 <img src="primer_history.png" alt="[Page history]" width="256"/>
 
-The page history will display the author and time of each change. Between two entries it will display the changes that were applied.
+The page history will display the author, time of each change and what changed.
 
-To revert to a previous version, click on the corresponding *Restore V?* button. This will not change the page yet, but open the editor showing the restored version. If you save that version, it will become the current one again.
+To revert to a previous version, click on the corresponding *restore* link. This will not change the page yet, but open the editor showing the restored version. If you save that version, it will become the current one again.
 
 ## Logout
 
