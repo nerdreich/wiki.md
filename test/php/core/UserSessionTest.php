@@ -27,6 +27,43 @@ require_once('dist/wiki.md/core/UserSession.php');
 
 final class UserSessionTest extends \PHPUnit\Framework\TestCase
 {
+    private static $htpasswd = '';
+
+    // --- helpers -------------------------------------------------------------
+
+    public function getPrivateProperty(string $propertyName): \ReflectionProperty
+    {
+        $reflector = new \ReflectionClass('\at\nerdreich\UserSession');
+        $property = $reflector->getProperty($propertyName);
+        $property->setAccessible(true);
+        return $property;
+    }
+
+    private function getAsPublicMethod(string $methodName): \ReflectionMethod
+    {
+        // make private method public for testing
+        $reflector = new \ReflectionClass('\at\nerdreich\UserSession');
+        $method = $reflector->getMethod($methodName);
+        $method->setAccessible(true);
+        return $method;
+    }
+
+    // --- tests ---------------------------------------------------------------
+
+    public static function setUpBeforeClass(): void
+    {
+        parent::setUpBeforeClass();
+
+        self::$htpasswd = dirname(__FILE__) . '/../../../dist/wiki.md/data/.htpasswd';
+
+        // set logindata to known passwords (adm, doc)
+        file_put_contents(
+            self::$htpasswd,
+            'admin:$2y$05$mcqOIM9K4lZfujCONaP7yu32/L5Ptzndf2xRN1/3EMO/UM7qicl8i' . PHP_EOL .
+            'docs:$2y$05$KiA/6HVXZ6sQsY9c8.0j/.g6HjBHwrV8lmLvlvxo76EdeIbOzgyBq' . PHP_EOL
+        );
+    }
+
     public function testAnonymoususer(): void
     {
         // anonymous users should only be able to read stuff
@@ -125,5 +162,138 @@ final class UserSessionTest extends \PHPUnit\Framework\TestCase
         $this->assertFalse($user->hasExplicitPermission('docs', 'userDelete', '/somefolder/'));
         $this->assertFalse($user->hasExplicitPermission('docs', 'userDelete', '/somefolder/somepage'));
         $this->assertFalse($user->hasExplicitPermission('docs', 'userDelete', '/somefolder/somefolder/somepage'));
+    }
+
+    public function testUserAdmin(): void
+    {
+        $config = parse_ini_file('dist/wiki.md/data/config.ini');
+        $user = new UserSession($config);
+
+        $hash = hash('sha1', file_get_contents(self::$htpasswd));
+        $this->getPrivateProperty('username')->setValue($user, '*');
+        $methodLogin = $this->getAsPublicMethod('getUserForPassword');
+
+        // no permissions -> no data
+        $data = $user->adminFolder('/');
+        $this->assertEquals(null, $data);
+        $this->assertFalse($user->addSecret('docs', '*****'));
+        $this->assertFalse($user->deleteUser('docs'));
+
+        // user docs can't read/update it
+        $this->getPrivateProperty('username')->setValue($user, 'docs');
+        $data = $user->adminFolder('/');
+        $this->assertEquals(null, $data);
+        $this->assertFalse($user->addSecret('docs', '*****'));
+        $this->assertFalse($user->deleteUser('docs'));
+
+        // user admin can read it
+        $this->getPrivateProperty('username')->setValue($user, 'admin');
+        $data = $user->adminFolder('/');
+        $this->assertCount(2, $data['users']);
+        $this->assertContains('admin', $data['users']);
+        $this->assertContains('docs', $data['users']);
+        $this->assertNotNull($methodLogin->invokeArgs($user, ['adm']));
+        $this->assertNotNull($methodLogin->invokeArgs($user, ['doc']));
+
+        // admin can add
+        $this->assertTrue($user->addSecret('woof', '12345678'));
+        $data = $user->adminFolder('/');
+        $this->assertCount(3, $data['users']);
+        $this->assertContains('admin', $data['users']);
+        $this->assertContains('docs', $data['users']);
+        $this->assertContains('woof', $data['users']);
+        $this->assertNotEquals($hash, hash('sha1', file_get_contents(self::$htpasswd))); // was written to db
+        $this->assertNotNull($methodLogin->invokeArgs($user, ['adm']));
+        $this->assertNotNull($methodLogin->invokeArgs($user, ['doc']));
+        $this->assertNotNull($methodLogin->invokeArgs($user, ['12345678']));
+
+        // admin can delete
+        $this->assertTrue($user->deleteUser('woof'));
+        $data = $user->adminFolder('/');
+        $this->assertCount(2, $data['users']);
+        $this->assertContains('admin', $data['users']);
+        $this->assertContains('docs', $data['users']);
+        $this->assertNotNull($methodLogin->invokeArgs($user, ['adm']));
+        $this->assertNotNull($methodLogin->invokeArgs($user, ['doc']));
+        $this->assertNull($methodLogin->invokeArgs($user, ['12345678']));
+
+        // can't delete superuser
+        $this->assertFalse($user->deleteUser($user->getSuperuser()));
+
+        // remaining password file should be back to the beginning
+        $this->assertEquals($hash, hash('sha1', file_get_contents(self::$htpasswd)));
+
+        // admin can change existing
+        $this->assertTrue($user->addSecret('docs', '12345678'));
+        $data = $user->adminFolder('/');
+        $this->assertCount(2, $data['users']);
+        $this->assertContains('admin', $data['users']);
+        $this->assertContains('docs', $data['users']);
+        $this->assertNotEquals($hash, hash('sha1', file_get_contents(self::$htpasswd)));
+        $this->assertNull($methodLogin->invokeArgs($user, ['doc']));
+        $this->assertNotNull($methodLogin->invokeArgs($user, ['12345678']));
+        $this->assertNotNull($methodLogin->invokeArgs($user, ['adm']));
+
+        // assert user validity
+        $this->assertTrue($user->addSecret('Docs', '123456'));  // ok
+        $this->assertFalse($user->addSecret('1', '123456')); // user too short
+        $this->assertFalse($user->addSecret('123456789012345678901234567890123', '123456')); // user too long
+        $this->assertFalse($user->addSecret('Do cs', '123456')); // user has whitespace
+        $this->assertFalse($user->addSecret(' Docs', '123456')); // user has whitespace
+        $this->assertFalse($user->addSecret('Docs ', '123456')); // user has whitespace
+        $this->assertFalse($user->addSecret('Docs ', '123456')); // user has whitespace
+        $this->assertFalse($user->addSecret('D0cs', '123456'));  // user has non-letter
+        $this->assertFalse($user->addSecret('Döcs', '123456'));  // user has non-letter
+
+        // assert pwd validity
+        $this->assertFalse($user->addSecret('Docs', '12345'));   // pwd too short
+        $this->assertFalse($user->addSecret('Docs', '12345678901234567890123456789012345678901234567890' .
+            '1234567890123456789012345678901234567890123456789012345678901234567890123456789'));   // pwd too long
+        $this->assertFalse($user->addSecret('Docs', '123 456')); // pwd has whitespace
+        $this->assertFalse($user->addSecret('Docs', '123456 ')); // pwd has whitespace
+        $this->assertFalse($user->addSecret('Docs', ' 123456')); // pwd has whitespace
+    }
+
+    public function testPermissionAdmin(): void
+    {
+        $config = parse_ini_file('dist/wiki.md/data/config.ini');
+        $user = new UserSession($config);
+        $this->getPrivateProperty('username')->setValue($user, '*');
+
+        // anonymous can't set permissions
+        $this->assertFalse(
+            $user->setPermissions('/some/test/folder/', ['admin'], ['admin'], ['admin'], ['admin'], ['admin'])
+        );
+
+        // non-admin user can't set permissions
+        $this->getPrivateProperty('username')->setValue($user, 'docs');
+        $this->assertFalse(
+            $user->setPermissions('/some/test/folder/', ['admin'], ['admin'], ['admin'], ['admin'], ['admin'])
+        );
+
+        // admin can set permissions
+        $this->getPrivateProperty('username')->setValue($user, 'admin');
+        $this->assertTrue(
+            $user->setPermissions('/some/test/folder/', ['admin'], ['admin'], ['admin'], ['admin'], ['admin'])
+        );
+        $this->assertFalse(
+            $user->setPermissions('/some/test/folder', ['admin'], ['admin'], ['admin'], ['admin'], ['admin'])
+        ); // even admin can't set permissions on a file
+
+        // check for auto-correction of various element combinations
+        $user->setPermissions(
+            '/some/test/folder/',
+            ['admin', 'docs'],
+            ['*'],
+            ['admin', '*', 'docs'],
+            ['docs', 'someone', 'admin', 'unknown'],
+            ['admin', 'admin']
+        );
+        $permissions = $this->getAsPublicMethod('loadPermissionFile')->invokeArgs($user, ['/some/test/folder/']);
+        $this->assertEquals('admin,docs', $permissions['userCreate']);
+        $this->assertEquals('*', $permissions['userRead']);
+        $this->assertEquals('*', $permissions['userUpdate']);
+        $this->assertEquals('admin,docs', $permissions['userDelete']);
+        $this->assertEquals('admin', $permissions['userAdmin']);
     }
 }

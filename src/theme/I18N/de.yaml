@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
 
+Admin: Administrieren
 Author: Autor
 bold: fett
 by %s at %s: von %s am %s
@@ -27,10 +28,13 @@ current: aktuell
 Date: Datum
 Delete page: Seite löschen
 Delete: Löschen
+like parent: vererbt
 Difference vs.: Unterschied zu
 Do you really want to delete this page?: Möchtest du diese Seite wirklich löschen?
 Edit: Bearbeiten
 Error: Fehler
+Folder editor: Ordner Editor
+Folder permissions: Ordnerrechte
 Forbidden: Unzulässig
 Headlines: Überschriften
 History: Protokoll
@@ -47,14 +51,17 @@ Page %d of %d: Seite %d von %d
 Page %d: Seite %d
 Page %s does not exist.: Seite %s existiert nicht.
 Password required: Passwort benötigt
-Please enter your password to continue.: Bitte gib dein Passwort ein, um fortzufahren.
+Permissions: Berechtigungen
 Privacy: Datenschutz
 Quickhelp: Kleine Hilfe
+Password: Passwort
+Read: Lesen
 restore %s: %s wiederherstellen
 restore: wiederherstellen
 Save & Edit: Speichern & Editieren
 Save: Speichern
 Separator: Trennlinie
+Set password: Passwort setzen
 Someone started editing this file %s minutes ago.: Jemand editiert diese Seite seit %s Minuten.
 Sorry, an error occured.: Es ist leider ein Fehler aufgetreten.
 strike through: durchgestrichen
@@ -62,7 +69,11 @@ target: Ziel
 The checksum of this page is invalid. Save the page in wiki.md again to correct this.: Die Prüfsumme dieser Seite ist nicht korrekt. Speichere die Seite in wiki.md erneut ab, um sie zu korrigieren.
 This page has not been saved by wiki.md.: Diese Seite wurde nicht durch wiki.md gespeichert.
 Title - may remain empty: Titel – darf auch leer bleiben
+Update: Ändern
+Username: Benutzer
+Users (global): Benutzer (global)
 unknown: unbekannt
+valid for %s and below: gültig für %s und tiefer
 Version: Version
 Warning: Warnung
 You do not have the necessary permissions to do this.: Du verfügst nicht über die nötigen Rechte, um diese Aktion auszuführen.

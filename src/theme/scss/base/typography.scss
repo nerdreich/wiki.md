@@ -164,7 +164,6 @@ h1,
   @include typography-font($typography-font-list-serif, 900, 2.5em, 1em, .025em);
   color: $color-headline;
   font-style: italic;
-  margin-bottom: $spacing * 2;
   margin-top: $spacing * 2.5;
 }
 
@@ -217,7 +216,8 @@ strong {
 }
 
 hr {
-  border-bottom: 2px sold $color-hr;
+  border: 0;
+  border-bottom: 2px solid $color-line;
   margin-bottom: 2rem;
   margin-top: 2rem;
 }

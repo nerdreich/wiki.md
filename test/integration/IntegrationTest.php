@@ -199,6 +199,28 @@ class IntegrationTest extends IntegrationTestCase
         $this->assertNoCookies();
     }
 
+    public function testLoginLogin(): void
+    {
+        // first login
+        $this->post('/?auth=login', ['password' => 'doc']);
+        $this->assertRedirect('/');
+        $token1 = $this->assertSessionCookie();
+
+        // login again - must be new session
+        $this->post('/?auth=login', ['password' => 'doc']);
+        $this->assertRedirect('/');
+        $token2 = $this->assertSessionCookie();
+        $this->assertNotEquals($token1, $token2);
+
+        // login as other user - must be new session
+        $this->post('/?auth=login', ['password' => 'adm']);
+        $this->assertRedirect('/');
+        $token3 = $this->assertSessionCookie();
+        $this->assertNotEquals($token1, $token2);
+        $this->assertNotEquals($token1, $token3);
+        $this->assertNotEquals($token2, $token3);
+    }
+
     public function testDocsCRUD(): void
     {
         $this->post('/?auth=login', ['password' => 'doc']);
@@ -213,7 +235,7 @@ class IntegrationTest extends IntegrationTestCase
         $this->get('/docs/crud?action=createPage');
         $this->assertPage();
         $this->assertSessionCookie();
-        $this->assertPayloadContainsPreg('/textarea name="content"/'); // editor
+        $this->assertPayloadContainsPreg('/textarea id="content"/'); // editor
 
         $this->post('/docs/crud?action=save', [
             'title' => 'first title',
@@ -460,8 +482,6 @@ class IntegrationTest extends IntegrationTestCase
         $this->assertPageError();
         $this->post('/docs/snippets?action=restore&version=1');
         $this->assertPageError();
-
-        // $this->post('/docs/snippets?action=deleteOK');
     }
 
     public function testEditor(): void
@@ -481,16 +501,12 @@ class IntegrationTest extends IntegrationTestCase
         $this->get('/docs/meow?action=edit');
         $this->assertPage();
         $this->assertPayloadContainsNotPreg('/Someone started editing/');
+        sleep(1);
 
-        // change different page to change alias to xyz
-        $this->post('/docs/woof?action=save', [
-            'title' => 'woof save',
-            'content' => 'woof',
-            'author' => 'dog'
-        ]);
-        $this->assertRedirect('/docs/woof');
-
-        sleep(2); // avoid this going so fast that the server won't recognize
+        // switch user
+        $this->post('/?auth=login', ['password' => 'adm']);
+        $this->assertRedirect('/');
+        $this->assertSessionCookie();
 
         // now we should get the warning
         $this->get('/docs/meow?action=edit');
@@ -516,5 +532,118 @@ class IntegrationTest extends IntegrationTestCase
         // cleaup
         $this->post('/docs/meow?action=deleteOK');
         $this->post('/docs/woof?action=deleteOK');
+    }
+
+    public function testPermissionEditor(): void
+    {
+        $this->post('/?auth=login', ['password' => 'adm']);
+        $this->assertRedirect('/');
+        $this->assertSessionCookie();
+
+        // docs default permissions
+        $this->get('/docs/?admin=folder');
+        $this->assertPage();
+        $this->assertPayloadContainsPreg('/name="userCreate" value="docs"/');
+        $this->assertPayloadContainsPreg('/name="userRead" value=""/');
+        $this->assertPayloadContainsPreg('/name="userUpdate" value="docs" /');
+        $this->assertPayloadContainsPreg('/name="userDelete" value="docs"/');
+        $this->assertPayloadContainsPreg('/name="userAdmin" value=""/');
+
+        // set permissions on a test folder
+        $this->post('/docs/perms/?admin=permissions', [
+            'userCreate' => 'admin',
+            'userRead' => 'docs,admin',
+            'userUpdate' => 'admin,docs',
+            'userDelete' => '',
+            'userAdmin' => '*'
+        ]);
+        $this->assertRedirect('/docs/perms/?admin=folder');
+
+        // check changes
+        $this->get('/docs/perms/?admin=folder');
+        $this->assertPage();
+        $this->assertPayloadContainsPreg('/name="userCreate" value="admin"/');
+        $this->assertPayloadContainsPreg('/name="userRead" value="admin,docs"/');
+        $this->assertPayloadContainsPreg('/name="userUpdate" value="admin,docs" /');
+        $this->assertPayloadContainsPreg('/name="userDelete" value=""/');
+        $this->assertPayloadContainsPreg('/name="userAdmin" value="\*"/');
+
+        // set edge cases
+        $this->post('/docs/perms/?admin=permissions', [
+            // no create - 'userCreate' => null,
+            'userRead' => ' docs',
+            'userUpdate' => null,
+            'userDelete' => 'docs,',
+            'userAdmin' => ',docs, docs'
+        ]);
+        $this->assertRedirect('/docs/perms/?admin=folder');
+
+        // check changes
+        $this->get('/docs/perms/?admin=folder');
+        $this->assertPage();
+        $this->assertPayloadContainsPreg('/name="userCreate" value=""/');
+        $this->assertPayloadContainsPreg('/name="userRead" value="docs"/');
+        $this->assertPayloadContainsPreg('/name="userUpdate" value="" /');
+        $this->assertPayloadContainsPreg('/name="userDelete" value="docs"/');
+        $this->assertPayloadContainsPreg('/name="userAdmin" value="docs"/');
+    }
+
+    public function testUserEditor(): void
+    {
+        $this->post('/?auth=login', ['password' => 'adm']);
+        $this->assertRedirect('/');
+        $this->assertSessionCookie();
+
+        // docs default users
+        $this->get('/docs/?admin=folder');
+        $this->assertPage();
+        $this->assertPayloadContainsPreg('/<li><strong>admin</');
+        $this->assertPayloadContainsPreg('/<li><strong>docs</');
+
+        // create a user
+        $this->post('/docs/?admin=secret', [
+            'username' => 'nr',
+            'secret' => 'supersecret',
+        ]);
+        $this->assertRedirect('/docs/?admin=folder');
+        $this->get('/docs/?admin=folder');
+        $this->assertPage();
+        $this->assertPayloadContainsPreg('/<li><strong>admin</');
+        $this->assertPayloadContainsPreg('/<li><strong>docs</');
+        $this->assertPayloadContainsPreg('/<li><strong>nr</');
+
+        // update a user
+        $this->post('/docs/?admin=secret', [
+            'username' => 'nr',
+            'secret' => 'supersecret2',
+        ]);
+        $this->assertRedirect('/docs/?admin=folder');
+        $this->get('/docs/?admin=folder');
+        $this->assertPage();
+        $this->assertPayloadContainsPreg('/<li><strong>admin</');
+        $this->assertPayloadContainsPreg('/<li><strong>docs</');
+        $this->assertPayloadContainsPreg('/<li><strong>nr</');
+
+        // delete a user
+        $this->get('/docs/?admin=delete&user=nr');
+        $this->assertRedirect('/docs/?admin=folder');
+        $this->get('/docs/?admin=folder');
+        $this->assertPage();
+        $this->assertPayloadContainsPreg('/<li><strong>admin</');
+        $this->assertPayloadContainsPreg('/<li><strong>docs</');
+        $this->assertPayloadContainsNotPreg('/<li><strong>nr</');
+
+        // delete again/invalid
+        $this->get('/docs/?admin=delete&user=nr');
+        $this->assertPage();
+        $this->get('/docs/?admin=delete&user=');
+        $this->assertPage();
+        $this->get('/docs/?admin=delete&user=*');
+        $this->assertPage();
+        $this->get('/docs/?admin=folder');
+        $this->assertPage();
+        $this->assertPayloadContainsPreg('/<li><strong>admin</');
+        $this->assertPayloadContainsPreg('/<li><strong>docs</');
+        $this->assertPayloadContainsNotPreg('/<li><strong>nr</');
     }
 }
