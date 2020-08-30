@@ -2,7 +2,7 @@
 
 ## Filesystem
 
-Every page in wiki.md is a Markdown file (`*.md`) in the content directory on the server. Every URL that does not end in a slash ('/') maps to a file of the same name:
+Every page in wiki.md is a Markdown file (`*.md`) in the content directory on the server. Every URL that does not end in a slash (`/`) maps to a file of the same name:
 
 ```
 https://wiki.example.org/about        # /about.md

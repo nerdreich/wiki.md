@@ -104,9 +104,8 @@ $typography-body-font-size: px(18);
   text-decoration: none;
 
   &:hover {
-    @include set-property-if-not(color, $color, $color-hover);
-
     background-image: $gradient-transparent, $gradient-transparent, linear-gradient(to right, $underline-color-hover, $underline-color-hover);
+    color: $color-hover;
     text-decoration: none;
   }
 }
@@ -127,7 +126,7 @@ body {
   color: $color-text;
 
   a {
-    @include typography-links($color-primary, $color-primary, 1px, transparent, $color-primary);
+    @include typography-links($color-primary, $color-text, 1px, transparent, $color-primary);
   }
 }
 

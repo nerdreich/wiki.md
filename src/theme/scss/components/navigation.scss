@@ -69,7 +69,7 @@ $navbar-text-color: $color-white-100;
       margin: 0;
 
       + div {
-        background-color: $color-bg;
+        background-color: $color-primary;
         border-radius: $var-border-radius;
         color: $color-text;
         display: none;
@@ -78,7 +78,8 @@ $navbar-text-color: $color-white-100;
         right: 15px; // bs padding
 
         a {
-          @include typography-links($color-text, $color-text, 1px, transparent, $color-text);
+          @include typography-links($navbar-text-color, $color-text, 0);
+          display: inline-block;
         }
       }
     }
