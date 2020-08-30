@@ -25,9 +25,6 @@ require_once('lib/spyc.php'); // yaml parser
 /**
  * UserSession - user-permission handling.
  *
- * Important: This is more of a "page password" implementation, not a real user
- * login implementation.
- *
  * This class can verify that a client is allowed to do certain things in a tree-
  * based content structure. Permissions are arbitrary strings stored in `_.yaml`
  * files in the tree. If the UserSession class has to verify that a user may do
@@ -40,8 +37,8 @@ require_once('lib/spyc.php'); // yaml parser
  *
  * - Users are authenticated via the .htpasswd file in the data/ folder next to
  *   this php file.
- * - Users are identified only via password, not usernames. Therefore no two
- *   users can have the same password.
+ * - If simple logins are enabled in the config file, users are identified only
+ *   via password, not usernames. No two users can have the same password then.
  * - Users have an alias they can set after login and even change while logged
  *   in. This is not the username.
  */
@@ -84,16 +81,23 @@ class UserSession
     /**
      * Try to authenticate and log-in a user.
      *
-     * This is only done via the password. No two users can have the same
-     * password. Consider them 'page passwords' if it helps ;)
+     * There are two login modes: regular (default) and simple. In simple mode
+     * only the password is used and the first user with that password in the DB
+     * is logged in. Consider this "page passwords" instead of "user passwords".
      *
+     * @param string $username The name to check for.
      * @param string $secret The secret/password to check.
      * @return bool True if user has been logged in and a new session started.
      */
     public function login(
+        string $username,
         string $secret
     ): bool {
-        $user = $this->getUserForPassword($secret);
+        if ($this->config['login_simple']) { // password-only logins
+            $user = $this->getUserForPassword($secret);
+        } else {
+            $user = $this->verifyLogin($username, $secret);
+        }
         if ($user) {
             // session_start();
             session_start();
@@ -192,7 +196,9 @@ class UserSession
     }
 
     /**
-     * Lookup a user in our .htpasswd file via a password.
+     * Reverse-Lookup a user in our .htpasswd file via a password.
+     *
+     * Only used in simple login mode.
      *
      * @param string $password Cleartext password to look up.
      * @return string Username if found, or null if no machting user exists.
@@ -203,6 +209,29 @@ class UserSession
         foreach ($this->loadAllUsers() as $username => $hash) {
             if (password_verify($password, trim($hash))) {
                 return trim($username);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Lookup a user/password pair in our .htpasswd.
+     *
+     * @param string $name User to look up.
+     * @param string $password Cleartext password to verify.
+     * @return string Username if found, or null if no machting user exists.
+     */
+    private function verifyLogin(
+        string $name,
+        string $password
+    ): ?string {
+        foreach ($this->loadAllUsers() as $username => $hash) {
+            if ($username === $name) {
+                if (password_verify($password, trim($hash))) {
+                    return trim($username);
+                } else {
+                    return null; // failed
+                }
             }
         }
         return null;

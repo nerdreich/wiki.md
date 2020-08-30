@@ -137,7 +137,7 @@ if ($wiki->isMedia() && $user->mayRead($wiki->getWikiPath())) {
 // first we check for any authentication related stuff
 switch ($_GET['auth']) {
     case 'login':
-        if ($user->login(trim($_POST['password']))) {
+        if ($user->login(trim($_POST['username'] ?? ''), trim($_POST['password'] ?? ''))) {
             // successfull -> redirect back
             $action = array_key_exists('action', $_GET) ? '?action=' . urlencode($_GET['action']) : '';
             redirect($wiki->getWikiRoot() . $contentPath, $action);

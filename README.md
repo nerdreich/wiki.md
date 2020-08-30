@@ -63,7 +63,6 @@ Feel free to report any [issues](https://github.com/nerdreich/wiki.md/issues) yo
 ### Planned for v1.1.0
 
 * file/media uploads
-* full user (name+pwd) logins
 * rename-page feature
 
 ### Unscheduled ideas

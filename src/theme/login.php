@@ -26,12 +26,16 @@ outputBanner($wiki);
 <section class="section-main container">
   <div class="row">
     <div class="col-12">
-      <h2><?php __('Password required'); ?></h2>
+      <h2><?php __('Login required'); ?></h2>
       <form action="?<?php
         echo array_key_exists('action', $_GET) ? 'action=' . urlencode($_GET['action']) . '&' : '';
         ?>auth=login" method="post">
+        <?php if (!$config['login_simple']) { ?>
+        <label for="username" class="in-border"><?php __('Username'); ?></label>
+        <input id="username" type="text" name="username" required autofocus>
+        <?php } ?>
         <label for="password" class="in-border"><?php __('Password'); ?></label>
-        <input id="password" type="password" name="password" required autofocus>
+        <input id="password" type="password" name="password" required<?php echo $config['login_simple'] ? ' autofocus' : ''; ?>>
         <input type="submit" class="primary" value="<?php __('Login'); ?>">
       </form>
     </div>

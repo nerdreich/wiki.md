@@ -153,6 +153,71 @@ class IntegrationTest extends IntegrationTestCase
 
     public function testLoginLogout(): void
     {
+        // verify non-simple login mode
+        $cfgOrig = file_get_contents(dirname(__FILE__) . '/../../dist/wiki.md/data/config.ini');
+        $this->assertTrue(strpos('login_simple = false', $cfgOrig) >= 0);
+        $this->assertFalse(strpos('login_simple = true', $cfgOrig));
+
+        $this->get('/');
+        $this->assertPage();
+        $this->assertNoCookies();
+        $this->assertPayloadContainsPreg('/<a href="\?auth=login">/');        // login button
+        $this->assertPayloadContainsNotPreg('/<a href="\?action=edit">/');    // edit button
+        $this->assertPayloadContainsNotPreg('/<a href="\?action=history">/'); // history button
+        $this->assertPayloadContainsNotPreg('/<a href="\?action=delete">/');  // delete button
+        $this->assertPayloadContainsNotPreg('/<a href="\?action=logout">/');  // logout button
+
+        $this->post('/?auth=login', ['username' => 'docs', 'password' => 'doc']);
+        $this->assertRedirect('/');
+        $this->assertSessionCookie();
+
+        $this->get('/');
+        $this->assertPage();
+        $this->assertSessionCookie();
+        $this->assertPayloadContainsNotPreg('/<a href="\?auth=login">/');     // login button
+        $this->assertPayloadContainsNotPreg('/<a href="\?action=edit">/');    // edit button
+        $this->assertPayloadContainsNotPreg('/<a href="\?action=history">/'); // history button
+        $this->assertPayloadContainsNotPreg('/<a href="\?action=delete">/');  // delete button
+        $this->assertPayloadContainsPreg('/<a href="\?auth=logout">/');       // logout button
+        $this->assertPayloadContainsPreg('/"page"/');                         // css
+
+        $this->get('/docs/install');
+        $this->assertPage();
+        $this->assertSessionCookie();
+        $this->assertPayloadContainsNotPreg('/<a href="\?auth=login">/');  // login button
+        $this->assertPayloadContainsPreg('/<a href="\?action=edit">/');    // edit button
+        $this->assertPayloadContainsPreg('/<a href="\?action=history">/'); // history button
+        $this->assertPayloadContainsPreg('/<a href="\?action=delete">/');  // delete button
+        $this->assertPayloadContainsPreg('/<a href="\?auth=logout">/');    // logout button
+        $this->assertPayloadContainsPreg('/"page page-docs page-docs-install"/');   // css
+
+        $this->get('/?auth=logout');
+        $this->assertRedirect('/');
+        $this->assertNoCookies();
+
+        $this->get('/');
+        $this->assertPage();
+        $this->assertNoCookies();
+
+        $this->post('/?auth=login', ['password' => 'invalid']);
+        $this->assertPageLogin();
+        $this->assertNoCookies();
+    }
+
+    public function testLoginLogoutSimple(): void
+    {
+        // switch to simple mode
+        $cfgOrig = file_get_contents(dirname(__FILE__) . '/../../dist/wiki.md/data/config.ini');
+        $cfg = str_replace('login_simple = false', 'login_simple = true', $cfgOrig);
+        file_put_contents(
+            dirname(__FILE__) . '/../../dist/wiki.md/data/config.ini',
+            $cfg,
+            FILE_APPEND | LOCK_EX
+        );
+        $cfg = file_get_contents(dirname(__FILE__) . '/../../dist/wiki.md/data/config.ini');
+        $this->assertTrue(strpos('login_simple = true', $cfg) >= 0);
+        $this->assertFalse(strpos('login_simple = false', $cfg));
+
         $this->get('/');
         $this->assertPage();
         $this->assertNoCookies();
@@ -197,23 +262,30 @@ class IntegrationTest extends IntegrationTestCase
         $this->post('/?auth=login', ['password' => 'invalid']);
         $this->assertPageLogin();
         $this->assertNoCookies();
+
+        // switch back to full mode
+        file_put_contents(
+            dirname(__FILE__) . '/../../dist/wiki.md/data/config.ini',
+            $cfgOrig,
+            FILE_APPEND | LOCK_EX
+        );
     }
 
     public function testLoginLogin(): void
     {
         // first login
-        $this->post('/?auth=login', ['password' => 'doc']);
+        $this->post('/?auth=login', ['username' => 'docs', 'password' => 'doc']);
         $this->assertRedirect('/');
         $token1 = $this->assertSessionCookie();
 
         // login again - must be new session
-        $this->post('/?auth=login', ['password' => 'doc']);
+        $this->post('/?auth=login', ['username' => 'docs', 'password' => 'doc']);
         $this->assertRedirect('/');
         $token2 = $this->assertSessionCookie();
         $this->assertNotEquals($token1, $token2);
 
         // login as other user - must be new session
-        $this->post('/?auth=login', ['password' => 'adm']);
+        $this->post('/?auth=login', ['username' => 'admin', 'password' => 'adm']);
         $this->assertRedirect('/');
         $token3 = $this->assertSessionCookie();
         $this->assertNotEquals($token1, $token2);
@@ -223,7 +295,7 @@ class IntegrationTest extends IntegrationTestCase
 
     public function testDocsCRUD(): void
     {
-        $this->post('/?auth=login', ['password' => 'doc']);
+        $this->post('/?auth=login', ['username' => 'docs', 'password' => 'doc']);
         $this->assertRedirect('/');
         $this->assertSessionCookie();
 
@@ -298,7 +370,7 @@ class IntegrationTest extends IntegrationTestCase
     public function testHistory(): void
     {
         // login
-        $this->post('/?auth=login', ['password' => 'doc']);
+        $this->post('/?auth=login', ['username' => 'docs', 'password' => 'doc']);
         $this->assertRedirect('/');
 
         // nonexisiting page does not have history
@@ -404,7 +476,7 @@ class IntegrationTest extends IntegrationTestCase
         $this->assertPayloadContainsPreg('/No history is available/');
 
         // login
-        $this->post('/?auth=login', ['password' => 'doc']);
+        $this->post('/?auth=login', ['username' => 'docs', 'password' => 'doc']);
         $this->assertRedirect('/');
 
         // normal save page
@@ -486,7 +558,7 @@ class IntegrationTest extends IntegrationTestCase
 
     public function testEditor(): void
     {
-        $this->post('/?auth=login', ['password' => 'doc']);
+        $this->post('/?auth=login', ['username' => 'docs', 'password' => 'doc']);
         $this->assertRedirect('/');
         $this->assertSessionCookie();
 
@@ -504,7 +576,7 @@ class IntegrationTest extends IntegrationTestCase
         sleep(1);
 
         // switch user
-        $this->post('/?auth=login', ['password' => 'adm']);
+        $this->post('/?auth=login', ['username' => 'admin', 'password' => 'adm']);
         $this->assertRedirect('/');
         $this->assertSessionCookie();
 
@@ -536,7 +608,7 @@ class IntegrationTest extends IntegrationTestCase
 
     public function testPermissionEditor(): void
     {
-        $this->post('/?auth=login', ['password' => 'adm']);
+        $this->post('/?auth=login', ['username' => 'admin', 'password' => 'adm']);
         $this->assertRedirect('/');
         $this->assertSessionCookie();
 
@@ -590,7 +662,7 @@ class IntegrationTest extends IntegrationTestCase
 
     public function testUserEditor(): void
     {
-        $this->post('/?auth=login', ['password' => 'adm']);
+        $this->post('/?auth=login', ['username' => 'admin', 'password' => 'adm']);
         $this->assertRedirect('/');
         $this->assertSessionCookie();
 

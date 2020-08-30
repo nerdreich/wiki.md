@@ -1,6 +1,6 @@
 # Page permissions
 
-wiki.md can restrict access to page actions (create, view, edit, delete) for certain users on a (sub)folder level. This is done by setting page passwords. Site default is to let anyone view/read all pages, but only admin-users may create, edit or delete them. wiki.md knows the following permissions:
+wiki.md can restrict access to page actions (create, view, edit, delete) for certain users on a (sub)folder level. This is done by setting page permissions. Site default is to let anyone view/read all pages, but only admin-users may create, edit or delete them. wiki.md knows the following permissions:
 
 * `userCreate` - create pages
 * `userRead` - view/read pages
@@ -10,7 +10,7 @@ wiki.md can restrict access to page actions (create, view, edit, delete) for cer
 
 ## Folder Editor
 
-To define permissions for a folder, navigate to any page and choose **Permissions** from the menu.
+To define permissions for a folder, navigate to any page and choose _Permissions_ from the menu.
 
 <img src="permissions.png" alt="[Folder Editor]" width="512"/>
 

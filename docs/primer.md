@@ -12,7 +12,7 @@ The Login-Screen will show up:
 
 <img src="primer_password.png" alt="[Password entry]" width="256"/>
 
-Enter your password and click login. There is no _username_ in wiki.md, just a password.
+(In case your site admin has turned on simple logins, there is no _username_, just a password.) Enter your credentials and click login.
 
 ## Editing pages
 

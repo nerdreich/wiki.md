@@ -192,7 +192,7 @@ class IntegrationTestCase extends \PHPUnit\Framework\TestCase
     public function assertPageLogin(): void
     {
         $this->assertPage(401);
-        $this->assertPayloadContainsPreg('/Password required/');
+        $this->assertPayloadContainsPreg('/Login required/');
     }
 
     /**
