@@ -16,7 +16,7 @@ This project could need help in the following areas:
 Please submit changes via pull requests.
 
 * One pull request per fix or feature or issue.
-* Each commits should focus on one task.
+* Each commit should focus on one task.
 * Use meaningful commit messages. In general, they should start with `added .. `, `changed ...`, `fixed ...` or `removed ...` and describe what happened to the code.
 * Development is done on the `develop` branch. Create a feature branch from there and request to pull back into it.
 * Make sure `gulp dist` runs without errors or warnings. This will enforce our coding standards.

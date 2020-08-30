@@ -5,18 +5,19 @@ filesystem - no database required.
 
 ## Setup
 
-* [Install & Config](install.md)  
-* [Permissions](permissions.md)  
+* [Install & Config](install.md)
+* [Permissions](permissions.md)
 * [Themes](themes.md)
 
 ## Usage
 
-* [Primer](primer.md)  
+* [Primer](primer.md)
 * [Markdown](markdown.md)
 
 ## Advanced Topics
 
-* [Snippets & Navigation](snippets.md)  
-* [Macros](macros.md)  
-* [Creating themes](themes_create.md)  
+* [Snippets & Navigation](snippets.md)
+* [Macros](macros.md)
+* [Creating themes](themes_create.md)
+* [Filters](filters.md)
 * [Content format](content.md)

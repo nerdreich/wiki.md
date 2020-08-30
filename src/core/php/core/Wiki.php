@@ -47,6 +47,7 @@ class Wiki
     private $content = '';    // the markdown body for a content
 
     private $macros = [];     // array of {{macro ...}} handlers
+    private $filters = [];
 
     /**
      * Constructor
@@ -65,10 +66,10 @@ class Wiki
         $this->contentDirFS = $this->wikiDirFS . '/' . ($this->config['datafolder'] ?? 'data') . '/content';
         $this->wikiRoot = substr($this->wikiDirFS, strlen($_SERVER['DOCUMENT_ROOT']));
 
-        // register core macros
-        $this->registerMacro('include', function (?string $primary, ?array $secondary, string $path) {
-            return $this->resolveMacroInclude($primary, $secondary, $path);
-        });
+        // register core filters
+        $this->registerFilterFixLinks();
+        $this->registerFilterIndentHeadlines();
+        $this->registerFilterMacros();
     }
 
     /**
@@ -97,14 +98,6 @@ class Wiki
         }
 
         return $wikiPath;
-    }
-
-    /**
-     * Load the content for this page from the filesystem.
-     */
-    private function loadFS(): void
-    {
-        list($this->metadata, $this->content) = $this->loadFile($this->contentFileFS, true);
     }
 
     // ----------------------------------------------------------------------
@@ -260,15 +253,23 @@ class Wiki
     }
 
     /**
+     * Get the current wiki page's history.
+     *
+     * @return Array History.
+     */
+    public function getHistory(): ?array
+    {
+        return $this->metadata['history'];
+    }
+
+    /**
      * Get the HTML content for the current wiki page.
      *
      * @return string HTML snippet for the content part of this page.
      */
     public function getContentHTML(): string
     {
-        return $this->markdown2Html(
-            $this->preprocessMarkdown($this->content, $this->contentFileFS)
-        );
+        return $this->markupToHTML($this->content, $this->contentFileFS);
     }
 
     /**
@@ -295,7 +296,8 @@ class Wiki
     ): string {
         // fetch html for snippet
         $filename = $this->contentDirFS . $this->findSnippetPath("_$snippetName.md");
-        $html = $this->getHTML($filename);
+        list($metadata, $content) = $this->loadFile($filename);
+        $html = $this->markupToHTML($content, $filename);
 
         // convert headlines to look-alike divs
         $html = preg_replace('/<h([1-6])>/', '<div class="h$1">', $html);
@@ -305,28 +307,23 @@ class Wiki
     }
 
     /**
-     * Load a content file as HTML.
+     * Convert markup to HTML.
      *
-     * @param string $markdownPath Absolute path to .md file.
-     * @return string Rendered HTML.
+     * Will apply all markup and html filters.
+     *
+     * @param string $markup The raw markup to render.
+     * @param string $pathFS The absolute path to the content (for macros).
+     * @return string HTML version.
      */
-    public function getHTML(
-        string $markdownPath
+    private function markupToHTML(
+        string $markup,
+        string $pathFS
     ): string {
-        list($snippetMetadata, $snippetContent) = $this->loadFile($markdownPath);
-        return $this->markdown2Html(
-            $this->preprocessMarkdown($snippetContent, $markdownPath)
-        );
-    }
-
-    /**
-     * Get the current wiki page's history.
-     *
-     * @return Array History.
-     */
-    public function getHistory(): ?array
-    {
-        return $this->metadata['history'];
+        $markup = $this->runFilters('raw', $markup, $pathFS);
+        $markup = $this->runFilters('markup', $markup, $pathFS);
+        $html = $this->markdown2Html($markup);
+        $html = $this->runFilters('html', $html, $pathFS);
+        return $html;
     }
 
     /**
@@ -399,9 +396,123 @@ class Wiki
     }
 
     // ----------------------------------------------------------------------
+    // --- filter handling  -------------------------------------------------
+    // ----------------------------------------------------------------------
+
+    /**
+     * Add a filter to be executed during content delivery.
+     *
+     * @param string $hook When this filter should be run ('markup' or 'html').
+     * @param string $filterName Name of this filter.
+     * @param callable $handler A function (string, string): string filter.
+     */
+    public function registerFilter(
+        string $hook,
+        string $filterName,
+        callable $handler
+    ): void {
+        $this->filters[$hook][$filterName] = $handler;
+    }
+
+    /**
+     * Improve markdown for rendering.
+     *
+     * Will apply all markup postprocess filters.
+     *
+     * @param string $markdown The Markdown content to apply the filters to.
+     * @param string $fsPath The absolute fs-path to the content.
+     * @return string Updated content.
+     */
+    private function runFilters(
+        string $hook,
+        string $markdown,
+        string $fsPath
+    ): string {
+        foreach ($this->filters[$hook] ?? [] as $plugin) {
+            $markdown = $plugin($markdown, $fsPath);
+        }
+        return $markdown;
+    }
+
+    /**
+     * Filter: Process {{...}} macros.
+     */
+    private function registerFilterMacros(): void
+    {
+        // register core macros
+        $this->registerMacro('include', function (?string $primary, ?array $secondary, string $path) {
+            return $this->resolveMacroInclude($primary, $secondary, $path);
+        });
+
+        // register plugin itself
+        $this->registerFilter('raw', 'macros', function (string $markup, string $pathFS): string {
+            if (preg_match_all('/{{[^}]*}}/', $markup, $matches)) {
+                foreach ($matches[0] as $macro) {
+                    list($command, $primary, $secondary) = $this->splitMacro($macro);
+                    if (array_key_exists($command, $this->macros)) {
+                        $markup = str_replace(
+                            $macro,
+                            $this->macros[$command]($primary, $secondary, $pathFS),
+                            $markup
+                        );
+                    }
+                }
+            }
+            return $markup;
+        });
+    }
+
+    /**
+     * Filter: Convert relative to absolute links in Markdown content.
+     *
+     * Particularly usefull to fix snippets, which contain links relative to
+     * the snippet location, not to the page location that includes them.
+     */
+    private function registerFilterFixLinks(): void
+    {
+        $this->registerFilter('markup', 'markdownFixLinks', function (string $markdown, string $fsPath): string {
+            $folder = dirname($this->findURLPathForContentFile($fsPath));
+            $folder = $folder === '/' ? '' : $folder;
+            // add absolute path to all relative links
+            //$markdown = preg_replace('/\]\(([^\/?])/', '](' . $folder . '/$1', $markdown);
+            preg_match_all('/\[([^]]*)\]\(([^)]*)\)/', $markdown, $matches);
+            list($matchFull, $matchText, $matchLink) = $matches;
+            for ($index = 0; $index < count($matchLink); $index++) {
+                if ($matchLink[$index][0] === '/') { // skip absolute urls and //-urls
+                    continue;
+                }
+                if (preg_match('/^https?:/', $matchLink[$index])) { // skip http[s]: links
+                    continue;
+                }
+                $markdown = str_replace($matchFull[$index], '[' . $matchText[$index] . ']('
+                    . $this->wikiRoot . $folder . '/' . $matchLink[$index] . ')', $markdown);
+            }
+            return $markdown;
+        });
+    }
+
+    /**
+     * Filter: Make all headlines one level deeper.
+     *
+     * This is neede as the page will get a <h1> based on the page title.
+     */
+    private function registerFilterIndentHeadlines(): void
+    {
+        $this->registerFilter('markup', 'markdownIndentHeadlines', function (string $markdown, string $fsPath): string {
+            return preg_replace('/^#/m', '##', $markdown);
+        });
+    }
+
+    // ----------------------------------------------------------------------
     // --- {{macro}} handling  ----------------------------------------------
     // ----------------------------------------------------------------------
 
+    /**
+     * Add a {{..}} macro to be processed by the macro filter.
+     *
+     * @param string $name The name of the macro (first parameter in {{...}}).
+     * @param callable $handler A function that will process this macro.
+     */
     public function registerMacro(
         string $name,
         callable $handler
@@ -547,39 +658,14 @@ class Wiki
         $includeFileFS = $this->wikiPathToContentFile($wikiPath);
         if ($this->user->mayRead($wikiPath)) {
             if (is_file($includeFileFS)) {
-                return $this->getHTML($includeFileFS);
+                list($metadata, $content) = $this->loadFile($includeFileFS);
+                return $this->markupToHTML($content, $includeFileFS);
             } else {
                 return '{{error include-not-found}}';
             }
         } else {
             return '{{error include-permission-denied}}';
         }
-    }
-
-    /**
-     * Expand all {{...}} macros with their dynamic content.
-     *
-     * @param string $markdown A markdown body of a page or snippet.
-     * @param string $pathFS Absolute path to file containing the macros (for relative processing).
-     * @return string New markdown with all macros expanded.
-     */
-    private function resolveMacros(
-        string $body,
-        string $pathFS
-    ): string {
-        if (preg_match_all('/{{[^}]*}}/', $body, $matches)) {
-            foreach ($matches[0] as $macro) {
-                list($command, $primary, $secondary) = $this->splitMacro($macro);
-                if (array_key_exists($command, $this->macros)) {
-                    $body = str_replace(
-                        $macro,
-                        $this->macros[$command]($primary, $secondary, $pathFS),
-                        $body
-                    );
-                }
-            }
-        }
-        return $body;
     }
 
     // ----------------------------------------------------------------------
@@ -853,6 +939,14 @@ class Wiki
     }
 
     /**
+     * Load the content for this page from the filesystem.
+     */
+    private function loadFS(): void
+    {
+        list($this->metadata, $this->content) = $this->loadFile($this->contentFileFS, true);
+    }
+
+    /**
      * Create a new, empty page.
      *
      * Will only reset internal data to a blank page, to be picked up by the
@@ -976,27 +1070,27 @@ class Wiki
     }
 
     /**
-     * Render Raw Markdown content to HTML.
+     * Render raw Markdown content to HTML.
      *
-     * @param string $markdown Markdown content.
+     * @param string $markup Markdown content.
      * @return string HTML.
      */
     private function markdown2Html(
-        string $markdown
+        string $markup
     ): string {
         $parser = new \ParsedownExtra();
-        return $parser->text($markdown);
+        return $parser->text($markup);
     }
 
     /**
-     * Extract the Markdown part from a file's content.
+     * Extract the markup part from a file's content.
      *
      * This just skips an (optional) YAML front matter part.
      *
      * @param string $content A file's raw content.
-     * @return string Markdown part of this content.
+     * @return string Markup part of this content.
      */
-    private function extractMarkdown(
+    private function extractMarkup(
         string $content
     ): string {
         $skip = 0;
@@ -1005,59 +1099,6 @@ class Wiki
             $skip = $skip < 0 ? 0 : $skip + 4;
         }
         return trim(substr($content, $skip));
-    }
-
-    /**
-     * Convert relative to absolute links in Markdown content.
-     *
-     * Particularly usefull to fix snippets, which contain links relative to
-     * the snippet location, not to the page location that includes them.
-     *
-     * @param string $markdown The Markdown content to fix.
-     * @param string $fsPath The absolute folder this content is actually in.
-     * @return string Fixed Markdown.
-     */
-    private function fixLinks(
-        string $markdown,
-        string $fsPath
-    ): string {
-        $folder = dirname($this->findURLPathForContentFile($fsPath));
-        $folder = $folder === '/' ? '' : $folder;
-        // add absolute path to all relative links
-        //$markdown = preg_replace('/\]\(([^\/?])/', '](' . $folder . '/$1', $markdown);
-        preg_match_all('/\[([^]]*)\]\(([^)]*)\)/', $markdown, $matches);
-        list($matchFull, $matchText, $matchLink) = $matches;
-        for ($index = 0; $index < count($matchLink); $index++) {
-            if ($matchLink[$index][0] === '/') { // skip absolute urls and //-urls
-                continue;
-            }
-            if (preg_match('/^https?:/', $matchLink[$index])) { // skip http[s]: links
-                continue;
-            }
-            $markdown = str_replace($matchFull[$index], '[' . $matchText[$index] . ']('
-                . $this->wikiRoot . $folder . '/' . $matchLink[$index] . ')', $markdown);
-        }
-        return $markdown;
-    }
-
-    /**
-     * Improve markdown for rendering.
-     *
-     * Will resolve relative links, fix headline depth, resolve macros ...
-     *
-     * @param string $markdown The Markdown content to fix.
-     * @param string $fsPath The absolute fs-path to the content.
-     * @return string Preprocessed Markdown.
-     */
-    private function preprocessMarkdown(
-        string $markdown,
-        string $fsPath
-    ): string {
-        // Make all Headlines one level deeper (# -> ##).
-        $markdown = preg_replace('/^#/m', '##', $markdown);
-        $markdown = $this->fixLinks($markdown, $fsPath);
-        $markdown = $this->resolveMacros($markdown, $fsPath);
-        return $markdown;
     }
 
     /**
@@ -1086,7 +1127,7 @@ class Wiki
         }
 
         // load page content
-        $markdown = $this->extractMarkdown($content);
+        $markdown = $this->extractMarkup($content);
 
         // done
         return array($yaml, $markdown);

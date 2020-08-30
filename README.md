@@ -2,6 +2,8 @@
 
 Yet another Wiki/CMS written in PHP.
 
+![https://img.shields.io/github/v/release/nerdreich/wiki.md](https://github.com/nerdreich/wiki.md/releases)
+
 ![wiki.md](preview.png)
 
 ## Key features
@@ -62,7 +64,6 @@ Feel free to report any [issues](https://github.com/nerdreich/wiki.md/issues) yo
 
 * file/media uploads
 * full user (name+pwd) logins
-* plugin mechanism
 * rename-page feature
 
 ### Unscheduled ideas

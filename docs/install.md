@@ -31,7 +31,7 @@ The default installation requires an `admin` password to edit pages. There is no
 
 To do so, replace the `admin`'s password in `.htpasswd` with a new one. You can use any tool that can create a bcrypt hash, e.g. Apache's `htpassd`:
 
-```
+```sh
 $ htpasswd -B /path/to/wiki/data/.htpasswd admin
 ```
 

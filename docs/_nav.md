@@ -14,4 +14,5 @@
 [Snippets & Navigation](snippets.md)  
 [Macros](macros.md)  
 [Creating themes](themes_create.md)  
+[Filters](filters.md)  
 [Content format](content.md)

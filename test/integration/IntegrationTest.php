@@ -545,7 +545,7 @@ class IntegrationTest extends IntegrationTestCase
         $this->assertPage();
         $this->assertPayloadContainsPreg('/name="userCreate" value="docs"/');
         $this->assertPayloadContainsPreg('/name="userRead" value=""/');
-        $this->assertPayloadContainsPreg('/name="userUpdate" value="docs" /');
+        $this->assertPayloadContainsPreg('/name="userUpdate" value="docs"/');
         $this->assertPayloadContainsPreg('/name="userDelete" value="docs"/');
         $this->assertPayloadContainsPreg('/name="userAdmin" value=""/');
 
@@ -564,7 +564,7 @@ class IntegrationTest extends IntegrationTestCase
         $this->assertPage();
         $this->assertPayloadContainsPreg('/name="userCreate" value="admin"/');
         $this->assertPayloadContainsPreg('/name="userRead" value="admin,docs"/');
-        $this->assertPayloadContainsPreg('/name="userUpdate" value="admin,docs" /');
+        $this->assertPayloadContainsPreg('/name="userUpdate" value="admin,docs"/');
         $this->assertPayloadContainsPreg('/name="userDelete" value=""/');
         $this->assertPayloadContainsPreg('/name="userAdmin" value="\*"/');
 
@@ -583,7 +583,7 @@ class IntegrationTest extends IntegrationTestCase
         $this->assertPage();
         $this->assertPayloadContainsPreg('/name="userCreate" value=""/');
         $this->assertPayloadContainsPreg('/name="userRead" value="docs"/');
-        $this->assertPayloadContainsPreg('/name="userUpdate" value="" /');
+        $this->assertPayloadContainsPreg('/name="userUpdate" value=""/');
         $this->assertPayloadContainsPreg('/name="userDelete" value="docs"/');
         $this->assertPayloadContainsPreg('/name="userAdmin" value="docs"/');
     }
@@ -597,8 +597,8 @@ class IntegrationTest extends IntegrationTestCase
         // docs default users
         $this->get('/docs/?admin=folder');
         $this->assertPage();
-        $this->assertPayloadContainsPreg('/<li><strong>admin</');
-        $this->assertPayloadContainsPreg('/<li><strong>docs</');
+        $this->assertPayloadContainsPreg('/<li>admin/');
+        $this->assertPayloadContainsPreg('/<li>docs/');
 
         // create a user
         $this->post('/docs/?admin=secret', [
@@ -608,9 +608,9 @@ class IntegrationTest extends IntegrationTestCase
         $this->assertRedirect('/docs/?admin=folder');
         $this->get('/docs/?admin=folder');
         $this->assertPage();
-        $this->assertPayloadContainsPreg('/<li><strong>admin</');
-        $this->assertPayloadContainsPreg('/<li><strong>docs</');
-        $this->assertPayloadContainsPreg('/<li><strong>nr</');
+        $this->assertPayloadContainsPreg('/<li>admin/');
+        $this->assertPayloadContainsPreg('/<li>docs/');
+        $this->assertPayloadContainsPreg('/<li>nr/');
 
         // update a user
         $this->post('/docs/?admin=secret', [
@@ -620,18 +620,18 @@ class IntegrationTest extends IntegrationTestCase
         $this->assertRedirect('/docs/?admin=folder');
         $this->get('/docs/?admin=folder');
         $this->assertPage();
-        $this->assertPayloadContainsPreg('/<li><strong>admin</');
-        $this->assertPayloadContainsPreg('/<li><strong>docs</');
-        $this->assertPayloadContainsPreg('/<li><strong>nr</');
+        $this->assertPayloadContainsPreg('/<li>admin/');
+        $this->assertPayloadContainsPreg('/<li>docs/');
+        $this->assertPayloadContainsPreg('/<li>nr/');
 
         // delete a user
         $this->get('/docs/?admin=delete&user=nr');
         $this->assertRedirect('/docs/?admin=folder');
         $this->get('/docs/?admin=folder');
         $this->assertPage();
-        $this->assertPayloadContainsPreg('/<li><strong>admin</');
-        $this->assertPayloadContainsPreg('/<li><strong>docs</');
-        $this->assertPayloadContainsNotPreg('/<li><strong>nr</');
+        $this->assertPayloadContainsPreg('/<li>admin/');
+        $this->assertPayloadContainsPreg('/<li>docs/');
+        $this->assertPayloadContainsNotPreg('/<li>nr/');
 
         // delete again/invalid
         $this->get('/docs/?admin=delete&user=nr');
@@ -642,8 +642,8 @@ class IntegrationTest extends IntegrationTestCase
         $this->assertPage();
         $this->get('/docs/?admin=folder');
         $this->assertPage();
-        $this->assertPayloadContainsPreg('/<li><strong>admin</');
-        $this->assertPayloadContainsPreg('/<li><strong>docs</');
-        $this->assertPayloadContainsNotPreg('/<li><strong>nr</');
+        $this->assertPayloadContainsPreg('/<li>admin/');
+        $this->assertPayloadContainsPreg('/<li>docs/');
+        $this->assertPayloadContainsNotPreg('/<li>nr/');
     }
 }
