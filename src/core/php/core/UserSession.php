@@ -441,6 +441,19 @@ class UserSession
             $this->hasExplicitPermission($this->username, 'userAdmin', $path);
     }
 
+    /**
+     * Check if the current user may administrate media & uploads.
+     *
+     * @param string $path The path to check the permission for.
+     * @return boolean True, if permissions are sufficient. False otherwise.
+     */
+    public function mayMedia(
+        string $path
+    ): bool {
+        return $this->username === $this->superuser ||
+            $this->hasExplicitPermission($this->username, 'userMedia', $path);
+    }
+
     // --- UI methods ----------------------------------------------------------
 
     /**
@@ -460,7 +473,7 @@ class UserSession
             $infos['folder'] = $path;
 
             if ($yaml = $this->loadPermissionFile($path)) {
-                foreach (['userCreate', 'userRead', 'userUpdate', 'userDelete', 'userAdmin'] as $permission) {
+                foreach (['userCreate', 'userRead', 'userUpdate', 'userDelete', 'userAdmin', 'userMedia'] as $permission) {
                     if (array_key_exists($permission, $yaml)) {
                         $permissions[$permission] = $yaml[$permission];
                     }
@@ -582,6 +595,7 @@ class UserSession
         array $userRead,
         array $userUpdate,
         array $userDelete,
+        array $userMedia,
         array $userAdmin
     ): bool {
         if (preg_match('/\/$/', $path) && $this->mayAdmin($path)) { // can only set permissions on folders
@@ -599,6 +613,9 @@ class UserSession
             }
             if ($userDelete = $this->sanitizeUserlist($userDelete, $userDB)) {
                 $yaml['userDelete'] = $userDelete;
+            }
+            if ($userMedia = $this->sanitizeUserlist($userMedia, $userDB)) {
+                $yaml['userMedia'] = $userMedia;
             }
             if ($userAdmin = $this->sanitizeUserlist($userAdmin, $userDB)) {
                 $yaml['userAdmin'] = $userAdmin;

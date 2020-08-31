@@ -64,37 +64,37 @@ class IntegrationTest extends IntegrationTestCase
         $this->assertNoCookies();
         $this->assertPayloadContainsPreg('/Welcome!/');
 
-        $this->get('/?action=unknown');
+        $this->get('/?page=unknown');
         $this->assertPage();
         $this->assertNoCookies();
         $this->assertPayloadContainsPreg('/Welcome!/');
 
-        $this->get('/?action=createPage');
+        $this->get('/?page=create');
         $this->assertPageError();
         $this->assertNoCookies();
 
-        $this->get('/?action=edit');
+        $this->get('/?page=edit');
         $this->assertPageLogin();
         $this->assertNoCookies();
 
-        $this->get('/?action=history');
+        $this->get('/?page=history');
         $this->assertPage();
         $this->assertNoCookies();
         $this->assertPayloadContainsPreg('/History for/');
 
-        $this->get('/?action=delete');
+        $this->get('/?page=delete');
         $this->assertPageLogin();
         $this->assertNoCookies();
 
-        $this->get('/?action=deleteOK');
+        $this->get('/?page=deleteOK');
         $this->assertPageLogin();
         $this->assertNoCookies();
 
-        $this->get('/?action=restore&version=0');
+        $this->get('/?page=restore&version=0');
         $this->assertPageError();
         $this->assertNoCookies();
 
-        $this->get('/?action=restore&version=1');
+        $this->get('/?page=restore&version=1');
         $this->assertPageError();
         $this->assertNoCookies();
 
@@ -118,35 +118,35 @@ class IntegrationTest extends IntegrationTestCase
         $this->assertPageNotFound();
         $this->assertNoCookies();
 
-        $this->get('/meow?action=unknown');
+        $this->get('/meow?page=unknown');
         $this->assertPageNotFound();
         $this->assertNoCookies();
 
-        $this->get('/meow?action=createPage');
+        $this->get('/meow?page=create');
         $this->assertPageLogin();
         $this->assertNoCookies();
 
-        $this->get('/meow?action=edit');
+        $this->get('/meow?page=edit');
         $this->assertPageNotFound();
         $this->assertNoCookies();
 
-        $this->get('/meow?action=history');
+        $this->get('/meow?page=history');
         $this->assertPageNotFound();
         $this->assertNoCookies();
 
-        $this->get('/meow?action=delete');
+        $this->get('/meow?page=delete');
         $this->assertPageNotFound();
         $this->assertNoCookies();
 
-        $this->get('/meow?action=deleteOK');
+        $this->get('/meow?page=deleteOK');
         $this->assertPageNotFound();
         $this->assertNoCookies();
 
-        $this->get('/meow?action=restore&version=0');
+        $this->get('/meow?page=restore&version=0');
         $this->assertPageNotFound();
         $this->assertNoCookies();
 
-        $this->get('/meow?action=restore&version=1');
+        $this->get('/meow?page=restore&version=1');
         $this->assertPageNotFound();
         $this->assertNoCookies();
     }
@@ -161,11 +161,12 @@ class IntegrationTest extends IntegrationTestCase
         $this->get('/');
         $this->assertPage();
         $this->assertNoCookies();
-        $this->assertPayloadContainsPreg('/<a href="\?auth=login">/');        // login button
-        $this->assertPayloadContainsNotPreg('/<a href="\?action=edit">/');    // edit button
-        $this->assertPayloadContainsNotPreg('/<a href="\?action=history">/'); // history button
-        $this->assertPayloadContainsNotPreg('/<a href="\?action=delete">/');  // delete button
-        $this->assertPayloadContainsNotPreg('/<a href="\?action=logout">/');  // logout button
+        $this->assertPayloadContainsPreg('/<a href="\?auth=login">/');      // login button
+        $this->assertPayloadContainsNotPreg('/<a href="\?page=edit">/');    // edit button
+        $this->assertPayloadContainsNotPreg('/<a href="\?media=list">/');   // media button
+        $this->assertPayloadContainsNotPreg('/<a href="\?page=history">/'); // history button
+        $this->assertPayloadContainsNotPreg('/<a href="\?page=delete">/');  // delete button
+        $this->assertPayloadContainsNotPreg('/<a href="\?page=logout">/');  // logout button
 
         $this->post('/?auth=login', ['username' => 'docs', 'password' => 'doc']);
         $this->assertRedirect('/');
@@ -174,21 +175,23 @@ class IntegrationTest extends IntegrationTestCase
         $this->get('/');
         $this->assertPage();
         $this->assertSessionCookie();
-        $this->assertPayloadContainsNotPreg('/<a href="\?auth=login">/');     // login button
-        $this->assertPayloadContainsNotPreg('/<a href="\?action=edit">/');    // edit button
-        $this->assertPayloadContainsNotPreg('/<a href="\?action=history">/'); // history button
-        $this->assertPayloadContainsNotPreg('/<a href="\?action=delete">/');  // delete button
-        $this->assertPayloadContainsPreg('/<a href="\?auth=logout">/');       // logout button
-        $this->assertPayloadContainsPreg('/"page"/');                         // css
+        $this->assertPayloadContainsNotPreg('/<a href="\?auth=login">/');   // login button
+        $this->assertPayloadContainsNotPreg('/<a href="\?page=edit">/');    // edit button
+        $this->assertPayloadContainsNotPreg('/<a href="\?media=list">/');   // media button
+        $this->assertPayloadContainsNotPreg('/<a href="\?page=history">/'); // history button
+        $this->assertPayloadContainsNotPreg('/<a href="\?page=delete">/');  // delete button
+        $this->assertPayloadContainsPreg('/<a href="\?auth=logout">/');     // logout button
+        $this->assertPayloadContainsPreg('/"page"/');                       // css
 
         $this->get('/docs/install');
         $this->assertPage();
         $this->assertSessionCookie();
-        $this->assertPayloadContainsNotPreg('/<a href="\?auth=login">/');  // login button
-        $this->assertPayloadContainsPreg('/<a href="\?action=edit">/');    // edit button
-        $this->assertPayloadContainsPreg('/<a href="\?action=history">/'); // history button
-        $this->assertPayloadContainsPreg('/<a href="\?action=delete">/');  // delete button
-        $this->assertPayloadContainsPreg('/<a href="\?auth=logout">/');    // logout button
+        $this->assertPayloadContainsNotPreg('/<a href="\?auth=login">/'); // login button
+        $this->assertPayloadContainsPreg('/<a href="\?page=edit">/');     // edit button
+        $this->assertPayloadContainsPreg('/<a href="\?media=list">/');    // media button
+        $this->assertPayloadContainsPreg('/<a href="\?page=history">/');  // history button
+        $this->assertPayloadContainsPreg('/<a href="\?page=delete">/');   // delete button
+        $this->assertPayloadContainsPreg('/<a href="\?auth=logout">/');   // logout button
         $this->assertPayloadContainsPreg('/"page page-docs page-docs-install"/');   // css
 
         $this->get('/?auth=logout');
@@ -221,11 +224,12 @@ class IntegrationTest extends IntegrationTestCase
         $this->get('/');
         $this->assertPage();
         $this->assertNoCookies();
-        $this->assertPayloadContainsPreg('/<a href="\?auth=login">/');        // login button
-        $this->assertPayloadContainsNotPreg('/<a href="\?action=edit">/');    // edit button
-        $this->assertPayloadContainsNotPreg('/<a href="\?action=history">/'); // history button
-        $this->assertPayloadContainsNotPreg('/<a href="\?action=delete">/');  // delete button
-        $this->assertPayloadContainsNotPreg('/<a href="\?action=logout">/');  // logout button
+        $this->assertPayloadContainsPreg('/<a href="\?auth=login">/');      // login button
+        $this->assertPayloadContainsNotPreg('/<a href="\?page=edit">/');    // edit button
+        $this->assertPayloadContainsNotPreg('/<a href="\?media=list">/');   // media button
+        $this->assertPayloadContainsNotPreg('/<a href="\?page=history">/'); // history button
+        $this->assertPayloadContainsNotPreg('/<a href="\?page=delete">/');  // delete button
+        $this->assertPayloadContainsNotPreg('/<a href="\?page=logout">/');  // logout button
 
         $this->post('/?auth=login', ['password' => 'doc']);
         $this->assertRedirect('/');
@@ -234,20 +238,22 @@ class IntegrationTest extends IntegrationTestCase
         $this->get('/');
         $this->assertPage();
         $this->assertSessionCookie();
-        $this->assertPayloadContainsNotPreg('/<a href="\?auth=login">/');     // login button
-        $this->assertPayloadContainsNotPreg('/<a href="\?action=edit">/');    // edit button
-        $this->assertPayloadContainsNotPreg('/<a href="\?action=history">/'); // history button
-        $this->assertPayloadContainsNotPreg('/<a href="\?action=delete">/');  // delete button
-        $this->assertPayloadContainsPreg('/<a href="\?auth=logout">/');       // logout button
-        $this->assertPayloadContainsPreg('/"page"/');                         // css
+        $this->assertPayloadContainsNotPreg('/<a href="\?auth=login">/');   // login button
+        $this->assertPayloadContainsNotPreg('/<a href="\?page=edit">/');    // edit button
+        $this->assertPayloadContainsNotPreg('/<a href="\?media=list">/');   // media button
+        $this->assertPayloadContainsNotPreg('/<a href="\?page=history">/'); // history button
+        $this->assertPayloadContainsNotPreg('/<a href="\?page=delete">/');  // delete button
+        $this->assertPayloadContainsPreg('/<a href="\?auth=logout">/');     // logout button
+        $this->assertPayloadContainsPreg('/"page"/');                       // css
 
         $this->get('/docs/install');
         $this->assertPage();
         $this->assertSessionCookie();
         $this->assertPayloadContainsNotPreg('/<a href="\?auth=login">/');  // login button
-        $this->assertPayloadContainsPreg('/<a href="\?action=edit">/');    // edit button
-        $this->assertPayloadContainsPreg('/<a href="\?action=history">/'); // history button
-        $this->assertPayloadContainsPreg('/<a href="\?action=delete">/');  // delete button
+        $this->assertPayloadContainsPreg('/<a href="\?page=edit">/');      // edit button
+        $this->assertPayloadContainsPreg('/<a href="\?media=list">/');     // media button
+        $this->assertPayloadContainsPreg('/<a href="\?page=history">/');   // history button
+        $this->assertPayloadContainsPreg('/<a href="\?page=delete">/');    // delete button
         $this->assertPayloadContainsPreg('/<a href="\?auth=logout">/');    // logout button
         $this->assertPayloadContainsPreg('/"page page-docs page-docs-install"/');   // css
 
@@ -293,6 +299,22 @@ class IntegrationTest extends IntegrationTestCase
         $this->assertNotEquals($token2, $token3);
     }
 
+    public function testImplicitLogin(): void
+    {
+        // login
+        $this->post('/docs/newpage?auth=login&page=create', ['username' => 'docs', 'password' => 'doc']);
+        $this->assertRedirect('/docs/newpage?page=create');
+
+        $this->get('/?auth=logout');
+        $this->assertRedirect('/');
+
+        $this->post('/docs/newpage?auth=login&media=list', ['username' => 'docs', 'password' => 'doc']);
+        $this->assertRedirect('/docs/newpage?media=list');
+
+        $this->get('/?auth=logout');
+        $this->assertRedirect('/');
+    }
+
     public function testDocsCRUD(): void
     {
         $this->post('/?auth=login', ['username' => 'docs', 'password' => 'doc']);
@@ -304,12 +326,12 @@ class IntegrationTest extends IntegrationTestCase
         $this->assertSessionCookie();
         $this->assertPayloadContainsPreg('/value="Create page"/'); // create button
 
-        $this->get('/docs/crud?action=createPage');
+        $this->get('/docs/crud?page=create');
         $this->assertPage();
         $this->assertSessionCookie();
         $this->assertPayloadContainsPreg('/textarea id="content"/'); // editor
 
-        $this->post('/docs/crud?action=save', [
+        $this->post('/docs/crud?page=save', [
             'title' => 'first title',
             'content' => 'first save',
             'author' => 'first author'
@@ -323,20 +345,20 @@ class IntegrationTest extends IntegrationTestCase
         $this->assertPayloadContainsPreg('/<h1>first title<\/h1>/');
         $this->assertPayloadContainsPreg('/<p>first save<\/p>/');
 
-        $this->get('/docs/crud?action=history');
+        $this->get('/docs/crud?page=history');
         $this->assertPage();
         $this->assertPayloadContainsPreg('/id="history-1"/');
         $this->assertPayloadContainsNotPreg('/id="history-2"/');
         $this->assertSessionCookie();
 
-        $this->get('/docs/crud?action=edit');
+        $this->get('/docs/crud?page=edit');
         $this->assertPage();
         $this->assertSessionCookie();
         $this->assertPayloadContainsPreg('/value="first title"/');// editor
         $this->assertPayloadContainsPreg('/>first save</');// editor
         $this->assertPayloadContainsPreg('/value="first author"/'); // editor
 
-        $this->post('/docs/crud?action=save', [
+        $this->post('/docs/crud?page=save', [
             'title' => 'second title',
             'content' => 'second save',
             'author' => 'second author'
@@ -350,14 +372,14 @@ class IntegrationTest extends IntegrationTestCase
         $this->assertPayloadContainsPreg('/<h1>second title<\/h1>/');
         $this->assertPayloadContainsPreg('/<p>second save<\/p>/');
 
-        $this->get('/docs/crud?action=delete');
+        $this->get('/docs/crud?page=delete');
         $this->assertPage();
         $this->assertSessionCookie();
         $this->assertPayloadContainsPreg('/<h1>second title<\/h1>/');
         $this->assertPayloadContainsPreg('/<p>second save<\/p>/');
         $this->assertPayloadContainsPreg('/value="Delete page"/'); // delete button
 
-        $this->post('/docs/crud?action=deleteOK');
+        $this->post('/docs/crud?page=deleteOK');
         $this->assertRedirect('/docs/crud');
         $this->assertSessionCookie();
 
@@ -374,12 +396,12 @@ class IntegrationTest extends IntegrationTestCase
         $this->assertRedirect('/');
 
         // nonexisiting page does not have history
-        $this->get('/docs/meow_history?action=history');
+        $this->get('/docs/meow_history?page=history');
         $this->assertPageNotFound();
         $this->assertPayloadContainsPreg('/value="Create page"/'); // create button
 
         // create page
-        $this->post('/docs/meow_history?action=save', [
+        $this->post('/docs/meow_history?page=save', [
             'title' => 'first title',
             'content' => 'first save',
             'author' => 'first author'
@@ -387,13 +409,13 @@ class IntegrationTest extends IntegrationTestCase
         $this->assertRedirect('/docs/meow_history');
 
         // one history entry
-        $this->get('/docs/meow_history?action=history');
+        $this->get('/docs/meow_history?page=history');
         $this->assertPage();
         $this->assertPayloadContainsPreg('/id="history-1"/');
         $this->assertPayloadContainsNotPreg('/id="history-2"/');
 
         // save again - same user
-        $this->post('/docs/meow_history?action=save', [
+        $this->post('/docs/meow_history?page=save', [
             'title' => 'second title',
             'content' => 'second save',
             'author' => 'first author'
@@ -401,13 +423,13 @@ class IntegrationTest extends IntegrationTestCase
         $this->assertRedirect('/docs/meow_history');
 
         // still one history entry - got squashed
-        $this->get('/docs/meow_history?action=history');
+        $this->get('/docs/meow_history?page=history');
         $this->assertPage();
         $this->assertPayloadContainsPreg('/id="history-1"/');
         $this->assertPayloadContainsNotPreg('/id="history-2"/');
 
         // save again - different user
-        $this->post('/docs/meow_history?action=save', [
+        $this->post('/docs/meow_history?page=save', [
             'title' => 'third title',
             'content' => 'third save',
             'author' => 'second author'
@@ -415,14 +437,14 @@ class IntegrationTest extends IntegrationTestCase
         $this->assertRedirect('/docs/meow_history');
 
         // two history entries
-        $this->get('/docs/meow_history?action=history');
+        $this->get('/docs/meow_history?page=history');
         $this->assertPage();
         $this->assertPayloadContainsPreg('/id="history-1"/');
         $this->assertPayloadContainsPreg('/id="history-2"/');
         $this->assertPayloadContainsNotPreg('/id="history-3"/');
 
         // save again - no changes - yet another different user
-        $this->post('/docs/meow_history?action=save', [
+        $this->post('/docs/meow_history?page=save', [
             'title' => '4th title',
             'content' => 'third save',
             'author' => 'third author'
@@ -430,28 +452,28 @@ class IntegrationTest extends IntegrationTestCase
         $this->assertRedirect('/docs/meow_history');
 
         // still two history entries - no-diff change did not get saved
-        $this->get('/docs/meow_history?action=history');
+        $this->get('/docs/meow_history?page=history');
         $this->assertPage();
         $this->assertPayloadContainsPreg('/id="history-1"/');
         $this->assertPayloadContainsPreg('/id="history-2"/');
         $this->assertPayloadContainsNotPreg('/id="history-3"/');
 
         // restore history - will return to second save as the first one was squashed
-        $this->post('/docs/meow_history?action=restore&version=1');
+        $this->post('/docs/meow_history?page=restore&version=1');
         $this->assertPage();
         $this->assertPayloadContainsPreg('/value="4th title"/');
         $this->assertPayloadContainsPreg('/>second save</');// only body gets restored
         $this->assertPayloadContainsPreg('/value="third author"/');
 
         // we did not save the revert, so no change to page
-        $this->get('/docs/meow_history?action=history');
+        $this->get('/docs/meow_history?page=history');
         $this->assertPage();
         $this->assertPayloadContainsPreg('/id="history-1"/');
         $this->assertPayloadContainsPreg('/id="history-2"/');
         $this->assertPayloadContainsNotPreg('/id="history-3"/');
 
         // cleaup
-        $this->post('/docs/meow_history?action=deleteOK');
+        $this->post('/docs/meow_history?page=deleteOK');
     }
 
     public function testHistoryFilesystemChanges(): void
@@ -468,7 +490,7 @@ class IntegrationTest extends IntegrationTestCase
         $this->assertPayloadContainsPreg('/<h2>Snippets<\/h2>/');
 
         // check history - no info there due lack of metadata
-        $this->get('/docs/snippets?action=history');
+        $this->get('/docs/snippets?page=history');
         $this->assertPage();
         $this->assertPayloadContainsPreg('/id="history-0"/');
         $this->assertPayloadContainsNotPreg('/id="history-1"/');
@@ -480,9 +502,9 @@ class IntegrationTest extends IntegrationTestCase
         $this->assertRedirect('/');
 
         // normal save page
-        $this->get('/docs/snippets?action=edit');
+        $this->get('/docs/snippets?page=edit');
         $this->assertPage();
-        $this->post('/docs/snippets?action=save', [
+        $this->post('/docs/snippets?page=save', [
             'title' => 'snippets save 1',
             'content' => 'snippets 1',
             'author' => 'snippet 1'
@@ -490,7 +512,7 @@ class IntegrationTest extends IntegrationTestCase
         $this->assertRedirect('/docs/snippets');
 
         // check history - now contains two entries, one for fs and one for snippet
-        $this->get('/docs/snippets?action=history');
+        $this->get('/docs/snippets?page=history');
         $this->assertPage();
         $this->assertPayloadContainsPreg('/id="history-1"/');
         $this->assertPayloadContainsPreg('/by \?\?\? at/');
@@ -509,7 +531,7 @@ class IntegrationTest extends IntegrationTestCase
         );
 
         // check history - still contains two entries, but also the dirty warning again
-        $this->get('/docs/snippets?action=history');
+        $this->get('/docs/snippets?page=history');
         $this->assertPage();
         $this->assertPayloadContainsPreg('/id="history-1"/');
         $this->assertPayloadContainsPreg('/by \?\?\? at/');
@@ -520,9 +542,9 @@ class IntegrationTest extends IntegrationTestCase
         $this->assertPayloadContainsPreg('/The checksum of this page is invalid./');
 
         // edit & save again
-        $this->get('/docs/snippets?action=edit');
+        $this->get('/docs/snippets?page=edit');
         $this->assertPage();
-        $this->post('/docs/snippets?action=save', [
+        $this->post('/docs/snippets?page=save', [
             'title' => 'snippets save 2' ,
             'content' => 'snippets 2',
             'author' => 'snippet 2'
@@ -530,7 +552,7 @@ class IntegrationTest extends IntegrationTestCase
         $this->assertRedirect('/docs/snippets');
 
         // check history - now contains 4 entries, two for fs and two for snippet
-        $this->get('/docs/snippets?action=history');
+        $this->get('/docs/snippets?page=history');
         $this->assertPage();
         $this->assertPayloadContainsPreg('/id="history-1"/');
         $this->assertPayloadContainsPreg('/by \?\?\? at/');
@@ -543,16 +565,16 @@ class IntegrationTest extends IntegrationTestCase
         $this->assertPayloadContainsNotPreg('/id="history-0"/');
 
         // we could go back to version 3
-        $this->post('/docs/snippets?action=restore&version=3');
+        $this->post('/docs/snippets?page=restore&version=3');
         $this->assertPage();
         $this->assertPayloadContainsPreg('/value="snippets save 2"/');
         $this->assertPayloadContainsPreg('/>snippets 1/');
         $this->assertPayloadContainsPreg('/value="snippet 2"/');
 
         // but history is broken for 2 and 1
-        $this->post('/docs/snippets?action=restore&version=2');
+        $this->post('/docs/snippets?page=restore&version=2');
         $this->assertPageError();
-        $this->post('/docs/snippets?action=restore&version=1');
+        $this->post('/docs/snippets?page=restore&version=1');
         $this->assertPageError();
     }
 
@@ -563,14 +585,14 @@ class IntegrationTest extends IntegrationTestCase
         $this->assertSessionCookie();
 
         // create a test page
-        $this->post('/docs/meow?action=save', [
+        $this->post('/docs/meow?page=save', [
             'title' => 'meow save',
             'content' => 'meow',
             'author' => 'cat'
         ]);
 
         // put first page in edit mode
-        $this->get('/docs/meow?action=edit');
+        $this->get('/docs/meow?page=edit');
         $this->assertPage();
         $this->assertPayloadContainsNotPreg('/Someone started editing/');
         sleep(1);
@@ -581,12 +603,12 @@ class IntegrationTest extends IntegrationTestCase
         $this->assertSessionCookie();
 
         // now we should get the warning
-        $this->get('/docs/meow?action=edit');
+        $this->get('/docs/meow?page=edit');
         $this->assertPage();
         $this->assertPayloadContainsPreg('/Someone started editing/');
 
         // we save anyway
-        $this->post('/docs/meow?action=save', [
+        $this->post('/docs/meow?page=save', [
             'title' => 'meow save 2',
             'content' => 'meow meow',
             'author' => 'cat'
@@ -594,7 +616,7 @@ class IntegrationTest extends IntegrationTestCase
         $this->assertRedirect('/docs/meow');
 
         // warning gone
-        $this->get('/docs/meow?action=edit');
+        $this->get('/docs/meow?page=edit');
         $this->assertPage();
         $this->assertPayloadContainsPreg('/value="meow save 2"/');
         $this->assertPayloadContainsPreg('/>meow meow</');
@@ -602,8 +624,8 @@ class IntegrationTest extends IntegrationTestCase
         $this->assertPayloadContainsNotPreg('/Someone started editing/');
 
         // cleaup
-        $this->post('/docs/meow?action=deleteOK');
-        $this->post('/docs/woof?action=deleteOK');
+        $this->post('/docs/meow?page=deleteOK');
+        $this->post('/docs/woof?page=deleteOK');
     }
 
     public function testPermissionEditor(): void
@@ -619,6 +641,7 @@ class IntegrationTest extends IntegrationTestCase
         $this->assertPayloadContainsPreg('/name="userRead" value=""/');
         $this->assertPayloadContainsPreg('/name="userUpdate" value="docs"/');
         $this->assertPayloadContainsPreg('/name="userDelete" value="docs"/');
+        $this->assertPayloadContainsPreg('/name="userMedia" value="docs"/');
         $this->assertPayloadContainsPreg('/name="userAdmin" value=""/');
 
         // set permissions on a test folder
@@ -627,6 +650,7 @@ class IntegrationTest extends IntegrationTestCase
             'userRead' => 'docs,admin',
             'userUpdate' => 'admin,docs',
             'userDelete' => '',
+            'userMedia' => 'admin,admin',
             'userAdmin' => '*'
         ]);
         $this->assertRedirect('/docs/perms/?admin=folder');
@@ -638,6 +662,7 @@ class IntegrationTest extends IntegrationTestCase
         $this->assertPayloadContainsPreg('/name="userRead" value="admin,docs"/');
         $this->assertPayloadContainsPreg('/name="userUpdate" value="admin,docs"/');
         $this->assertPayloadContainsPreg('/name="userDelete" value=""/');
+        $this->assertPayloadContainsPreg('/name="userMedia" value="admin"/');
         $this->assertPayloadContainsPreg('/name="userAdmin" value="\*"/');
 
         // set edge cases
@@ -646,6 +671,7 @@ class IntegrationTest extends IntegrationTestCase
             'userRead' => ' docs',
             'userUpdate' => null,
             'userDelete' => 'docs,',
+            // no upload - 'userMedia' => null,
             'userAdmin' => ',docs, docs'
         ]);
         $this->assertRedirect('/docs/perms/?admin=folder');
@@ -657,6 +683,7 @@ class IntegrationTest extends IntegrationTestCase
         $this->assertPayloadContainsPreg('/name="userRead" value="docs"/');
         $this->assertPayloadContainsPreg('/name="userUpdate" value=""/');
         $this->assertPayloadContainsPreg('/name="userDelete" value="docs"/');
+        $this->assertPayloadContainsPreg('/name="userMedia" value=""/');
         $this->assertPayloadContainsPreg('/name="userAdmin" value="docs"/');
     }
 

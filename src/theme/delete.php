@@ -29,7 +29,7 @@ outputBanner($wiki);
       <div class="col-12">
         <p><?php __('Do you really want to delete this page?'); ?></p>
         <?php if ($user->mayDelete($wiki->getWikiPath())) { ?>
-          <form action="?action=deleteOK" method="post">
+          <form action="?page=deleteOK" method="post">
             <input type="submit" class="error" value="<?php __('Delete page'); ?>"><a class="btn" href="<?php echo $wiki->getWikiPath(); ?>"><?php __('Cancel'); ?></a>
           </form>
         <?php } ?>

@@ -4,3 +4,4 @@ userRead: *
 userUpdate: admin
 userDelete: admin
 userAdmin: admin
+userMedia: admin

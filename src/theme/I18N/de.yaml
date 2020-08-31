@@ -15,6 +15,7 @@
 # along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
 
 Admin: Administrieren
+Allowed media types %s.: Zulässige Formate %s.
 Author: Autor
 bold: fett
 by %s at %s: von %s am %s
@@ -32,6 +33,7 @@ Difference vs.: Unterschied zu
 Do you really want to delete this page?: Möchtest du diese Seite wirklich löschen?
 Edit: Bearbeiten
 Error: Fehler
+File size limit %s.: Dateigrößenlimit %s.
 Folder editor: Ordner Editor
 Folder permissions: Ordnerrechte
 Forbidden: Unzulässig
@@ -46,7 +48,9 @@ Login required: Anmeldung erforderlich
 Login: Anmelden
 Logout: Abmelden
 Löschen: Delete
+Media: Medien
 No history is available.: Es ist kein Protokoll verfügbar.
+No media found.: Keine Medien gefunden.
 Not found: Nicht gefunden
 Page %d of %d: Seite %d von %d
 Page %d: Seite %d
@@ -61,6 +65,7 @@ restore: wiederherstellen
 Save & Edit: Speichern & Editieren
 Save: Speichern
 Separator: Trennlinie
+Select file: Datei wählen
 Set password: Passwort setzen
 Someone started editing this file %s minutes ago.: Jemand editiert diese Seite seit %s Minuten.
 Sorry, an error occured.: Es ist leider ein Fehler aufgetreten.
@@ -75,5 +80,6 @@ Username: Benutzer
 Users (global): Benutzer (global)
 valid for %s and below: gültig für %s und tiefer
 Version: Version
+View: Ansehen
 Warning: Warnung
 You do not have the necessary permissions to do this.: Du verfügst nicht über die nötigen Rechte, um diese Aktion auszuführen.

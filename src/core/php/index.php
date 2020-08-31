@@ -37,6 +37,7 @@ function redirect(
     string $path,
     string $action = ''
 ) {
+    $action = $action === '' ? '' : '?' . $action;
     header('Location: ' . $path . $action);
     exit; // terminate execution to enforce redirect
 }
@@ -105,6 +106,19 @@ function renderMedia(string $pathFS): void
     exit;
 }
 
+/**
+ * Assemble page actions for forwarding.
+ *
+ * @return string get-string containing action(s).
+ */
+function getActions(): string
+{
+    $actions = '';
+    $actions .= array_key_exists('page', $_GET) ? '&page=' . urlencode($_GET['page']) : '';
+    $actions .= array_key_exists('media', $_GET) ? '&media=' . urlencode($_GET['media']) : '';
+    return $actions === '' ? $actions : substr($actions, 1);
+}
+
 // --- setup wiki --------------------------------------------------------------
 
 require_once('core/Wiki.php');
@@ -126,12 +140,8 @@ $contentPath = substr(sanitizePath(
 ), strlen($wiki->getWikiRoot()));
 
 $canonicalPath = $wiki->init($contentPath);
-if ($contentPath != $canonicalPath) {
+if ($contentPath !== $canonicalPath) {
     redirect($canonicalPath);
-}
-
-if ($wiki->isMedia() && $user->mayRead($wiki->getWikiPath())) {
-    renderMedia($wiki->getContentFileFS());
 }
 
 // first we check for any authentication related stuff
@@ -139,8 +149,7 @@ switch ($_GET['auth']) {
     case 'login':
         if ($user->login(trim($_POST['username'] ?? ''), trim($_POST['password'] ?? ''))) {
             // successfull -> redirect back
-            $action = array_key_exists('action', $_GET) ? '?action=' . urlencode($_GET['action']) : '';
-            redirect($wiki->getLocation(), $action);
+            redirect($wiki->getLocation(), getActions());
         } else {
             // unsuccessful -> show login again
             renderThemeFile('login.php', 401);
@@ -148,8 +157,7 @@ switch ($_GET['auth']) {
         break;
     case 'logout':
         $user->logout();
-        $action = array_key_exists('action', $_GET) ? '?action=' . urlencode($_GET['action']) : '';
-        redirect($wiki->getLocation(), $action);
+        redirect($wiki->getLocation(), getActions());
 }
 
 // now check for regular wiki operations
@@ -157,13 +165,13 @@ switch ($_GET['auth']) {
 // actions that work on existing & non-existing pages
 switch ($_GET['admin']) {
     case 'folder': // folder administration
-        if ($user->adminFolder($contentPath) != null) {
+        if ($user->adminFolder($contentPath) !== null) {
             renderThemeFile('admin_folder.php');
         }
         break;
     case 'delete':
         if ($user->deleteUser($_GET['user'])) {
-            redirect($wiki->getLocation() . '?admin=folder');
+            redirect($wiki->getLocation(), 'admin=folder');
         }
         break;
     case 'permissions':
@@ -174,19 +182,20 @@ switch ($_GET['admin']) {
                 preg_split('/,/', preg_replace('/\s+/', '', $_POST['userRead'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
                 preg_split('/,/', preg_replace('/\s+/', '', $_POST['userUpdate'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
                 preg_split('/,/', preg_replace('/\s+/', '', $_POST['userDelete'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
+                preg_split('/,/', preg_replace('/\s+/', '', $_POST['userMedia'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
                 preg_split('/,/', preg_replace('/\s+/', '', $_POST['userAdmin'] ?? ''), -1, PREG_SPLIT_NO_EMPTY)
             )
         ) {
-            redirect($wiki->getLocation() . '?admin=folder');
+            redirect($wiki->getLocation(), 'admin=folder');
         }
         break;
     case 'secret':
         if ($user->addSecret($_POST['username'], $_POST['secret'])) {
-            redirect($wiki->getLocation() . '?admin=folder');
+            redirect($wiki->getLocation(), 'admin=folder');
         }
         break;
 }
-switch ($_GET['action']) {
+switch ($_GET['page']) {
     case 'save': // saving new pages
         $user->setAlias(trim(preg_replace('/\s+/', ' ', $_POST['author'])));
         if (
@@ -200,11 +209,40 @@ switch ($_GET['action']) {
         };
         break;
 }
+switch ($_GET['media']) {
+    case 'list': // media folder admin
+        if ($wiki->media($contentPath) !== null) {
+            renderThemeFile('media.php');
+        }
+        renderLoginOrDenied();
+        break;
+    case 'delete': // media folder admin
+        if ($wiki->mediaDelete($contentPath) !== null) {
+            redirect(dirname($wiki->getLocation()) . '/', 'media=list'); // redirect back to media list
+        }
+        renderLoginOrDenied();
+        break;
+    case 'upload': // media folder admin
+        if ($_FILES['wikimedia'] && $_FILES['wikimedia']['error'] === UPLOAD_ERR_OK) {
+            if (
+                $wiki->mediaUpload(
+                    $_FILES['wikimedia']['tmp_name'],
+                    strtolower(trim($_FILES['wikimedia']['name'])),
+                    $contentPath
+                )
+            ) {
+                redirect($wiki->getLocation(), 'media=list'); // redirect back to media list
+            }
+        } else { // upload failed
+            redirect($wiki->getLocation(), 'media=list');
+        }
+        break;
+}
 
 if (!$wiki->exists()) {
-    switch ($_GET['action']) {
-        case 'createPage':
-            if ($wiki->createPage()) {
+    switch ($_GET['page']) {
+        case 'create':
+            if ($wiki->create()) {
                 renderThemeFile('edit.php');
             }
             break;
@@ -213,7 +251,7 @@ if (!$wiki->exists()) {
             exit;
     }
 } else {
-    switch ($_GET['action']) {
+    switch ($_GET['page']) {
         case 'delete':
             if ($wiki->deletePage(true)) {
                 renderThemeFile('delete.php');
@@ -243,10 +281,13 @@ if (!$wiki->exists()) {
             }
             renderThemeFile('error.php', 400);
             break;
-        case 'createPage':
+        case 'create':
             renderThemeFile('error.php', 400); // can't recreate existing page
             break;
         default:
+            if ($wiki->isMedia() && $user->mayRead($wiki->getWikiPath())) {
+                renderMedia($wiki->getContentFileFS());
+            }
             if ($wiki->readPage()) {
                 renderThemeFile('view.php');
             }

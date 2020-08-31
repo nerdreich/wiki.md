@@ -75,6 +75,8 @@ final class UserSessionTest extends \PHPUnit\Framework\TestCase
         $this->assertFalse($user->mayCreate(''));
         $this->assertFalse($user->mayUpdate(''));
         $this->assertFalse($user->mayDelete(''));
+        $this->assertFalse($user->mayMedia(''));
+        $this->assertFalse($user->mayAdmin(''));
 
         $this->assertTrue($user->mayRead('/'));
         $this->assertTrue($user->mayRead('/somepage'));
@@ -96,6 +98,16 @@ final class UserSessionTest extends \PHPUnit\Framework\TestCase
         $this->assertFalse($user->mayDelete('/somefolder/'));
         $this->assertFalse($user->mayDelete('/somefolder/somepage'));
         $this->assertFalse($user->mayDelete('/somefolder/somefolder/somepage'));
+        $this->assertFalse($user->mayMedia('/'));
+        $this->assertFalse($user->mayMedia('/somepage'));
+        $this->assertFalse($user->mayMedia('/somefolder/'));
+        $this->assertFalse($user->mayMedia('/somefolder/somepage'));
+        $this->assertFalse($user->mayMedia('/somefolder/somefolder/somepage'));
+        $this->assertFalse($user->mayAdmin('/'));
+        $this->assertFalse($user->mayAdmin('/somepage'));
+        $this->assertFalse($user->mayAdmin('/somefolder/'));
+        $this->assertFalse($user->mayAdmin('/somefolder/somepage'));
+        $this->assertFalse($user->mayAdmin('/somefolder/somefolder/somepage'));
 
         $this->assertTrue($user->mayRead('/docs'));
         $this->assertTrue($user->mayRead('/docs/'));
@@ -113,6 +125,14 @@ final class UserSessionTest extends \PHPUnit\Framework\TestCase
         $this->assertFalse($user->mayDelete('/docs/'));
         $this->assertFalse($user->mayDelete('/docs/install'));
         $this->assertFalse($user->mayDelete('/docs/install/'));
+        $this->assertFalse($user->mayMedia('/docs'));
+        $this->assertFalse($user->mayMedia('/docs/'));
+        $this->assertFalse($user->mayMedia('/docs/install'));
+        $this->assertFalse($user->mayMedia('/docs/install/'));
+        $this->assertFalse($user->mayAdmin('/docs'));
+        $this->assertFalse($user->mayAdmin('/docs/'));
+        $this->assertFalse($user->mayAdmin('/docs/install'));
+        $this->assertFalse($user->mayAdmin('/docs/install/'));
     }
 
     public function testDocsUser(): void
@@ -141,6 +161,16 @@ final class UserSessionTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($user->hasExplicitPermission('docs', 'userDelete', '/docs/install'));
         $this->assertTrue($user->hasExplicitPermission('docs', 'userDelete', '/docs/more/infos'));
         $this->assertTrue($user->hasExplicitPermission('docs', 'userDelete', '/docs/more/infos/'));
+        $this->assertFalse($user->hasExplicitPermission('docs', 'userMedia', '/docs'));
+        $this->assertTrue($user->hasExplicitPermission('docs', 'userMedia', '/docs/'));
+        $this->assertTrue($user->hasExplicitPermission('docs', 'userMedia', '/docs/install'));
+        $this->assertTrue($user->hasExplicitPermission('docs', 'userMedia', '/docs/more/infos'));
+        $this->assertTrue($user->hasExplicitPermission('docs', 'userMedia', '/docs/more/infos/'));
+        $this->assertFalse($user->hasExplicitPermission('docs', 'userAdmin', '/docs'));
+        $this->assertFalse($user->hasExplicitPermission('docs', 'userAdmin', '/docs/'));
+        $this->assertFalse($user->hasExplicitPermission('docs', 'userAdmin', '/docs/install'));
+        $this->assertFalse($user->hasExplicitPermission('docs', 'userAdmin', '/docs/more/infos'));
+        $this->assertFalse($user->hasExplicitPermission('docs', 'userAdmin', '/docs/more/infos/'));
 
         $this->assertFalse($user->hasExplicitPermission('docs', 'userCreate', '/'));
         $this->assertFalse($user->hasExplicitPermission('docs', 'userCreate', '/somepage'));
@@ -162,6 +192,16 @@ final class UserSessionTest extends \PHPUnit\Framework\TestCase
         $this->assertFalse($user->hasExplicitPermission('docs', 'userDelete', '/somefolder/'));
         $this->assertFalse($user->hasExplicitPermission('docs', 'userDelete', '/somefolder/somepage'));
         $this->assertFalse($user->hasExplicitPermission('docs', 'userDelete', '/somefolder/somefolder/somepage'));
+        $this->assertFalse($user->hasExplicitPermission('docs', 'userMedia', '/'));
+        $this->assertFalse($user->hasExplicitPermission('docs', 'userMedia', '/somepage'));
+        $this->assertFalse($user->hasExplicitPermission('docs', 'userMedia', '/somefolder/'));
+        $this->assertFalse($user->hasExplicitPermission('docs', 'userMedia', '/somefolder/somepage'));
+        $this->assertFalse($user->hasExplicitPermission('docs', 'userMedia', '/somefolder/somefolder/somepage'));
+        $this->assertFalse($user->hasExplicitPermission('docs', 'userAdmin', '/'));
+        $this->assertFalse($user->hasExplicitPermission('docs', 'userAdmin', '/somepage'));
+        $this->assertFalse($user->hasExplicitPermission('docs', 'userAdmin', '/somefolder/'));
+        $this->assertFalse($user->hasExplicitPermission('docs', 'userAdmin', '/somefolder/somepage'));
+        $this->assertFalse($user->hasExplicitPermission('docs', 'userAdmin', '/somefolder/somefolder/somepage'));
     }
 
     public function testUserAdmin(): void
@@ -262,22 +302,22 @@ final class UserSessionTest extends \PHPUnit\Framework\TestCase
 
         // anonymous can't set permissions
         $this->assertFalse(
-            $user->setPermissions('/some/test/folder/', ['admin'], ['admin'], ['admin'], ['admin'], ['admin'])
+            $user->setPermissions('/some/test/folder/', ['admin'], ['admin'], ['admin'], ['admin'], ['admin'], ['admin'])
         );
 
         // non-admin user can't set permissions
         $this->getPrivateProperty('username')->setValue($user, 'docs');
         $this->assertFalse(
-            $user->setPermissions('/some/test/folder/', ['admin'], ['admin'], ['admin'], ['admin'], ['admin'])
+            $user->setPermissions('/some/test/folder/', ['admin'], ['admin'], ['admin'], ['admin'], ['admin'], ['admin'])
         );
 
         // admin can set permissions
         $this->getPrivateProperty('username')->setValue($user, 'admin');
         $this->assertTrue(
-            $user->setPermissions('/some/test/folder/', ['admin'], ['admin'], ['admin'], ['admin'], ['admin'])
+            $user->setPermissions('/some/test/folder/', ['admin'], ['admin'], ['admin'], ['admin'], ['admin'], ['admin'])
         );
         $this->assertFalse(
-            $user->setPermissions('/some/test/folder', ['admin'], ['admin'], ['admin'], ['admin'], ['admin'])
+            $user->setPermissions('/some/test/folder', ['admin'], ['admin'], ['admin'], ['admin'], ['admin'], ['admin'])
         ); // even admin can't set permissions on a file
 
         // check for auto-correction of various element combinations
@@ -287,6 +327,7 @@ final class UserSessionTest extends \PHPUnit\Framework\TestCase
             ['*'],
             ['admin', '*', 'docs'],
             ['docs', 'someone', 'admin', 'unknown'],
+            ['*', '*'],
             ['admin', 'admin']
         );
         $permissions = $this->getAsPublicMethod('loadPermissionFile')->invokeArgs($user, ['/some/test/folder/']);
@@ -294,6 +335,7 @@ final class UserSessionTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals('*', $permissions['userRead']);
         $this->assertEquals('*', $permissions['userUpdate']);
         $this->assertEquals('admin,docs', $permissions['userDelete']);
+        $this->assertEquals('*', $permissions['userMedia']);
         $this->assertEquals('admin', $permissions['userAdmin']);
     }
 }

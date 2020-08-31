@@ -27,6 +27,7 @@ form {
 
 input[type='text'],
 input[type='password'],
+input[type='file'],
 textarea {
   @include typography-font($typography-font-list-courier, 400, px(18), 1.4em);
 
@@ -55,6 +56,37 @@ textarea {
     border-color: $color-negative;
     box-shadow: none;
     outline: 0;
+  }
+}
+
+.form-upload {
+  input {
+    margin-left: 0;
+    margin-right: 0;
+
+    &[type='file'] {
+      height: 2.5em;
+      opacity: 0;
+      position: absolute;
+      width: 90vw;
+
+      @include media-breakpoint-up(sm) {
+        width: 62%;
+      }
+    }
+
+    &[type='text'] {
+      @include media-breakpoint-up(sm) {
+        pointer-events: none;
+        width: 66%;
+      }
+    }
+
+    &[type='submit'] {
+      @include media-breakpoint-up(sm) {
+        width: 33%;
+      }
+    }
   }
 }
 

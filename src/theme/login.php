@@ -27,9 +27,7 @@ outputBanner($wiki);
   <div class="row">
     <div class="col-12">
       <h2><?php __('Login required'); ?></h2>
-      <form action="?<?php
-        echo array_key_exists('action', $_GET) ? 'action=' . urlencode($_GET['action']) . '&' : '';
-        ?>auth=login" method="post">
+      <form action="?<?php echo getActions(); ?>&amp;auth=login" method="post">
         <?php if (!$config['login_simple']) { ?>
         <label for="username" class="in-border"><?php __('Username'); ?></label>
         <input id="username" type="text" name="username" required autofocus>

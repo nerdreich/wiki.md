@@ -25,7 +25,7 @@ outputBanner($wiki);
 ?>
 <section class="section-main container">
   <div class="row">
-    <form class="col-12" action="?action=save" method="post">
+    <form class="col-12" action="?page=save" method="post">
       <?php if ($wip = $wiki->isWip()) { ?>
         <p class="warning"><?php __('Warning') ?>: <?php __('Someone started editing this file %s minutes ago.', ceil($wip / 60.)) ?></p>
       <?php } ?>

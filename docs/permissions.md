@@ -6,6 +6,7 @@ wiki.md can restrict access to page actions (create, view, edit, delete) for cer
 * `userRead` - view/read pages
 * `userUpdate` - edit/update pages
 * `userDelete` - delete pages
+* `userMedia` - manage uploads (e.g. images)
 * `userAdmin` - administrate folders (passwords)
 
 ## Folder Editor
@@ -32,7 +33,7 @@ userUpdate: docs
 userDelete: docs
 ```
 
-This defines that, everyone (`*`) can read pages, but only `docs` might create (`userCreate`), update (`userUpdate`) or delete (`userDelete`) pages. As there is no reference to `userAdmin`, the admin roles are inherited from the parent folder.
+This defines that, everyone (`*`) can read pages, but only `docs` might create (`userCreate`), update (`userUpdate`) or delete (`userDelete`) pages. As there is no reference to `userAdmin` or `userMedia`, these roles are inherited from the parent folder.
 
 If no `_.yaml` file exists in a directory, it inherits all permissions from the parent folder.
 

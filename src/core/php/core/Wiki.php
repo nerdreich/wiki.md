@@ -34,8 +34,8 @@ class Wiki
     private $repo = '$URL$';
     private $config = [];
     private $user;
-    private $pregMedia =
-        '/\.(gif|jpe?g|png)$/i'; // files matching this are considered media
+    private $pregMedia = '/\.(gif|jpg|png)$/i'; // files matching this are considered media
+    private $mediaTypes = 'gif|jpg|png';        // shown to humans
 
     private $contentDirFS = '';    // e.g. /var/www/www.mysite.com/mywiki/data/content
     private $contentFileFS = 'na'; // e.g. /var/www/www.mysite.com/mywiki/data/content/animal/lion.md
@@ -216,6 +216,34 @@ class Wiki
     }
 
     /**
+     * Determine the media directory for a wiki path.
+     *
+     * @param string $wikiPath Wiki Path.
+     * @return string Absolute directory of media folder on disk.
+     */
+    private function getMediaDirFS(
+        string $wikiPath
+    ): string {
+        if (preg_match('/\/$/', $wikiPath)) {
+            return $this->contentDirFS . $wikiPath . '_media';
+        } else {
+            return $this->contentDirFS . dirname($wikiPath) . '/_media';
+        }
+    }
+
+    /**
+     * Determine the media file for a wiki path.
+     *
+     * @param string $wikiPath Wiki Path to a media file (e.g. /animal/lion.jpg).
+     * @return string Absolute directory of media folder on disk.
+     */
+    private function getMediaFileFS(
+        string $wikiPath
+    ): string {
+        return $this->getMediaDirFS($wikiPath) . '/' . basename($wikiPath);
+    }
+
+    /**
      * Map URL path to markdown file.
      *
      * - /path/to/folder/ -> /path/to/folder/README.md
@@ -228,7 +256,7 @@ class Wiki
         string $wikiPath
     ): string {
         if (preg_match($this->pregMedia, $wikiPath)) { // image etc.
-            return $this->contentDirFS . dirname($wikiPath) . '/_media/' . basename($wikiPath);
+            return $this->getMediaFileFS($wikiPath);
         } else { // Markdown file
             if (preg_match('/\/$/', $wikiPath)) { // folder
                 $postfix = 'README.md';
@@ -369,6 +397,33 @@ class Wiki
     public function getDescription(): string
     {
         return $this->getTitle();
+    }
+
+    /**
+     * Get the media types allowed for upload.
+     *
+     * @return string Both human-readable and HTML5 pattern string for UI, e.g. 'gif|jpg|png'.
+     */
+    public function getMediaTypes(): string
+    {
+        return $this->mediaTypes;
+    }
+
+    /**
+     * Get the media size limit.
+     *
+     * Might be limited by wiki.md's config or by php.ini.
+     *
+     * @return int Limit in bytes.
+     */
+    public function getMediaSizeLimit(): string
+    {
+        return min(
+            (int)($this->config['media_size_limit_kb'] ?? 4096),
+            ((int)(ini_get('upload_max_filesize'))) * 1024,
+            ((int)(ini_get('post_max_size'))) * 1024,
+            ((int)(ini_get('memory_limit'))) * 1024
+        );
     }
 
     /**
@@ -1062,7 +1117,7 @@ class Wiki
      *
      * @return True if page was created. False if user is not allowed.
      */
-    public function createPage(): bool
+    public function create(): bool
     {
         if ($this->user->mayCreate($this->wikiPath)) {
             // reset internal data to empty page
@@ -1135,6 +1190,71 @@ class Wiki
             return true;
         }
 
+        return false;
+    }
+
+    /**
+     * Provide all data for the media/upload page.
+     *
+     * @param string $wikiPath WikiPath of folder to administer.
+     * @param array Array containing 'media'.
+     */
+    public function media(
+        string $wikiPath
+    ): ?array {
+        $mediaFolder = $this->getWikiPathParentFolder($wikiPath);
+        if ($this->user->mayMedia($mediaFolder)) {
+            $files = [];
+            $mediaDirFS = $this->getMediaDirFS($mediaFolder);
+            if (is_dir($mediaDirFS)) {
+                foreach (new \DirectoryIterator($mediaDirFS) as $fileinfo) {
+                    if (!$fileinfo->isDot() && preg_match($this->pregMedia, $fileinfo->getFilename())) {
+                        $file = [];
+                        $file['name'] = $fileinfo->getFilename();
+                        $file['path'] = $fileinfo->getFilename();
+                        $file['size'] = $fileinfo->getSize();
+                        $file['mtime'] = $fileinfo->getMtime();
+                        $files[] = $file;
+                    }
+                }
+            }
+            return $files;
+        }
+        return null;
+    }
+
+    /**
+     * Delete a media file.
+     *
+     * @param string $wikiPath WikiPath of file to delete.
+     * @return bool True if file could be deleted.
+     */
+    public function mediaDelete(
+        string $wikiPath
+    ): bool {
+        if ($this->user->mayMedia($wikiPath)) {
+            $file = $this->wikiPathToContentFileFS($wikiPath);
+            if (is_file($file)) {
+                unlink($file);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function mediaUpload(
+        $tempName,
+        $filename,
+        $wikiPath
+    ): bool {
+        if (preg_match($this->pregMedia, $filename)) { // image etc.
+            if ($this->user->mayMedia($wikiPath)) {
+                $target = $this->getMediaDirFS($wikiPath) . '/' . $filename;
+                if (move_uploaded_file($tempName, $target)) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 

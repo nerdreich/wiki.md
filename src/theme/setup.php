@@ -69,16 +69,19 @@ function getPageLinksHTML($user, $wiki)
     $html = '';
     if ($user->mayUpdate($wiki->getWikiPath())) {
         if ($wiki->exists()) {
-            $html .= '<a href="?action=edit">' . ___('Edit') . '</a><br>';
+            $html .= '<a href="?page=edit">' . ___('Edit') . '</a><br>';
         } else {
-            $html .= '<a href="?action=createPage">' . ___('Create') . '</a><br>';
+            $html .= '<a href="?page=create">' . ___('Create') . '</a><br>';
         }
     }
+    if ($user->mayMedia($wiki->getWikiPath())) {
+        $html .= '<a href="?media=list">' . ___('Media') . '</a><br>';
+    }
     if ($wiki->exists() && $user->mayRead($wiki->getWikiPath()) && $user->mayUpdate($wiki->getWikiPath())) {
-        $html .= '<a href="?action=history">' . ___('History') . '</a><br>';
+        $html .= '<a href="?page=history">' . ___('History') . '</a><br>';
     }
     if ($wiki->exists() && $user->mayDelete($wiki->getWikiPath())) {
-        $html .= '<a href="?action=delete">' . ___('Delete') . '</a><br>';
+        $html .= '<a href="?page=delete">' . ___('Delete') . '</a><br>';
     }
     if ($user->mayAdmin($wiki->getWikiPath())) {
         $html .= '<a href="./?admin=folder">' . ___('Permissions') . '</a><br>';
@@ -145,6 +148,28 @@ function diff2html(
     }
     $html .= $chunk;
     return '<pre><code>' . substr($html, 1) . '</code></pre>';
+}
+
+/**
+ * Convert a date or time to a string based on the current language/locale.
+ *
+ * Will auto-detect the format of the date.
+ *
+ * @param mixed $param A date of some kind.
+ * @return string Formatted date.
+ */
+function localDateString(
+    $param
+): string {
+    global $config;
+    $fmt = $config['datetime'];
+    if (gettype($param) === 'object' && get_class($param) === 'DateTime') {
+        return $param->format($fmt);
+    }
+    if (gettype($param) === 'integer') {
+        return (new \DateTime('@' . $param))->format($fmt);
+    }
+    return $param;
 }
 
 /**
@@ -233,7 +258,7 @@ function outputFooter(at\nerdreich\Wiki $wiki, array $config)
       <p>
         <a class="no-icon" href="<?php echo $wiki->getRepo(); ?>">wiki.md v<?php echo $wiki->getVersion(); ?></a>
         <?php if ($wiki->getDate() !== null) {
-            echo '- ' . htmlspecialchars(___('Last saved %s', $wiki->getDate()->format($config['datetime'])));
+            echo '- ' . htmlspecialchars(___('Last saved %s', localDateString($wiki->getDate())));
         } ?>
         - <a href="/<?php __('Privacy'); ?>"><?php __('Privacy'); ?></a>
       </p>

@@ -52,6 +52,9 @@ $userPattern = '(' . implode(',|', $infos['users']) . ',)*(' . implode('|', $inf
       <label class="in-border"><?php __('Delete'); ?></label>
       <input type="text" name="userDelete" value="<?php echo $infos['permissions']['userDelete']; ?>"
         placeholder="<?php __('like parent'); ?>" pattern="<?php echo $userPattern; ?>">
+      <label class="in-border"><?php __('Upload'); ?></label>
+      <input type="text" name="userMedia" value="<?php echo $infos['permissions']['userMedia']; ?>"
+        placeholder="<?php __('like parent'); ?>" pattern="<?php echo $userPattern; ?>">
       <label class="in-border"><?php __('Admin'); ?></label>
       <input type="text" name="userAdmin" value="<?php echo $infos['permissions']['userAdmin']; ?>"
         placeholder="<?php __('like parent'); ?>" pattern="<?php echo $userPattern; ?>">

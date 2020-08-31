@@ -75,7 +75,7 @@ $restoreEnabled = true;
             <p>
               <span class="minor"><?php __('by %s at %s', $change['author'], historyDate($change['date'], $config)); ?></span>
               <?php if ($restoreEnabled && !$wiki->isDirty()) { ?>
-                - <a href="?action=restore&version=<?php echo $version; ?>"><?php __('restore'); ?></a>
+                - <a href="?page=restore&version=<?php echo $version; ?>"><?php __('restore'); ?></a>
               <?php } ?>
             </p>
           </dt>

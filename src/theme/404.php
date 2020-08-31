@@ -28,7 +28,7 @@ outputBanner($wiki);
     <div class="col-12">
       <p><?php __('Page %s does not exist.', $wiki->getLocation()); ?></p>
       <?php if ($user->mayCreate($wiki->getLocation())) { ?>
-        <form action="?action=createPage" method="post">
+        <form action="?page=create" method="post">
           <input type="submit" class="primary" value="<?php __('Create page'); ?>">
         </form>
       <?php } ?>
