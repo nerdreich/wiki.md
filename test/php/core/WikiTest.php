@@ -59,6 +59,23 @@ final class WikiTest extends \PHPUnit\Framework\TestCase
         $this->assertStringStartsWith('https://github', $wiki->getRepo());
     }
 
+    public function testExists(): void
+    {
+        $wiki = $this->getNewWiki();
+        $this->assertTrue($wiki->exists('/'));
+        $this->assertTrue($wiki->exists('/README'));
+        $this->assertFalse($wiki->exists('/README.md'));
+        $this->assertFalse($wiki->exists('/docs'));
+        $this->assertTrue($wiki->exists('/docs/'));
+        $this->assertTrue($wiki->exists('/docs/README'));
+        $this->assertFalse($wiki->exists('/docs/README.md'));
+        $this->assertTrue($wiki->exists('/docs/install'));
+        $this->assertFalse($wiki->exists('/docs/install.md'));
+        $this->assertTrue($wiki->exists('/docs/./install'));
+        $this->assertTrue($wiki->exists('/docs/../docs/more/../install'));
+        $this->assertFalse($wiki->exists('/docs/../../README'));
+    }
+
     public function testHomepage(): void
     {
         $wiki = $this->getNewWiki();
@@ -249,6 +266,21 @@ final class WikiTest extends \PHPUnit\Framework\TestCase
         );
     }
 
+    public function testFilterBrokenLinks(): void
+    {
+        $wiki = $this->getNewWiki();
+        $method = $this->getAsPublicMethod('runFilters');
+
+        // nothing changes while not logged-in
+        $this->assertEquals('[link](/)', $method->invokeArgs($wiki, ['markup', '[link](/)', '/path']));
+        $this->assertNotEquals(
+            '[link](/nope){.broken}',
+            $method->invokeArgs($wiki, ['markup', '[link](/nope)', '/path'])
+        );
+
+        // we can't test logged-in version without sessions/header errors :(
+    }
+
     public function testMacroInclude(): void
     {
         $wiki = $this->getNewWiki();
@@ -265,8 +297,14 @@ final class WikiTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals('include README', $method->invokeArgs($wiki, ['raw', 'include README', '/path']));
 
         // missing filename
-        $this->assertEquals('{{error include-invalid}}', $method->invokeArgs($wiki, ['raw', '{{include}}', $contentDirFS . '/']));
-        $this->assertEquals('{{error include-invalid}}', $method->invokeArgs($wiki, ['raw', '{{ include }}', $contentDirFS . '/']));
+        $this->assertEquals(
+            '{{error include-invalid}}',
+            $method->invokeArgs($wiki, ['raw', '{{include}}', $contentDirFS . '/'])
+        );
+        $this->assertEquals(
+            '{{error include-invalid}}',
+            $method->invokeArgs($wiki, ['raw', '{{ include }}', $contentDirFS . '/'])
+        );
 
         // include same-level
         $this->assertMatchesRegularExpression(

@@ -188,11 +188,11 @@ switch ($_GET['admin']) {
 }
 switch ($_GET['action']) {
     case 'save': // saving new pages
-        $user->setAlias(trim($_POST['author']));
+        $user->setAlias(trim(preg_replace('/\s+/', ' ', $_POST['author'])));
         if (
             $wiki->savePage(
                 trim(str_replace("\r", '', $_POST['content'])),
-                trim($_POST['title']),
+                trim(preg_replace('/\s+/', ' ', $_POST['title'])),
                 trim($user->getAlias())
             )
         ) {

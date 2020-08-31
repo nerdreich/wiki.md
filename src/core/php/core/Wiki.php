@@ -69,6 +69,7 @@ class Wiki
         $this->registerFilterFixLinks();
         $this->registerFilterIndentHeadlines();
         $this->registerFilterMacros();
+        $this->registerFilterBrokenLinks();
     }
 
     /**
@@ -188,7 +189,8 @@ class Wiki
      * within that subfolder, but not contain the subfolder.
      *
      * @param string $path Path to convert, e.g. `animal/../rock/granite`.
-     * @return string Resolved path, e.g. `/rock/granite`.
+     * @return string Resolved path, e.g. `/rock/granite`. Null if invalid (e.g.
+     *                outside root).
      */
     private function canonicalWikiPath(string $wikiPath): ?string
     {
@@ -313,13 +315,20 @@ class Wiki
     }
 
     /**
-     * Check if the current wiki page exists.
+     * Check if a wiki page exists.
      *
+     * @param $wikiPath WikiPath to check. If none/null, the currently loaded
+     *                  page is checked.
      * @return boolean True, if the current path matches a page. False if not.
      */
-    public function exists(): bool
+    public function exists(string $wikiPath = null): bool
     {
-        return is_file($this->contentFileFS);
+        if ($wikiPath === null) {
+            return is_file($this->contentFileFS);
+        } else {
+            $wikiPath = $this->canonicalWikiPath($wikiPath);
+            return $wikiPath === null ? false : is_file($this->wikiPathToContentFileFS($wikiPath));
+        }
     }
 
     /**
@@ -618,6 +627,35 @@ class Wiki
                 }
                 $markdown = str_replace($matchFull[$index], '[' . $matchText[$index] . ']('
                     . $this->getLocation($folder . $matchLink[$index]) . ')', $markdown);
+            }
+            return $markdown;
+        });
+    }
+
+    /**
+     * Filter: Mark internal links to non-exisiting pages 'broken'.
+     *
+     * For performance reasons, this will only run when a user is logged-in.
+     */
+    private function registerFilterBrokenLinks(): void
+    {
+        $this->registerFilter('markup', 'markdownDeadLinks', function (string $markdown, string $fsPath): string {
+            if ($this->user->isLoggedIn()) {
+                $folder = $this->getWikiPathParentFolder($this->contentFileFSToWikiPath($fsPath));
+
+                preg_match_all('/\[([^]]*)\]\(([^)]*)\)/', $markdown, $matches); // fetch all markup links
+                list($matchFull, $matchText, $matchLink) = $matches;
+                for ($index = 0; $index < count($matchLink); $index++) {
+                    if (preg_match('/^https?:/', $matchLink[$index])) { // skip http[s]: links
+                        continue;
+                    }
+
+                    // at this point we can assume that we have an internal, absolute wikipath
+                    if (!$this->exists($matchLink[$index])) {
+                        // append Markdown-extra css markup to link
+                        $markdown = str_replace($matchFull[$index], $matchFull[$index] . '{.broken}', $markdown);
+                    }
+                }
             }
             return $markdown;
         });
@@ -973,8 +1011,7 @@ class Wiki
 
             // update other metadata
             $this->metadata['date'] = date(\DateTimeInterface::ATOM);
-            $this->metadata['title'] = $this->cleanupSingeLineText($title);
-            $author = $this->cleanupSingeLineText($author);
+            $this->metadata['title'] = $title;
             $this->metadata['author'] = $author !== '' ? $author : '???';
             unset($this->metadata['edit']);
             unset($this->metadata['editBy']);
@@ -1223,18 +1260,6 @@ class Wiki
             array_pop($split);
         }
         return '/' . $name;
-    }
-
-    /**
-     * Remove bad stuff from single-line inputs.
-     *
-     * @param string $text Value of an <input>.
-     * @return string Trimmed value with extra whitspace removed.
-     */
-    private function cleanupSingeLineText(
-        string $text
-    ): string {
-        return preg_replace('/\s+/', ' ', trim($text));
     }
 
     /**

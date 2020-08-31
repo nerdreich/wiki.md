@@ -127,6 +127,10 @@ body {
 
   a {
     @include typography-links($color-primary, $color-text, 1px, transparent, $color-primary);
+
+    &.broken {
+      @include typography-links($color-negative, $color-text, 1px, $color-negative, $color-negative);
+    }
   }
 }
 

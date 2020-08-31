@@ -298,7 +298,7 @@ class UserSession
      */
     public function isLoggedOut(): bool
     {
-        return session_status() == PHP_SESSION_NONE;
+        return session_status() === PHP_SESSION_NONE;
     }
 
     /**
