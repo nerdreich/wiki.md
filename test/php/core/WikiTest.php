@@ -77,45 +77,45 @@ final class WikiTest extends \PHPUnit\Framework\TestCase
         $this->assertIsString($wiki->getContentMarkup());
     }
 
-    public function testWikiPathToContentFile(): void
+    public function testwikiPathToContentFileFS(): void
     {
         $wiki = $this->getNewWiki();
-        $method = $this->getAsPublicMethod('wikiPathToContentFile');
+        $method = $this->getAsPublicMethod('wikiPathToContentFileFS');
 
         $this->assertEquals(
-            $wiki->getWikiDirFS() . '/data/content/README.md',
+            $wiki->getContentDirFS() . '/README.md',
             $method->invokeArgs($wiki, ['/'])
         );
         $this->assertEquals(
-            $wiki->getWikiDirFS() . '/data/content/about.md',
+            $wiki->getContentDirFS() . '/about.md',
             $method->invokeArgs($wiki, ['/about'])
         );
         $this->assertEquals(
-            $wiki->getWikiDirFS() . '/data/content/animal/README.md',
+            $wiki->getContentDirFS() . '/animal/README.md',
             $method->invokeArgs($wiki, ['/animal/'])
         );
         $this->assertEquals(
-            $wiki->getWikiDirFS() . '/data/content/animal/lion.md',
+            $wiki->getContentDirFS() . '/animal/lion.md',
             $method->invokeArgs($wiki, ['/animal/lion'])
         );
         $this->assertEquals(
-            $wiki->getWikiDirFS() . '/data/content/animal/_media/lion.png',
+            $wiki->getContentDirFS() . '/animal/_media/lion.png',
             $method->invokeArgs($wiki, ['/animal/lion.png'])
         );
         $this->assertEquals(
-            $wiki->getWikiDirFS() . '/data/content/animal/_media/LION.JPG.PNG',
+            $wiki->getContentDirFS() . '/animal/_media/LION.JPG.PNG',
             $method->invokeArgs($wiki, ['/animal/LION.JPG.PNG'])
         );
         $this->assertEquals(
-            $wiki->getWikiDirFS() . '/data/content/animal/_media/lion.jpg',
+            $wiki->getContentDirFS() . '/animal/_media/lion.jpg',
             $method->invokeArgs($wiki, ['/animal/lion.jpg'])
         );
         $this->assertEquals(
-            $wiki->getWikiDirFS() . '/data/content/animal/_media/lion.JPEG',
+            $wiki->getContentDirFS() . '/animal/_media/lion.JPEG',
             $method->invokeArgs($wiki, ['/animal/lion.JPEG'])
         );
         $this->assertEquals(
-            $wiki->getWikiDirFS() . '/data/content/animal/_media/lion.gif',
+            $wiki->getContentDirFS() . '/animal/_media/lion.gif',
             $method->invokeArgs($wiki, ['/animal/lion.gif'])
         );
     }
@@ -254,7 +254,7 @@ final class WikiTest extends \PHPUnit\Framework\TestCase
         $wiki = $this->getNewWiki();
         $method = $this->getAsPublicMethod('runFilters');
 
-        $contentDirFS = $wiki->getWikiDirFS() . '/data/content';
+        $contentDirFS = $wiki->getContentDirFS() . '';
 
         // no macro
         $this->assertEquals('body', $method->invokeArgs($wiki, ['markup', 'body', '/path']));

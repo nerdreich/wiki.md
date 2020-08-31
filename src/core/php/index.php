@@ -70,7 +70,7 @@ function renderThemeFile(string $filename, $httpResponseCode = 200): void
 {
     global $config, $wiki, $user;
     http_response_code($httpResponseCode);
-    require($config['themeRoot'] . $filename);
+    require($config['themeDirFS'] . '/' . $filename);
     exit;
 }
 
@@ -114,9 +114,9 @@ $wiki = new at\nerdreich\Wiki($config, $user);
 
 // --- setup theme --------------------------------------------------------------
 
-$config['themePath'] = $wiki->getWikiRoot() . '/themes/' . $config['theme'] . '/';
-$config['themeRoot'] = dirname(__FILE__) . '/themes/' . $config['theme'] . '/';
-require_once($config['themeRoot'] . 'setup.php');
+$config['themePath'] = $wiki->getLocation('/themes/' . $config['theme']) . '/';
+$config['themeDirFS'] = dirname(__FILE__) . '/themes/' . $config['theme'];
+require_once($config['themeDirFS'] . '/setup.php');
 
 // --- route requests ----------------------------------------------------------
 
@@ -140,7 +140,7 @@ switch ($_GET['auth']) {
         if ($user->login(trim($_POST['username'] ?? ''), trim($_POST['password'] ?? ''))) {
             // successfull -> redirect back
             $action = array_key_exists('action', $_GET) ? '?action=' . urlencode($_GET['action']) : '';
-            redirect($wiki->getWikiRoot() . $contentPath, $action);
+            redirect($wiki->getLocation(), $action);
         } else {
             // unsuccessful -> show login again
             renderThemeFile('login.php', 401);
@@ -149,7 +149,7 @@ switch ($_GET['auth']) {
     case 'logout':
         $user->logout();
         $action = array_key_exists('action', $_GET) ? '?action=' . urlencode($_GET['action']) : '';
-        redirect($wiki->getWikiRoot() . $contentPath, $action);
+        redirect($wiki->getLocation(), $action);
 }
 
 // now check for regular wiki operations

@@ -42,6 +42,15 @@ All project files use UTF-8 encoding and Unix-style line endings. We use `gulp` 
 ### PHP
 
 * All PHP code must adhere the [PSR12 coding standard](https://www.php-fig.org/psr/psr-12/). Gulp will check & enforce that by using a linter.
+* The terms path, directory and file can become very confusing very fast. We use the following nomenclature for them:
+  * Variables about the file-system ...
+    * ... never contain 'path' in their name and end in `DirFS` or `FileFS`, depending on their content.
+    * ... always contain absolute information, e.g. `/var/www/www.mysite.com/mywiki`.
+    * ... must not contain a trailing slash if they contain a directory.
+  * Variables about the URL ...
+    * ... always use the term `path`.
+    * ... must contain a trailing slash if they contain a directory.
+  * A `wikiPath` is the path of a resource (folder or file) within the wiki. If wiki.md is installed in a sub-folder, that sub-folder name is not part of the `wikiPath`.
 
 ### (S)CSS
 
