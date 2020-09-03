@@ -128,10 +128,6 @@ final class WikiTest extends \PHPUnit\Framework\TestCase
             $method->invokeArgs($wiki, ['/animal/lion.jpg'])
         );
         $this->assertEquals(
-            $wiki->getContentDirFS() . '/animal/_media/lion.JPEG',
-            $method->invokeArgs($wiki, ['/animal/lion.JPEG'])
-        );
-        $this->assertEquals(
             $wiki->getContentDirFS() . '/animal/_media/lion.gif',
             $method->invokeArgs($wiki, ['/animal/lion.gif'])
         );

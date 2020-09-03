@@ -18,20 +18,20 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
-outputHeader($config, $wiki->getWikiPath(), $wiki->getTitle(), $wiki->getDescription());
-outputNavbar($wiki, $user);
-outputBanner($wiki);
+outputHeader($ui, $ui->wiki->getTitle(), $ui->wiki->getDescription());
+outputNavbar($ui);
+outputBanner($ui);
 
 ?>
 <section class="section-main container">
   <div class="row">
     <div class="col-12 col-md-8 col-lg-9">
-      <?php echo $wiki->getTitle() !== '' ? '<h1>' . htmlspecialchars($wiki->getTitle()) . '</h1>' : ''; ?>
-      <?php echo $wiki->getContentHTML(); ?>
+      <?php echo $ui->wiki->getTitle() !== '' ? '<h1>' . htmlspecialchars($ui->wiki->getTitle()) . '</h1>' : ''; ?>
+      <?php echo $ui->wiki->getContentHTML(); ?>
     </div>
     <nav class="col-12 col-md-4 col-lg-3 sidenav">
-      <?php echo $wiki->getSnippetHTML('nav'); ?>
+      <?php echo $ui->wiki->getSnippetHTML('nav'); ?>
     </nav>
   </div>
 </section>
-<?php outputFooter($wiki, $config); ?>
+<?php outputFooter($ui); ?>

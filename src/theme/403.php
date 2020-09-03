@@ -18,9 +18,9 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
-outputHeader($config, $wiki->getWikiPath(), ___('Forbidden'), '');
-outputNavbar($wiki, $user);
-outputBanner($wiki);
+outputHeader($ui, ___('Forbidden'));
+outputNavbar($ui);
+outputBanner($ui);
 
 ?>
 <section class="section-main container">
@@ -30,4 +30,4 @@ outputBanner($wiki);
     </div>
   </div>
 </section>
-<?php outputFooter($wiki, $config); ?>
+<?php outputFooter($ui); ?>

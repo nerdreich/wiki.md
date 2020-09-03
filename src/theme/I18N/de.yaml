@@ -69,6 +69,7 @@ Select file: Datei wählen
 Set password: Passwort setzen
 Someone started editing this file %s minutes ago.: Jemand editiert diese Seite seit %s Minuten.
 Sorry, an error occured.: Es ist leider ein Fehler aufgetreten.
+Sorry, an error occured (or you don\'t have permission to do this).: Es ist leider ein Fehler aufgetreten (oder dir fehlen die nötigen Rechte).
 strike through: durchgestrichen
 target: Ziel
 The checksum of this page is invalid. Save the page in wiki.md again to correct this.: Die Prüfsumme dieser Seite ist nicht korrekt. Speichere die Seite in wiki.md erneut ab, um sie zu korrigieren.

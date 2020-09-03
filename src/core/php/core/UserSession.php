@@ -79,6 +79,16 @@ class UserSession
     }
 
     /**
+     * Determine if this wiki runs in simple login mode (=password only)
+     *
+     * @return bool True if simple logins are enabled in config.
+     */
+    public function isLoginSimple(): bool
+    {
+        return $this->config['login_simple'];
+    }
+
+    /**
      * Try to authenticate and log-in a user.
      *
      * There are two login modes: regular (default) and simple. In simple mode
@@ -93,7 +103,7 @@ class UserSession
         string $username,
         string $secret
     ): bool {
-        if ($this->config['login_simple']) { // password-only logins
+        if ($this->isLoginSimple()) { // password-only logins
             $user = $this->getUserForPassword($secret);
         } else {
             $user = $this->verifyLogin($username, $secret);

@@ -18,10 +18,10 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
-outputHeader($config, $wiki->getWikiPath(), ___('Edit') . ': ' . $wiki->getTitle(), ' admin');
-outputNavbar($wiki, $user);
+outputHeader($ui, ___('Edit') . ': ' . $ui->wiki->getTitle());
+outputNavbar($ui);
 
-$infos = $user->adminFolder($wiki->getWikiPath());
+$infos = $ui->user->adminFolder($ui->wiki->getWikiPath());
 
 $userPattern = '(' . implode(',|', $infos['users']) . ',)*(' . implode('|', $infos['users']) . ')?|\*';
 
@@ -37,7 +37,7 @@ $userPattern = '(' . implode(',|', $infos['users']) . ',)*(' . implode('|', $inf
 </section>
 <section class="section-main container">
   <div class="row">
-    <form class="col-12" action="?admin=permissions" method="post">
+    <form class="col-12" action="?user=set" method="post">
       <h2><?php __('Folder permissions'); ?></h2>
       <p class="minor"><?php __('valid for %s and below', $infos['folder']); ?></p>
       <label class="in-border"><?php __('Create'); ?></label>
@@ -72,8 +72,8 @@ $userPattern = '(' . implode(',|', $infos['users']) . ',)*(' . implode('|', $inf
           <?php
             foreach ($infos['users'] as $entry) {
                 echo '<li>' . $entry;
-                if ($entry !== $user->getSuperuser()) {
-                    echo ' - <a href="?admin=delete&amp;user=' . $entry . '">' . ___('Delete') . '</a>';
+                if ($entry !== $ui->user->getSuperuser()) {
+                    echo ' - <a href="?user=delete&amp;name=' . $entry . '">' . ___('Delete') . '</a>';
                 }
                 echo '</li>';
             } ?>
@@ -81,4 +81,4 @@ $userPattern = '(' . implode(',|', $infos['users']) . ',)*(' . implode('|', $inf
     </form>
   </div>
 </section>
-<?php outputFooter($wiki, $config); ?>
+<?php outputFooter($ui); ?>

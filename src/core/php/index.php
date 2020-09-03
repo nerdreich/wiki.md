@@ -18,281 +18,163 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
-// --- load config -------------------------------------------------------------
+require_once 'core/WikiUI.php';
+$ui = new \at\nerdreich\WikiUI();
+require_once $ui->getThemeSetupFile();
 
-$config = parse_ini_file('data/config.ini');
+// --- register a default route ------------------------------------------------
 
-// --- frontend helpers --------------------------------------------------------
-
-/**
- * Terminate further execution and redirect the client to another page.
- *
- * Has to be called before any output is sent to client or setting headers will
- * fail.
- *
- * @param string $path URL path to send user to.
- * @param string $path Wiki action to add to path.
- */
-function redirect(
-    string $path,
-    string $action = ''
-) {
-    $action = $action === '' ? '' : '?' . $action;
-    header('Location: ' . $path . $action);
-    exit; // terminate execution to enforce redirect
-}
-
-/**
- * Remove 'bad' stuff from a path so no one can break out of the docroot.
- *
- * @param string $path Path to sanitize.
- * @return string A path with invalid characters and '..' tricks removed.
- */
-function sanitizePath(
-    string $path
-): string {
-    $path = urldecode($path);
-    $path = mb_ereg_replace('([^\w\s\d\-_~,;/\[\]\(\).])', '', $path); // only whitelisted chars
-    $path = mb_ereg_replace('([\.]{2,})', '', $path); // no '..'
-    $path = mb_ereg_replace('^/*', '/', $path); // make sure there is only one leading slash
-    return $path;
-}
-
-/**
- * Output a theme file and terminate further execution.
- *
- * This puts the the theme file into a function scope, so it can only access
- * global-declared variables.
- *
- * @param string $filename Theme file to load, e.g. 'edit.php'.
- * @param int $httpResponseCode Code to send this page with to the client.
- */
-function renderThemeFile(string $filename, $httpResponseCode = 200): void
-{
-    global $config, $wiki, $user;
-    http_response_code($httpResponseCode);
-    require($config['themeDirFS'] . '/' . $filename);
-    exit;
-}
-
-/**
- * Show a permission-denied message for logged-in users or the login screen for
- * logged out users.
- */
-function renderLoginOrDenied()
-{
-    global $user;
-    if ($user->isLoggedIn()) {
-        // as this user is logged in, (s)he just has insufficient permissions
-        renderThemeFile('403.php', 403);
-    } else {
-        // user has to login-first
-        renderThemeFile('login.php', 401);
+$ui->registerRouteDefault(function ($ui) {
+    if ($ui->wiki->isMedia() && $ui->user->mayRead($ui->wiki->getWikiPath())) {
+        $ui->renderMedia($ui->wiki->getContentFileFS());
     }
-}
+    if (!$ui->wiki->exists()) {
+        $ui->renderThemeFile('404', 404);
+    }
+    if ($ui->wiki->readPage()) {
+        $ui->renderThemeFile('view');
+    }
+});
 
-/**
- * Deliver a file, usually an image or uploaded file, to the client.
- *
- * Will set proper HTTP headers and terminate execution after sending the blob.
- *
- * @param string $pathFS Absolute path of file to send.
- */
-function renderMedia(string $pathFS): void
-{
-    header('Content-Type:' . mime_content_type($pathFS));
-    header('Content-Length: ' . filesize($pathFS));
-    readfile($pathFS);
-    exit;
-}
+// --- register authentication routes ------------------------------------------
 
-/**
- * Assemble page actions for forwarding.
- *
- * @return string get-string containing action(s).
- */
-function getActions(): string
-{
-    $actions = '';
-    $actions .= array_key_exists('page', $_GET) ? '&page=' . urlencode($_GET['page']) : '';
-    $actions .= array_key_exists('media', $_GET) ? '&media=' . urlencode($_GET['media']) : '';
-    return $actions === '' ? $actions : substr($actions, 1);
-}
+$ui->registerRoute('auth', 'login', function ($ui) {
+    if ($ui->user->login(trim($_POST['username'] ?? ''), trim($_POST['password'] ?? ''))) {
+        $ui->redirect($ui->wiki->getLocation(), $ui->getActions()); // successfull -> redirect back
+    }
+    $ui->renderThemeFile('login', 401); // unsuccessful -> show login again
+});
 
-// --- setup wiki --------------------------------------------------------------
+$ui->registerRoute('auth', 'logout', function ($ui) {
+    $ui->user->logout();
+    $ui->redirect($ui->wiki->getLocation(), $ui->getActions());
+});
 
-require_once('core/Wiki.php');
-require_once('core/UserSession.php');
-$user = new at\nerdreich\UserSession($config);
-$wiki = new at\nerdreich\Wiki($config, $user);
+// --- register user management routes -----------------------------------------
 
-// --- setup theme --------------------------------------------------------------
+$ui->registerRoute('user', 'list', function ($ui) {
+    if ($ui->user->adminFolder($ui->wiki->getWikiPath()) !== null) {
+        $ui->renderThemeFile('admin_folder');
+    }
+    $ui->renderLoginOrDenied(); // transparent login
+});
 
-$config['themePath'] = $wiki->getLocation('/themes/' . $config['theme']) . '/';
-$config['themeDirFS'] = dirname(__FILE__) . '/themes/' . $config['theme'];
-require_once($config['themeDirFS'] . '/setup.php');
+$ui->registerRoute('user', 'delete', function ($ui) {
+    if ($ui->user->deleteUser($_GET['name'])) {
+        $ui->redirect($ui->wiki->getLocation(), 'user=list');
+    }
+});
 
-// --- route requests ----------------------------------------------------------
+$ui->registerRoute('user', 'set', function ($ui) {
+    if (
+        $ui->user->setPermissions(
+            $ui->wiki->getWikiPath(),
+            preg_split('/,/', preg_replace('/\s+/', '', $_POST['userCreate'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
+            preg_split('/,/', preg_replace('/\s+/', '', $_POST['userRead'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
+            preg_split('/,/', preg_replace('/\s+/', '', $_POST['userUpdate'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
+            preg_split('/,/', preg_replace('/\s+/', '', $_POST['userDelete'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
+            preg_split('/,/', preg_replace('/\s+/', '', $_POST['userMedia'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
+            preg_split('/,/', preg_replace('/\s+/', '', $_POST['userAdmin'] ?? ''), -1, PREG_SPLIT_NO_EMPTY)
+        )
+    ) {
+        $ui->redirect($ui->wiki->getLocation(), 'user=list');
+    }
+});
 
-// determine content path. will trim folder if wiki.md is installed in a sub-folder.
-$contentPath = substr(sanitizePath(
-    parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)
-), strlen($wiki->getWikiRoot()));
+$ui->registerRoute('user', 'secret', function ($ui) {
+    if ($ui->user->addSecret($_POST['username'], $_POST['secret'])) {
+        $ui->redirect($ui->wiki->getLocation(), 'user=list');
+    }
+});
 
-$canonicalPath = $wiki->init($contentPath);
-if ($contentPath !== $canonicalPath) {
-    redirect($canonicalPath);
-}
+// --- register media routes ---------------------------------------------------
 
-// first we check for any authentication related stuff
-switch ($_GET['auth']) {
-    case 'login':
-        if ($user->login(trim($_POST['username'] ?? ''), trim($_POST['password'] ?? ''))) {
-            // successfull -> redirect back
-            redirect($wiki->getLocation(), getActions());
-        } else {
-            // unsuccessful -> show login again
-            renderThemeFile('login.php', 401);
-        }
-        break;
-    case 'logout':
-        $user->logout();
-        redirect($wiki->getLocation(), getActions());
-}
+$ui->registerRoute('media', 'list', function ($ui) {
+    if ($ui->wiki->media($ui->wiki->getWikiPath()) !== null) {
+        $ui->renderThemeFile('media');
+    }
+    $ui->renderLoginOrDenied(); // transparent login
+});
 
-// now check for regular wiki operations
-
-// actions that work on existing & non-existing pages
-switch ($_GET['admin']) {
-    case 'folder': // folder administration
-        if ($user->adminFolder($contentPath) !== null) {
-            renderThemeFile('admin_folder.php');
-        }
-        break;
-    case 'delete':
-        if ($user->deleteUser($_GET['user'])) {
-            redirect($wiki->getLocation(), 'admin=folder');
-        }
-        break;
-    case 'permissions':
+$ui->registerRoute('media', 'upload', function ($ui) {
+    if ($_FILES['wikimedia'] && $_FILES['wikimedia']['error'] === UPLOAD_ERR_OK) {
         if (
-            $user->setPermissions(
-                $contentPath,
-                preg_split('/,/', preg_replace('/\s+/', '', $_POST['userCreate'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
-                preg_split('/,/', preg_replace('/\s+/', '', $_POST['userRead'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
-                preg_split('/,/', preg_replace('/\s+/', '', $_POST['userUpdate'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
-                preg_split('/,/', preg_replace('/\s+/', '', $_POST['userDelete'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
-                preg_split('/,/', preg_replace('/\s+/', '', $_POST['userMedia'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
-                preg_split('/,/', preg_replace('/\s+/', '', $_POST['userAdmin'] ?? ''), -1, PREG_SPLIT_NO_EMPTY)
+            $ui->wiki->mediaUpload(
+                $_FILES['wikimedia']['tmp_name'],
+                strtolower(trim($_FILES['wikimedia']['name'])),
+                $ui->wiki->getWikiPath()
             )
         ) {
-            redirect($wiki->getLocation(), 'admin=folder');
+            $ui->redirect($ui->wiki->getLocation(), 'media=list');
         }
-        break;
-    case 'secret':
-        if ($user->addSecret($_POST['username'], $_POST['secret'])) {
-            redirect($wiki->getLocation(), 'admin=folder');
-        }
-        break;
-}
-switch ($_GET['page']) {
-    case 'save': // saving new pages
-        $user->setAlias(trim(preg_replace('/\s+/', ' ', $_POST['author'])));
-        if (
-            $wiki->savePage(
-                trim(str_replace("\r", '', $_POST['content'])),
-                trim(preg_replace('/\s+/', ' ', $_POST['title'])),
-                trim($user->getAlias())
-            )
-        ) {
-            redirect($wiki->getLocation());
-        };
-        break;
-}
-switch ($_GET['media']) {
-    case 'list': // media folder admin
-        if ($wiki->media($contentPath) !== null) {
-            renderThemeFile('media.php');
-        }
-        renderLoginOrDenied();
-        break;
-    case 'delete': // media folder admin
-        if ($wiki->mediaDelete($contentPath) !== null) {
-            redirect(dirname($wiki->getLocation()) . '/', 'media=list'); // redirect back to media list
-        }
-        renderLoginOrDenied();
-        break;
-    case 'upload': // media folder admin
-        if ($_FILES['wikimedia'] && $_FILES['wikimedia']['error'] === UPLOAD_ERR_OK) {
-            if (
-                $wiki->mediaUpload(
-                    $_FILES['wikimedia']['tmp_name'],
-                    strtolower(trim($_FILES['wikimedia']['name'])),
-                    $contentPath
-                )
-            ) {
-                redirect($wiki->getLocation(), 'media=list'); // redirect back to media list
-            }
-        } else { // upload failed
-            redirect($wiki->getLocation(), 'media=list');
-        }
-        break;
-}
-
-if (!$wiki->exists()) {
-    switch ($_GET['page']) {
-        case 'create':
-            if ($wiki->create()) {
-                renderThemeFile('edit.php');
-            }
-            break;
-        default:
-            renderThemeFile('404.php', 404);
-            exit;
+    } else { // upload failed, probably due empty selector on submit
+        $ui->redirect($ui->wiki->getLocation(), 'media=list');
     }
+});
+
+$ui->registerRoute('media', 'delete', function ($ui) {
+    if ($ui->wiki->mediaDelete($ui->wiki->getWikiPath()) !== null) {
+        $ui->redirect(dirname($ui->wiki->getLocation()) . '/', 'media=list');
+    }
+});
+
+// --- register page routes ----------------------------------------------------
+
+$ui->registerRoute('page', 'save', function ($ui) {
+    $alias = trim(preg_replace('/\s+/', ' ', $_POST['author']));
+    if (
+        $ui->wiki->savePage(
+            trim(str_replace("\r", '', $_POST['content'])),
+            trim(preg_replace('/\s+/', ' ', $_POST['title'])),
+            $alias
+        )
+    ) {
+        $ui->user->setAlias($alias);
+        $ui->redirect($ui->wiki->getLocation());
+    };
+});
+
+if ($ui->wiki->exists()) {
+    // these routes are only added if the item exists
+    $ui->registerRoute('page', 'edit', function ($ui) {
+        if ($ui->wiki->editPage()) {
+            $ui->renderThemeFile('edit');
+        }
+        $ui->renderLoginOrDenied(); // transparent login
+    });
+    $ui->registerRoute('page', 'history', function ($ui) {
+        if ($ui->wiki->history()) {
+            $ui->renderThemeFile('history');
+        }
+        $ui->renderLoginOrDenied(); // transparent login
+    });
+    $ui->registerRoute('page', 'restore', function ($ui) {
+        $version = (int) preg_replace('/[^0-9]/', '', $_GET['version']);
+        if ($version > 0) {
+            if ($ui->wiki->revertToVersion($version)) {
+                $ui->renderThemeFile('edit');
+            }
+        }
+    });
+    $ui->registerRoute('page', 'delete', function ($ui) {
+        if ($ui->wiki->deletePage(true)) {
+            $ui->renderThemeFile('delete');
+        }
+    });
+    $ui->registerRoute('page', 'deleteOK', function ($ui) {
+        if ($ui->wiki->deletePage()) {
+            $ui->redirect($ui->wiki->getLocation());
+        }
+    });
 } else {
-    switch ($_GET['page']) {
-        case 'delete':
-            if ($wiki->deletePage(true)) {
-                renderThemeFile('delete.php');
-            }
-            break;
-        case 'deleteOK':
-            if ($wiki->deletePage()) {
-                redirect($wiki->getLocation());
-            }
-            break;
-        case 'edit':
-            if ($wiki->editPage()) {
-                renderThemeFile('edit.php');
-            }
-            break;
-        case 'history':
-            if ($wiki->history()) {
-                renderThemeFile('history.php');
-            }
-            break;
-        case 'restore':
-            $version = (int) preg_replace('/[^0-9]/', '', $_GET['version']);
-            if ($version > 0) {
-                if ($wiki->revertToVersion($version)) {
-                    renderThemeFile('edit.php');
-                }
-            }
-            renderThemeFile('error.php', 400);
-            break;
-        case 'create':
-            renderThemeFile('error.php', 400); // can't recreate existing page
-            break;
-        default:
-            if ($wiki->isMedia() && $user->mayRead($wiki->getWikiPath())) {
-                renderMedia($wiki->getContentFileFS());
-            }
-            if ($wiki->readPage()) {
-                renderThemeFile('view.php');
-            }
-    }
+    // these routes are only added if the item does not exist
+    $ui->registerRoute('page', 'create', function ($ui) {
+        if ($ui->wiki->create()) {
+            $ui->renderThemeFile('edit');
+        }
+    });
 }
 
-// if we got here, then no 'exit' fired - probably a permission error
-renderLoginOrDenied();
+// --- ready! ------------------------------------------------------------------
+
+$ui->run();

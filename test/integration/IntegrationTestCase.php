@@ -182,7 +182,7 @@ class IntegrationTestCase extends \PHPUnit\Framework\TestCase
      */
     public function assertPageError(): void
     {
-        $this->assertPage(400);
+        $this->assertPage(401);
         $this->assertPayloadContainsPreg('/an error occured/');
     }
 

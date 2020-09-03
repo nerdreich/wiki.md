@@ -18,10 +18,10 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
-outputHeader($config, $wiki->getWikiPath(), ___('Media'), 'wiki.md Media Editor');
-outputNavbar($wiki, $user);
+outputHeader($ui, ___('Media'));
+outputNavbar($ui);
 
-$files = $wiki->media($wiki->getWikiPath());
+$files = $ui->wiki->media($ui->wiki->getWikiPath());
 
 function mediaSize(int $bytes): string
 {
@@ -59,15 +59,15 @@ function mediaSize(int $bytes): string
     <form class="col-12 form-upload" action="?media=upload" method="post" enctype="multipart/form-data">
       <h2><?php __('Upload'); ?></h2>
       <p>
-          <?php __('Allowed media types %s.', $wiki->getMediaTypes()); ?>
-          <?php __('File size limit %s.', mediaSize($wiki->getMediaSizeLimit() * 1024)); ?>
+          <?php __('Allowed media types %s.', $ui->wiki->getMediaTypes()); ?>
+          <?php __('File size limit %s.', mediaSize($ui->wiki->getMediaSizeLimit() * 1024)); ?>
       </p>
       <input type="file" name="wikimedia" id="wikimedia"
         onchange="document.getElementById('filename').value = this.value">
       <input type="text" name="filename" id="filename"
-        placeholder="<?php __('Select file'); ?>" pattern="|.*\.(<?php echo $wiki->getMediaTypes(); ?>)">
+        placeholder="<?php __('Select file'); ?>" pattern="|.*\.(<?php echo $ui->wiki->getMediaTypes(); ?>)">
       <input type="submit" value="Upload" name="submit">
     </form>
   </div>
 </section>
-<?php outputFooter($wiki, $config); ?>
+<?php outputFooter($ui); ?>

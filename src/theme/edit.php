@@ -18,26 +18,26 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
-outputHeader($config, $wiki->getWikiPath(), ___('Edit') . ': ' . $wiki->getTitle(), ' page editor');
-outputNavbar($wiki, $user);
-outputBanner($wiki);
+outputHeader($ui, ___('Edit') . ': ' . $ui->wiki->getTitle());
+outputNavbar($ui);
+outputBanner($ui);
 
 ?>
 <section class="section-main container">
   <div class="row">
     <form class="col-12" action="?page=save" method="post">
-      <?php if ($wip = $wiki->isWip()) { ?>
+      <?php if ($wip = $ui->wiki->isWip()) { ?>
         <p class="warning"><?php __('Warning') ?>: <?php __('Someone started editing this file %s minutes ago.', ceil($wip / 60.)) ?></p>
       <?php } ?>
-      <?php echo $wiki->getTitle() !== '' ? '<h1>' . htmlspecialchars($wiki->getTitle()) . '</h1>' : ''; ?>
+      <?php echo $ui->wiki->getTitle() !== '' ? '<h1>' . htmlspecialchars($ui->wiki->getTitle()) . '</h1>' : ''; ?>
       <label for="title" class="in-border"><?php __('Title - may remain empty'); ?></label>
-      <input id="title" type="text" name="title" value="<?php echo $wiki->getTitle(); ?>">
+      <input id="title" type="text" name="title" value="<?php echo $ui->wiki->getTitle(); ?>">
       <label for="content" class="in-border"><?php __('Markdown'); ?></label>
-      <textarea id="content" name="content" required autofocus><?php echo $wiki->getContentMarkup(); ?></textarea>
+      <textarea id="content" name="content" required autofocus><?php echo $ui->wiki->getContentMarkup(); ?></textarea>
       <label for="author" class="in-border"><?php __('Author'); ?></label>
-      <input id="author" type="text" name="author" value="<?php echo $user->getAlias(); ?>" required>
+      <input id="author" type="text" name="author" value="<?php echo $ui->user->getAlias(); ?>" required>
       <input type="submit" class="primary" value="<?php __('Save'); ?>"><input type="submit"
-      value="<?php __('Save & Edit'); ?>"><a class="btn" href="<?php echo $wiki->getWikiPath(); ?>"><?php __('Cancel'); ?></a>
+      value="<?php __('Save & Edit'); ?>"><a class="btn" href="<?php echo $ui->wiki->getWikiPath(); ?>"><?php __('Cancel'); ?></a>
     </form>
     <div class="col-12">
       <hr>
@@ -56,4 +56,4 @@ outputBanner($wiki);
     </div>
   </div>
 </section>
-<?php outputFooter($wiki, $config); ?>
+<?php outputFooter($ui); ?>

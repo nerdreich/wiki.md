@@ -18,25 +18,25 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
-outputHeader($config, $wiki->getWikiPath(), ___('Login'), 'wiki.md login page');
-outputNavbar($wiki, $user);
-outputBanner($wiki);
+outputHeader($ui, ___('Login'));
+outputNavbar($ui);
+outputBanner($ui);
 
 ?>
 <section class="section-main container">
   <div class="row">
     <div class="col-12">
       <h2><?php __('Login required'); ?></h2>
-      <form action="?<?php echo getActions(); ?>&amp;auth=login" method="post">
-        <?php if (!$config['login_simple']) { ?>
+      <form action="?<?php echo $ui->getActions(); ?>&amp;auth=login" method="post">
+        <?php if (!$ui->user->isLoginSimple()) { ?>
         <label for="username" class="in-border"><?php __('Username'); ?></label>
         <input id="username" type="text" name="username" required autofocus>
         <?php } ?>
         <label for="password" class="in-border"><?php __('Password'); ?></label>
-        <input id="password" type="password" name="password" required<?php echo $config['login_simple'] ? ' autofocus' : ''; ?>>
+        <input id="password" type="password" name="password" required<?php echo $ui->user->isLoginSimple() ? ' autofocus' : ''; ?>>
         <input type="submit" class="primary" value="<?php __('Login'); ?>">
       </form>
     </div>
   </div>
 </section>
-<?php outputFooter($wiki, $config); ?>
+<?php outputFooter($ui); ?>
