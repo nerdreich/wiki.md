@@ -109,7 +109,7 @@ namespace { // global helpers to reduce clutter in templates
      */
     function ___(): string
     {
-        return at\nerdreich\Translate::translate(func_get_args());
+        return\at\nerdreich\Translate::translate(func_get_args());
     }
 
 }

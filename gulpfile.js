@@ -92,9 +92,24 @@ gulp.task('test-plugin-media-php', function () {
     .pipe(phpcs.reporter('log'))
 })
 
-gulp.task('tests', gulp.series('test-theme-elegant-sass', 'test-core-php', 'test-plugin-media-php', 'test-theme-elegant-php'))
+gulp.task('test-plugin-macro-php', function () {
+  const phpcs = require('gulp-phpcs')
+  const phplint = require('gulp-phplint')
 
-// --- build targets -----------------------------------------------------
+  return gulp.src([
+    'src/plugins/macro/**/*php'
+  ])
+    .pipe(phplint('', { skipPassedFiles: true }))
+    .pipe(phpcs({
+      bin: 'tools/phpcs.phar',
+      standard: 'PSR12',
+      colors: 1,
+      warningSeverity: 0
+    }))
+    .pipe(phpcs.reporter('log'))
+})
+
+gulp.task('tests', gulp.series('test-theme-elegant-sass', 'test-core-php', 'test-plugin-media-php', 'test-plugin-macro-php', 'test-theme-elegant-php'))
 
 gulp.task('clean', function () {
   const del = require('del')
@@ -105,6 +120,8 @@ gulp.task('clean', function () {
     dirs.build + '/*.zip'
   ])
 })
+
+// --- theme: elegant ----------------------------------------------------------
 
 gulp.task('theme-elegant-fonts', function () {
   return gulp.src([
@@ -163,6 +180,8 @@ gulp.task('theme-elegant-favicon', function () {
 
 gulp.task('theme-elegant', gulp.parallel('theme-elegant-fonts', 'theme-elegant-scss', 'theme-elegant-php', 'theme-elegant-I18N', 'theme-elegant-favicon'))
 
+// --- plugin: media -----------------------------------------------------------
+
 gulp.task('plugin-media-php', gulp.series('test-plugin-media-php', function () {
   return gulp.src([
     'src/plugins/media/**/*php'
@@ -173,6 +192,21 @@ gulp.task('plugin-media-php', gulp.series('test-plugin-media-php', function () {
 }))
 
 gulp.task('plugin-media', gulp.parallel('plugin-media-php'))
+
+// --- plugin: macro -----------------------------------------------------------
+
+gulp.task('plugin-macro-php', gulp.series('test-plugin-macro-php', function () {
+  return gulp.src([
+    'src/plugins/macro/**/*php'
+  ])
+    .pipe(replace('$VERSION$', p.version, { skipBinary: true }))
+    .pipe(replace('$URL$', p.homepage, { skipBinary: true }))
+    .pipe(gulp.dest(dirs.plugins + '/macro'))
+}))
+
+gulp.task('plugin-macro', gulp.parallel('plugin-macro-php'))
+
+// --- core --------------------------------------------------------------------
 
 gulp.task('core-meta', function () {
   return gulp.src([
@@ -213,7 +247,7 @@ gulp.task('docs', gulp.series(function () {
     .pipe(gulp.dest(dirs.data + '/content/docs/_media'))
 }))
 
-gulp.task('dist', gulp.series(gulp.parallel('core-php', 'core-meta', 'theme-elegant', 'plugin-media', 'data'), 'docs'))
+gulp.task('dist', gulp.series(gulp.parallel('core-php', 'core-meta', 'theme-elegant', 'plugin-media', 'plugin-macro', 'data'), 'docs'))
 
 gulp.task('package-tgz', function () {
   const tar = require('gulp-tar')

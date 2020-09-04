@@ -240,7 +240,11 @@ if (!class_exists('\at\nerdreich\MediaPlugin')) {
         ): bool {
             if (preg_match($this->pregMedia, $filename)) { // image etc.
                 if ($this->mayMedia($wikiPath)) {
-                    $target = $this->getMediaDirFS($wikiPath) . '/' . $filename;
+                    $targetDir = $this->getMediaDirFS($wikiPath);
+                    if (!\file_exists($targetDir)) {
+                        mkdir($targetDir, 0777, true);
+                    }
+                    $target = $targetDir . '/' . $filename;
                     if (move_uploaded_file($tempName, $target)) {
                         return true;
                     }
@@ -263,6 +267,6 @@ if (!class_exists('\at\nerdreich\MediaPlugin')) {
             return round($bytes, 1) . ' ' . ['B', 'kB', 'MB', 'GB', 'TB'][$pow];
         }
     }
-}
 
-$ui->wiki->registerPlugin('media', new MediaPlugin($ui));
+    $GLOBALS['wiki.md-plugins']['media'] = '\at\nerdreich\MediaPlugin';
+}

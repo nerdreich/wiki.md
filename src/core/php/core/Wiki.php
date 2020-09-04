@@ -43,7 +43,6 @@ class Wiki
     private $metadata = [];        // yaml front matter for a content
     private $content = '';         // the markdown body for a content
 
-    private $macros = [];          // array of {{macro ...}} handlers
     private $filters = [];
 
     private $plugins = [];
@@ -69,7 +68,6 @@ class Wiki
         // register core filters
         $this->registerFilterFixLinks();
         $this->registerFilterIndentHeadlines();
-        $this->registerFilterMacros();
         $this->registerFilterBrokenLinks();
     }
 
@@ -252,7 +250,7 @@ class Wiki
      * @return string Resolved path, e.g. `/rock/granite`. Null if invalid (e.g.
      *                outside root).
      */
-    private function canonicalWikiPath(string $wikiPath): ?string
+    public function canonicalWikiPath(string $wikiPath): ?string
     {
         $absPath = preg_replace('/\/$/', '/.', $wikiPath); // treat folder as dot-file
         if (strpos($absPath, '/') === 0) {
@@ -284,7 +282,7 @@ class Wiki
      * @param string $wikiPath Path to lookup.
      * @return mixed Path (string) to file or FALSE if not found.
      */
-    private function wikiPathToContentFileFS(
+    public function wikiPathToContentFileFS(
         string $wikiPath
     ): string {
         if (preg_match('/\/$/', $wikiPath)) { // folder
@@ -495,10 +493,10 @@ class Wiki
      * Will apply all markup and html filters.
      *
      * @param string $markup The raw markup to render.
-     * @param string $pathFS The absolute path to the content (for macros).
+     * @param string $pathFS The absolute path to the content (e.g. for macros).
      * @return string HTML version.
      */
-    private function markupToHTML(
+    public function markupToHTML(
         string $markup,
         string $pathFS
     ): string {
@@ -647,34 +645,6 @@ class Wiki
     }
 
     /**
-     * Filter: Process {{...}} macros.
-     */
-    private function registerFilterMacros(): void
-    {
-        // register core macros
-        $this->registerMacro('include', function (?string $primary, ?array $secondary, string $path) {
-            return $this->resolveMacroInclude($primary, $secondary, $path);
-        });
-
-        // register plugin itself
-        $this->registerFilter('raw', 'macros', function (string $markup, string $pathFS): string {
-            if (preg_match_all('/{{[^}]*}}/', $markup, $matches)) {
-                foreach ($matches[0] as $macro) {
-                    list($command, $primary, $secondary) = $this->splitMacro($macro);
-                    if (array_key_exists($command, $this->macros)) {
-                        $markup = str_replace(
-                            $macro,
-                            $this->macros[$command]($primary, $secondary, $pathFS),
-                            $markup
-                        );
-                    }
-                }
-            }
-            return $markup;
-        });
-    }
-
-    /**
      * Filter: Convert relative to absolute links in Markdown content.
      *
      * Particularly usefull to fix snippets, which contain links relative to
@@ -741,110 +711,6 @@ class Wiki
         $this->registerFilter('markup', 'markdownIndentHeadlines', function (string $markdown, string $fsPath): string {
             return preg_replace('/^#/m', '##', $markdown);
         });
-    }
-
-    // -------------------------------------------------------------------------
-    // --- {{macro}} handling  -------------------------------------------------
-    // -------------------------------------------------------------------------
-
-    /**
-     * Add a {{..}} macro to be processed by the macro filter.
-     *
-     * @param string $name The name of the macro (first parameter in {{...}}).
-     * @param callable $handler A function that will process this macro.
-     */
-    public function registerMacro(
-        string $name,
-        callable $handler
-    ): void {
-        $this->macros[$name] = $handler;
-    }
-
-    /**
-     * Split a {{macro}} into its components.
-     *
-     * @param string $macro The macro including curly braces.
-     * @return array The components: name, primary parameter, secondary parameters.
-     */
-    public static function splitMacro(
-        string $macro
-    ): array {
-        $macro = str_replace("\n", ' ', trim($macro));
-
-        // check for macros without parameter
-        if (preg_match_all('/{{\s*([^\s]+)\s*}}/', $macro, $matches)) {
-            $command = trim($matches[1][0]);
-            return [$command, null, null];
-        }
-
-        // now check for macro with only primary parameter
-        if (preg_match_all('/{{\s*([^\s|]+)\s+([^\s|]+)\s*}}/', $macro, $matches)) {
-            $command = trim($matches[1][0]);
-            $primary = trim($matches[2][0]);
-            return [$command, $primary, null];
-        }
-
-        // check for macro with extended secondary parameter
-        if (preg_match_all('/{{\s*([^\s]+)\s+([^|]+)\s*\|(.*)}}/', $macro, $matches)) {
-            $command = trim($matches[1][0]);
-            $primary = trim($matches[2][0]);
-            $secondary = [];
-            $secondaryPairs = explode('|', trim($matches[3][0]));
-            foreach ($secondaryPairs as $secondaryPair) {
-                list($key, $value) = explode('=', $secondaryPair);
-                $secondary[trim($key)] = trim($value);
-            }
-            return [$command, $primary, $secondary];
-        }
-
-        return [null, null, null];
-    }
-
-    /**
-     * Expand a {{include ...}} macro.
-     *
-     * @param string $primary The primary parameter. Path to file to include. Can be relative.
-     * @param array $options The secondary parameters. Not used.
-     * @param string $pathFS Absolute path to file containing the macro (for relative processing).
-     * @return string Expanded macro.
-     */
-    private function resolveMacroInclude(
-        ?string $includePath,
-        ?array $options,
-        string $pathFS
-    ): string {
-
-        if ($includePath === null || $includePath === '') {
-            return '{{error include-invalid}}';
-        }
-
-        // now we need to convert the potentially relative $includePath in an absolute $wikiPath
-        if (strpos($includePath, '/') === 0) { // absolute include
-            $wikiPath = $this->canonicalWikiPath($includePath);
-        } else { // relative include
-            $wikiPathCaller = $this->contentFileFSToWikiPath($pathFS);
-            $wikiPath = $this->canonicalWikiPath(
-                $this->getWikiPathParentFolder($wikiPathCaller) . $includePath
-            );
-        }
-
-        // deny caller walking up too far / outside the wiki dir
-        if ($wikiPath === null) {
-            return '{{error include-permission-denied}}';
-        }
-
-        // now we fetch the included file's content if possible
-        $includeFileFS = $this->wikiPathToContentFileFS($wikiPath);
-        if ($this->user->mayRead($wikiPath)) {
-            if (is_file($includeFileFS)) {
-                list($metadata, $content) = $this->loadFile($includeFileFS);
-                return $this->markupToHTML($content, $includeFileFS);
-            } else {
-                return '{{error include-not-found}}';
-            }
-        } else {
-            return '{{error include-permission-denied}}';
-        }
     }
 
     // -------------------------------------------------------------------------

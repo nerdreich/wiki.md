@@ -33,10 +33,10 @@ class MyPlugin
   }
 }
 
-$ui->wiki->registerPlugin('myplugin', new MyPlugin($ui));
+$GLOBALS['wiki.md-plugins']['myplugin'] = '\org\example\MyPlugin';
 ```
 
-`plugin.php` can assume that, when run, the framework will provide a `$ui` variable containing a reference to the currently running wiki. It's probably a good idea to store it in your plugin so you can access the UI, config and core later on. Don't forget the last line, as this will let the core know about your plugin.
+Your plugin can assume that it will get a `$ui` variable passed to its constructor, containing a reference to the currently running wiki. It's probably a good idea to store it in your plugin so you can access the UI, config and core later on. Don't forget the last line - this will let the core know about your plugin.
 
 ## Routes
 

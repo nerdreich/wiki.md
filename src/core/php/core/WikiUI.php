@@ -75,8 +75,10 @@ class WikiUI
         // load plugins
         foreach (explode(',', $this->config['plugins'] ?? '') as $plugin) {
             $plugin = preg_replace('/[^\w]+/', '', $plugin); // sanitize folder name
-            $ui = $this; // put WikiUI in scope of plugin
             require $root . '/plugins/' . $plugin . '/plugin.php';
+        }
+        foreach ($GLOBALS['wiki.md-plugins'] as $plugin => $className) {
+            $this->wiki->registerPlugin($plugin, new $className($this));
         }
 
         // setup theme config

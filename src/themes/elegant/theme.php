@@ -25,7 +25,7 @@ at\nerdreich\Translate::loadLanguage(dirname(__FILE__) . '/I18N/' . $ui->getLang
 
 // --- register theme macros ---------------------------------------------------
 
-$ui->wiki->registerMacro('paginate', function (
+$ui->wiki->getPlugin('macro')->registerMacro('paginate', function (
     ?string $primary,
     ?array $secondary,
     string $path
@@ -146,7 +146,7 @@ function localDateString(
 /**
  * Assemble the navigation menu.
  *
- * @param at\nerdreich\WikiUI $ui Current UI object.
+ * @param\at\nerdreich\WikiUI $ui Current UI object.
  */
 function getPageLinksHTML(at\nerdreich\WikiUI $ui): string
 {
@@ -160,7 +160,7 @@ function getPageLinksHTML(at\nerdreich\WikiUI $ui): string
 /**
  * Generate the HTML header and open the <body>.
  *
- * @param at\nerdreich\WikiUI $ui Current UI object.
+ * @param\at\nerdreich\WikiUI $ui Current UI object.
  */
 function outputHeader(at\nerdreich\WikiUI $ui, ?string $title = null, ?string $description = null): void
 {
@@ -185,7 +185,7 @@ function outputHeader(at\nerdreich\WikiUI $ui, ?string $title = null, ?string $d
 /**
  * Generate the (top) navbar.
  *
- * @param at\nerdreich\WikiUI $ui Current UI object.
+ * @param\at\nerdreich\WikiUI $ui Current UI object.
  */
 function outputNavbar(at\nerdreich\WikiUI $ui): void
 {
@@ -212,7 +212,7 @@ function outputNavbar(at\nerdreich\WikiUI $ui): void
 /**
  * Generate the banner area.
  *
- * @param at\nerdreich\WikiUI $ui Current UI object.
+ * @param\at\nerdreich\WikiUI $ui Current UI object.
  */
 function outputBanner(at\nerdreich\WikiUI $ui): void
 {
@@ -232,7 +232,7 @@ function outputBanner(at\nerdreich\WikiUI $ui): void
 /**
  * Generate the footer and close <body> & <html>.
  *
- * @param at\nerdreich\WikiUI $ui Current UI object.
+ * @param\at\nerdreich\WikiUI $ui Current UI object.
  */
 function outputFooter(at\nerdreich\WikiUI $ui): void
 {
