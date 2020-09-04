@@ -19,6 +19,8 @@
 /// @access public
 ////
 
+@import '../../../../node_modules/bootstrap/scss/bootstrap-grid'; // based on bs4 grid
+
 // Basic grid and spacing settings. We move all margins to the top of
 // entities. This makes it soo much easier to use the + selector to
 // fine-tune situation specific spacings in other files.

@@ -353,13 +353,11 @@ class UserSession
      * - if no permission is found even in the root -> NOK
      * - a '*' permission at any time allows everyone
      *
-     * @param string $username A username to check for.
      * @param string $permission Name of permission.
      * @param string $path A path to check the permission for.
      * @return boolean True, if the permission is granted.
      */
     public function hasExplicitPermission(
-        string $username,
         string $permission,
         string $path
     ): bool {
@@ -372,7 +370,7 @@ class UserSession
                 // note that "any user" and "anonymous" are both '*'
                 if (array_key_exists($permission, $yaml)) {
                     $permissions = explode(',', trim($yaml[$permission] ?? ''));
-                    if (in_array($username, $permissions) || in_array('*', $permissions)) {
+                    if (in_array($this->username, $permissions) || in_array('*', $permissions)) {
                         return true; // -> ALLOWED
                     }
                     return false; // there were explicit permissions and none matched -> DENIED
@@ -387,6 +385,16 @@ class UserSession
     }
 
     /**
+     * Determine if the current user/session is a super-user.
+     *
+     * @return bool True if superuser.
+     */
+    public function isSuperuser(): bool
+    {
+        return $this->username === $this->superuser;
+    }
+
+    /**
      * Check if the current user may read/view a path.
      *
      * @param string $path The path to check the permission for.
@@ -395,8 +403,7 @@ class UserSession
     public function mayCreate(
         string $path
     ): bool {
-        return $this->username === $this->superuser ||
-            $this->hasExplicitPermission($this->username, 'userCreate', $path);
+        return $this->isSuperuser() || $this->hasExplicitPermission('userCreate', $path);
     }
 
     /**
@@ -408,8 +415,7 @@ class UserSession
     public function mayRead(
         string $path
     ): bool {
-        return $this->username === $this->superuser ||
-            $this->hasExplicitPermission($this->username, 'userRead', $path);
+        return $this->isSuperuser() || $this->hasExplicitPermission('userRead', $path);
     }
 
     /**
@@ -421,8 +427,7 @@ class UserSession
     public function mayUpdate(
         string $path
     ): bool {
-        return $this->username === $this->superuser ||
-            $this->hasExplicitPermission($this->username, 'userUpdate', $path);
+        return $this->isSuperuser() || $this->hasExplicitPermission('userUpdate', $path);
     }
 
     /**
@@ -434,8 +439,7 @@ class UserSession
     public function mayDelete(
         string $path
     ): bool {
-        return $this->username === $this->superuser ||
-            $this->hasExplicitPermission($this->username, 'userDelete', $path);
+        return $this->isSuperuser() || $this->hasExplicitPermission('userDelete', $path);
     }
 
     /**
@@ -447,21 +451,7 @@ class UserSession
     public function mayAdmin(
         string $path
     ): bool {
-        return $this->username === $this->superuser ||
-            $this->hasExplicitPermission($this->username, 'userAdmin', $path);
-    }
-
-    /**
-     * Check if the current user may administrate media & uploads.
-     *
-     * @param string $path The path to check the permission for.
-     * @return boolean True, if permissions are sufficient. False otherwise.
-     */
-    public function mayMedia(
-        string $path
-    ): bool {
-        return $this->username === $this->superuser ||
-            $this->hasExplicitPermission($this->username, 'userMedia', $path);
+        return $this->isSuperuser() || $this->hasExplicitPermission('userAdmin', $path);
     }
 
     // --- UI methods ----------------------------------------------------------

@@ -34,19 +34,20 @@ class Wiki
     private $repo = '$URL$';
     private $config = [];
     private $user;
-    private $pregMedia = '/\.(gif|jpg|png)$/i'; // files matching this are considered media
-    private $mediaTypes = 'gif|jpg|png';        // shown to humans
 
     private $contentDirFS = '';    // e.g. /var/www/www.mysite.com/mywiki/data/content
     private $contentFileFS = 'na'; // e.g. /var/www/www.mysite.com/mywiki/data/content/animal/lion.md
     private $wikiRoot = '';        // url-parent-folder of the wiki, e.g. /mywiki
     private $wikiPath = '/';       // current document path within the wiki, e.g. /animal/lion
 
-    private $metadata = [];   // yaml front matter for a content
-    private $content = '';    // the markdown body for a content
+    private $metadata = [];        // yaml front matter for a content
+    private $content = '';         // the markdown body for a content
 
-    private $macros = [];     // array of {{macro ...}} handlers
+    private $macros = [];          // array of {{macro ...}} handlers
     private $filters = [];
+
+    private $plugins = [];
+    private $menuItems = [];
 
     /**
      * Constructor
@@ -92,6 +93,9 @@ class Wiki
         $this->wikiPath = $wikiPath;
         $this->contentFileFS = $this->wikiPathToContentFileFS($this->wikiPath);
 
+        // setup page actions
+        $this->setupMenuItems();
+
         // if this is both a file and a folder, redirect to the folder instead
         if (is_dir(preg_replace('/\.md$/', '/', $this->contentFileFS))) {
             return $wikiPath . '/';
@@ -100,9 +104,65 @@ class Wiki
         return $wikiPath;
     }
 
-    // ----------------------------------------------------------------------
-    // --- various paths & converters ---------------------------------------
-    // ----------------------------------------------------------------------
+    /**
+     * Add a menu item to this page's actions.
+     *
+     * @param string $action An action=value string.
+     * @param string $label A label for the menu item.
+     */
+    public function addMenuItem(
+        string $action,
+        string $label
+    ): void {
+        $this->menuItems[$action] = $label;
+    }
+
+    /**
+     * Get all registered menu items for this page.
+     *
+     * @return array $action Aray with 'action=value' as key and label as value.
+     */
+    public function getMenuItems(): array
+    {
+        return $this->menuItems;
+    }
+
+    /**
+     * Determine what the current user may do with the current page.
+     *
+     * Will update internal $pageActions array.
+     */
+    public function setupMenuItems(): void
+    {
+        $wikiPath = $this->getWikiPath();
+        if ($this->user->mayUpdate($wikiPath)) {
+            if ($this->exists()) {
+                $this->addMenuItem('page=edit', 'Edit');
+            } else {
+                $this->addMenuItem('page=create', 'Create');
+            }
+        }
+        if ($this->exists()) {
+            if ($this->user->mayRead($wikiPath) && $this->user->mayUpdate($wikiPath)) {
+                $this->addMenuItem('page=history', 'History');
+            }
+            if ($this->user->mayDelete($wikiPath)) {
+                $this->addMenuItem('page=delete', 'Delete');
+            }
+        }
+        if ($this->user->mayAdmin($wikiPath)) {
+            $this->addMenuItem('user=list', 'Permissions');
+        }
+        if ($this->user->isLoggedIn()) {
+            $this->addMenuItem('auth=logout', 'Logout');
+        } else {
+            $this->addMenuItem('auth=login', 'Login');
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // --- various paths & converters ------------------------------------------
+    // -------------------------------------------------------------------------
 
     /**
      * Get the full filesystem path to the wiki's content directory.
@@ -216,34 +276,6 @@ class Wiki
     }
 
     /**
-     * Determine the media directory for a wiki path.
-     *
-     * @param string $wikiPath Wiki Path.
-     * @return string Absolute directory of media folder on disk.
-     */
-    private function getMediaDirFS(
-        string $wikiPath
-    ): string {
-        if (preg_match('/\/$/', $wikiPath)) {
-            return $this->contentDirFS . $wikiPath . '_media';
-        } else {
-            return $this->contentDirFS . dirname($wikiPath) . '/_media';
-        }
-    }
-
-    /**
-     * Determine the media file for a wiki path.
-     *
-     * @param string $wikiPath Wiki Path to a media file (e.g. /animal/lion.jpg).
-     * @return string Absolute directory of media folder on disk.
-     */
-    private function getMediaFileFS(
-        string $wikiPath
-    ): string {
-        return $this->getMediaDirFS($wikiPath) . '/' . basename($wikiPath);
-    }
-
-    /**
      * Map URL path to markdown file.
      *
      * - /path/to/folder/ -> /path/to/folder/README.md
@@ -255,16 +287,12 @@ class Wiki
     private function wikiPathToContentFileFS(
         string $wikiPath
     ): string {
-        if (preg_match($this->pregMedia, $wikiPath)) { // image etc.
-            return $this->getMediaFileFS($wikiPath);
-        } else { // Markdown file
-            if (preg_match('/\/$/', $wikiPath)) { // folder
-                $postfix = 'README.md';
-            } else { // page
-                $postfix = '.md';
-            }
-            return $this->contentDirFS . $wikiPath . $postfix;
+        if (preg_match('/\/$/', $wikiPath)) { // folder
+            $postfix = 'README.md';
+        } else { // page
+            $postfix = '.md';
         }
+        return $this->contentDirFS . $wikiPath . $postfix;
     }
 
     /**
@@ -318,9 +346,9 @@ class Wiki
         return $path;
     }
 
-    // ----------------------------------------------------------------------
-    // --- content access for theme files -----------------------------------
-    // ----------------------------------------------------------------------
+    // -------------------------------------------------------------------------
+    // --- content access for theme/plugin files -------------------------------
+    // -------------------------------------------------------------------------
 
     /**
      * Get the wiki.md version.
@@ -360,21 +388,6 @@ class Wiki
     }
 
     /**
-     * Check if the current wiki page is a media object (image, ...).
-     *
-     * @return boolean True, if so. False if not.
-     */
-    public function isMedia(): bool
-    {
-        if (preg_match($this->pregMedia, $this->contentFileFS)) {
-            if ($this->exists()) {
-                return true;
-            };
-        }
-        return false;
-    }
-
-    /**
      * Get the tile of the current wiki page.
      *
      * @return string Page title, e.g. 'Lion'.
@@ -397,33 +410,6 @@ class Wiki
     public function getDescription(): string
     {
         return $this->getTitle();
-    }
-
-    /**
-     * Get the media types allowed for upload.
-     *
-     * @return string Both human-readable and HTML5 pattern string for UI, e.g. 'gif|jpg|png'.
-     */
-    public function getMediaTypes(): string
-    {
-        return $this->mediaTypes;
-    }
-
-    /**
-     * Get the media size limit.
-     *
-     * Might be limited by wiki.md's config or by php.ini.
-     *
-     * @return int Limit in bytes.
-     */
-    public function getMediaSizeLimit(): string
-    {
-        return min(
-            (int)($this->config['media_size_limit_kb'] ?? 4096),
-            ((int)(ini_get('upload_max_filesize'))) * 1024,
-            ((int)(ini_get('post_max_size'))) * 1024,
-            ((int)(ini_get('memory_limit'))) * 1024
-        );
     }
 
     /**
@@ -592,9 +578,38 @@ class Wiki
         }
     }
 
-    // ----------------------------------------------------------------------
-    // --- filter handling  -------------------------------------------------
-    // ----------------------------------------------------------------------
+    // -------------------------------------------------------------------------
+    // --- plugin handling  ----------------------------------------------------
+    // -------------------------------------------------------------------------
+
+    /**
+     * Add/register a plugin.
+     *
+     * @param string $name Name of plugin, e.g. 'media'.
+     * @param object $plugin The plugin.
+     */
+    public function registerPlugin(
+        string $name,
+        object $plugin
+    ): void {
+        $this->plugins[$name] = $plugin;
+    }
+
+    /**
+     * Access a registered/loaded plugin.
+     *
+     * @param string $name Name of plugin, e.g. 'media'.
+     * @return object The plugin.
+     */
+    public function getPlugin(
+        string $name
+    ): ?object {
+        return $this->plugins[$name];
+    }
+
+    // -------------------------------------------------------------------------
+    // --- filter handling  ----------------------------------------------------
+    // -------------------------------------------------------------------------
 
     /**
      * Add a filter to be executed during content delivery.
@@ -728,9 +743,9 @@ class Wiki
         });
     }
 
-    // ----------------------------------------------------------------------
-    // --- {{macro}} handling  ----------------------------------------------
-    // ----------------------------------------------------------------------
+    // -------------------------------------------------------------------------
+    // --- {{macro}} handling  -------------------------------------------------
+    // -------------------------------------------------------------------------
 
     /**
      * Add a {{..}} macro to be processed by the macro filter.
@@ -832,9 +847,9 @@ class Wiki
         }
     }
 
-    // ----------------------------------------------------------------------
-    // --- file handling  ---------------------------------------------------
-    // ----------------------------------------------------------------------
+    // -------------------------------------------------------------------------
+    // --- file handling  ------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     /**
      * Read a file's content.
@@ -877,9 +892,9 @@ class Wiki
         return file_put_contents($filename, $content, LOCK_EX) !== false;
     }
 
-    // ----------------------------------------------------------------------
-    // --- page management --------------------------------------------------
-    // ----------------------------------------------------------------------
+    // -------------------------------------------------------------------------
+    // --- page management -----------------------------------------------------
+    // -------------------------------------------------------------------------
 
     /**
      * Determine if the file has been changed on disk.
@@ -1193,74 +1208,9 @@ class Wiki
         return false;
     }
 
-    /**
-     * Provide all data for the media/upload page.
-     *
-     * @param string $wikiPath WikiPath of folder to administer.
-     * @param array Array containing 'media'.
-     */
-    public function media(
-        string $wikiPath
-    ): ?array {
-        $mediaFolder = $this->getWikiPathParentFolder($wikiPath);
-        if ($this->user->mayMedia($mediaFolder)) {
-            $files = [];
-            $mediaDirFS = $this->getMediaDirFS($mediaFolder);
-            if (is_dir($mediaDirFS)) {
-                foreach (new \DirectoryIterator($mediaDirFS) as $fileinfo) {
-                    if (!$fileinfo->isDot() && preg_match($this->pregMedia, $fileinfo->getFilename())) {
-                        $file = [];
-                        $file['name'] = $fileinfo->getFilename();
-                        $file['path'] = $fileinfo->getFilename();
-                        $file['size'] = $fileinfo->getSize();
-                        $file['mtime'] = $fileinfo->getMtime();
-                        $files[] = $file;
-                    }
-                }
-            }
-            return $files;
-        }
-        return null;
-    }
-
-    /**
-     * Delete a media file.
-     *
-     * @param string $wikiPath WikiPath of file to delete.
-     * @return bool True if file could be deleted.
-     */
-    public function mediaDelete(
-        string $wikiPath
-    ): bool {
-        if ($this->user->mayMedia($wikiPath)) {
-            $file = $this->wikiPathToContentFileFS($wikiPath);
-            if (is_file($file)) {
-                unlink($file);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public function mediaUpload(
-        $tempName,
-        $filename,
-        $wikiPath
-    ): bool {
-        if (preg_match($this->pregMedia, $filename)) { // image etc.
-            if ($this->user->mayMedia($wikiPath)) {
-                $target = $this->getMediaDirFS($wikiPath) . '/' . $filename;
-                if (move_uploaded_file($tempName, $target)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    // ----------------------------------------------------------------------
-    // --- Content: Markdown & Meta -----------------------------------------
-    // ----------------------------------------------------------------------
+    // -------------------------------------------------------------------------
+    // --- Content: Markdown & Meta --------------------------------------------
+    // -------------------------------------------------------------------------
 
     /**
      * Extract the YAML front matter from a file's content.

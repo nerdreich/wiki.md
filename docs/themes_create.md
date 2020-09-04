@@ -25,7 +25,7 @@ Your theme files can assume the following global variables to be present when ca
 
 * `$config` contains an array with all configuration settings from `data/config.ini`. You may for example query it to find out the language that is currently used.
 
-`setup.php` is called first by the core to bootstrap your theme. It might define helper methods and setup other global stuff your theme might need. `setup.php` should not output any HTML markup and is _not_ in charge to load the other theme files - wiki.md's core will do that.
+`theme.php` is called first by the core to bootstrap your theme. It might define helper methods and setup other global stuff your theme might need. `theme.php` should not output any HTML markup and is _not_ in charge to load the other theme files - wiki.md's core will do that.
 
 ### Template files
 

@@ -23,31 +23,10 @@
 
 namespace at\nerdreich;
 
-require_once('dist/wiki.md/core/Wiki.php');
-require_once('dist/wiki.md/core/UserSession.php');
+require_once('test/php/WikiTestCase.php');
 
-final class WikiTest extends \PHPUnit\Framework\TestCase
+final class WikiTest extends WikiTestCase
 {
-    // --- helper methods ------------------------------------------------------
-
-    private function getNewWiki(): Wiki
-    {
-        $config = parse_ini_file('dist/wiki.md/data/config.ini');
-        $user = new UserSession($config);
-        return new Wiki($config, $user);
-    }
-
-    private function getAsPublicMethod(string $methodName): \ReflectionMethod
-    {
-        // make private method public for testing
-        $reflector = new \ReflectionClass('\at\nerdreich\Wiki');
-        $method = $reflector->getMethod($methodName);
-        $method->setAccessible(true);
-        return $method;
-    }
-
-    // --- test methods --------------------------------------------------------
-
     public function testDefaultValues(): void
     {
         $wiki = $this->getNewWiki();
@@ -97,7 +76,7 @@ final class WikiTest extends \PHPUnit\Framework\TestCase
     public function testwikiPathToContentFileFS(): void
     {
         $wiki = $this->getNewWiki();
-        $method = $this->getAsPublicMethod('wikiPathToContentFileFS');
+        $method = $this->getAsPublicMethod('\at\nerdreich\Wiki', 'wikiPathToContentFileFS');
 
         $this->assertEquals(
             $wiki->getContentDirFS() . '/README.md',
@@ -115,29 +94,13 @@ final class WikiTest extends \PHPUnit\Framework\TestCase
             $wiki->getContentDirFS() . '/animal/lion.md',
             $method->invokeArgs($wiki, ['/animal/lion'])
         );
-        $this->assertEquals(
-            $wiki->getContentDirFS() . '/animal/_media/lion.png',
-            $method->invokeArgs($wiki, ['/animal/lion.png'])
-        );
-        $this->assertEquals(
-            $wiki->getContentDirFS() . '/animal/_media/LION.JPG.PNG',
-            $method->invokeArgs($wiki, ['/animal/LION.JPG.PNG'])
-        );
-        $this->assertEquals(
-            $wiki->getContentDirFS() . '/animal/_media/lion.jpg',
-            $method->invokeArgs($wiki, ['/animal/lion.jpg'])
-        );
-        $this->assertEquals(
-            $wiki->getContentDirFS() . '/animal/_media/lion.gif',
-            $method->invokeArgs($wiki, ['/animal/lion.gif'])
-        );
     }
 
     public function testCanonicalWikiPath(): void
     {
         $wiki = $this->getNewWiki();
         $wiki->init('/animal/lion');
-        $method = $this->getAsPublicMethod('canonicalWikiPath');
+        $method = $this->getAsPublicMethod('\at\nerdreich\Wiki', 'canonicalWikiPath');
 
         // absolute pages
         $this->assertEquals('/animal/lion', $method->invokeArgs($wiki, ['/animal/lion']));
@@ -265,7 +228,7 @@ final class WikiTest extends \PHPUnit\Framework\TestCase
     public function testFilterBrokenLinks(): void
     {
         $wiki = $this->getNewWiki();
-        $method = $this->getAsPublicMethod('runFilters');
+        $method = $this->getAsPublicMethod('\at\nerdreich\Wiki', 'runFilters');
 
         // nothing changes while not logged-in
         $this->assertEquals('[link](/)', $method->invokeArgs($wiki, ['markup', '[link](/)', '/path']));
@@ -280,7 +243,7 @@ final class WikiTest extends \PHPUnit\Framework\TestCase
     public function testMacroInclude(): void
     {
         $wiki = $this->getNewWiki();
-        $method = $this->getAsPublicMethod('runFilters');
+        $method = $this->getAsPublicMethod('\at\nerdreich\Wiki', 'runFilters');
 
         $contentDirFS = $wiki->getContentDirFS() . '';
 

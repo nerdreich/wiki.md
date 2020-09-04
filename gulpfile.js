@@ -26,14 +26,15 @@ const dirs = {
   build: 'dist/',
   site: 'dist/' + p.name + subdir,
   theme: 'dist/' + p.name + subdir + '/themes/elegant',
+  plugins: 'dist/' + p.name + subdir + '/plugins',
   data: 'dist/' + p.name + subdir + '/data'
 }
 
 // --- testing targets ---------------------------------------------------
 
-gulp.task('test-theme-sass', function () {
+gulp.task('test-theme-elegant-sass', function () {
   const sassLint = require('gulp-sass-lint')
-  return gulp.src(['src/theme/**/*.s+(a|c)ss'])
+  return gulp.src(['src/themes/**/*.s+(a|c)ss'])
     .pipe(sassLint({ configFile: '.sass-lint.yml' }))
     .pipe(sassLint.format())
     .pipe(sassLint.failOnError())
@@ -57,12 +58,12 @@ gulp.task('test-core-php', function () {
     .pipe(phpcs.reporter('log'))
 })
 
-gulp.task('test-theme-php', function () {
+gulp.task('test-theme-elegant-php', function () {
   const phpcs = require('gulp-phpcs')
   const phplint = require('gulp-phplint')
 
   return gulp.src([
-    'src/theme/*php'
+    'src/themes/**/*php'
   ])
     .pipe(phplint('', { skipPassedFiles: true }))
     .pipe(phpcs({
@@ -74,7 +75,24 @@ gulp.task('test-theme-php', function () {
     .pipe(phpcs.reporter('log'))
 })
 
-gulp.task('tests', gulp.series('test-theme-sass', 'test-core-php', 'test-theme-php'))
+gulp.task('test-plugin-media-php', function () {
+  const phpcs = require('gulp-phpcs')
+  const phplint = require('gulp-phplint')
+
+  return gulp.src([
+    'src/plugins/media/**/*php'
+  ])
+    .pipe(phplint('', { skipPassedFiles: true }))
+    .pipe(phpcs({
+      bin: 'tools/phpcs.phar',
+      standard: 'PSR12',
+      colors: 1,
+      warningSeverity: 0
+    }))
+    .pipe(phpcs.reporter('log'))
+})
+
+gulp.task('tests', gulp.series('test-theme-elegant-sass', 'test-core-php', 'test-plugin-media-php', 'test-theme-elegant-php'))
 
 // --- build targets -----------------------------------------------------
 
@@ -88,21 +106,21 @@ gulp.task('clean', function () {
   ])
 })
 
-gulp.task('theme-fonts', function () {
+gulp.task('theme-elegant-fonts', function () {
   return gulp.src([
-    'src/theme/fonts/*/*woff',
-    'src/theme/fonts/*/*woff2'
+    'src/themes/elegant/fonts/*/*woff',
+    'src/themes/elegant/fonts/*/*woff2'
   ])
     .pipe(gulp.dest(dirs.theme + '/fonts/'))
 })
 
-gulp.task('theme-scss', gulp.series('test-theme-sass', function () {
+gulp.task('theme-elegant-scss', gulp.series('test-theme-elegant-sass', function () {
   const sass = require('gulp-sass')
   const concat = require('gulp-concat')
   const autoprefixer = require('gulp-autoprefixer')
 
   return gulp.src([
-    'src/theme/scss/main.scss'
+    'src/themes/elegant/scss/main.scss'
     // include additional vendor-css from /node_modules here
   ])
     .pipe(concat('style.css'))
@@ -112,28 +130,28 @@ gulp.task('theme-scss', gulp.series('test-theme-sass', function () {
     .pipe(gulp.dest(dirs.theme))
 }))
 
-gulp.task('theme-php', gulp.series('test-theme-php', function () {
+gulp.task('theme-elegant-php', gulp.series('test-theme-elegant-php', function () {
   return gulp.src([
-    'src/theme/**/*.php'
+    'src/themes/elegant/**/*.php'
   ])
     .pipe(replace('$VERSION$', p.version, { skipBinary: true }))
     .pipe(replace('$URL$', p.homepage, { skipBinary: true }))
     .pipe(gulp.dest(dirs.theme))
 }))
 
-gulp.task('theme-I18N', function () {
+gulp.task('theme-elegant-I18N', function () {
   return gulp.src([
-    'src/theme/I18N/**/*'
+    'src/themes/elegant/I18N/**/*'
   ])
     .pipe(gulp.dest(dirs.theme + '/I18N'))
 })
 
-gulp.task('theme-favicon', function () {
+gulp.task('theme-elegant-favicon', function () {
   const imagemin = require('gulp-imagemin')
   const imageminPngquant = require('imagemin-pngquant')
 
   return gulp.src([
-    'src/theme/favicon/**/*'
+    'src/themes/elegant/favicon/**/*'
   ])
     .pipe(imagemin([
       imageminPngquant({ quality: [0.8, 0.9], strip: true })
@@ -143,7 +161,18 @@ gulp.task('theme-favicon', function () {
     .pipe(gulp.dest(dirs.theme))
 })
 
-gulp.task('theme', gulp.parallel('theme-fonts', 'theme-scss', 'theme-php', 'theme-I18N', 'theme-favicon'))
+gulp.task('theme-elegant', gulp.parallel('theme-elegant-fonts', 'theme-elegant-scss', 'theme-elegant-php', 'theme-elegant-I18N', 'theme-elegant-favicon'))
+
+gulp.task('plugin-media-php', gulp.series('test-plugin-media-php', function () {
+  return gulp.src([
+    'src/plugins/media/**/*php'
+  ])
+    .pipe(replace('$VERSION$', p.version, { skipBinary: true }))
+    .pipe(replace('$URL$', p.homepage, { skipBinary: true }))
+    .pipe(gulp.dest(dirs.plugins + '/media'))
+}))
+
+gulp.task('plugin-media', gulp.parallel('plugin-media-php'))
 
 gulp.task('core-meta', function () {
   return gulp.src([
@@ -184,7 +213,7 @@ gulp.task('docs', gulp.series(function () {
     .pipe(gulp.dest(dirs.data + '/content/docs/_media'))
 }))
 
-gulp.task('dist', gulp.series(gulp.parallel('core-php', 'core-meta', 'theme', 'data'), 'docs'))
+gulp.task('dist', gulp.series(gulp.parallel('core-php', 'core-meta', 'theme-elegant', 'plugin-media', 'data'), 'docs'))
 
 gulp.task('package-tgz', function () {
   const tar = require('gulp-tar')

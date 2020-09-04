@@ -20,7 +20,7 @@
 
 // --- setup I18N --------------------------------------------------------------
 
-require_once('core/Translate.php');
+require_once(dirname(__FILE__) . '/../../core/Translate.php');
 at\nerdreich\Translate::loadLanguage(dirname(__FILE__) . '/I18N/' . $ui->getLanguage() . '.yaml');
 
 // --- register theme macros ---------------------------------------------------
@@ -151,29 +151,8 @@ function localDateString(
 function getPageLinksHTML(at\nerdreich\WikiUI $ui): string
 {
     $html = '';
-    if ($ui->user->mayUpdate($ui->wiki->getWikiPath())) {
-        if ($ui->wiki->exists()) {
-            $html .= '<a href="?page=edit">' . ___('Edit') . '</a><br>';
-        } else {
-            $html .= '<a href="?page=create">' . ___('Create') . '</a><br>';
-        }
-    }
-    if ($ui->user->mayMedia($ui->wiki->getWikiPath())) {
-        $html .= '<a href="?media=list">' . ___('Media') . '</a><br>';
-    }
-    if ($ui->wiki->exists() && $ui->user->mayRead($ui->wiki->getWikiPath()) && $ui->user->mayUpdate($ui->wiki->getWikiPath())) {
-        $html .= '<a href="?page=history">' . ___('History') . '</a><br>';
-    }
-    if ($ui->wiki->exists() && $ui->user->mayDelete($ui->wiki->getWikiPath())) {
-        $html .= '<a href="?page=delete">' . ___('Delete') . '</a><br>';
-    }
-    if ($ui->user->mayAdmin($ui->wiki->getWikiPath())) {
-        $html .= '<a href="./?user=list">' . ___('Permissions') . '</a><br>';
-    }
-    if ($ui->user->isLoggedIn()) {
-        $html .= '<a href="?auth=logout">' . ___('Logout') . '</a>';
-    } else {
-        $html .= '<a href="?auth=login">' . ___('Login') . '</a>';
+    foreach ($ui->wiki->getMenuItems() as $action => $label) {
+        $html .= '<a href="?' . $action . '">' . ___($label) . '</a><br>';
     }
     return $html;
 }

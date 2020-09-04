@@ -21,14 +21,8 @@
 outputHeader($ui, ___('Media'));
 outputNavbar($ui);
 
-$files = $ui->wiki->media($ui->wiki->getWikiPath());
-
-function mediaSize(int $bytes): string
-{
-    $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
-    $bytes /= pow(1024, $pow);
-    return round($bytes, 1) . ' ' . ['B', 'kB', 'MB', 'GB', 'TB'][$pow];
-}
+$plugin = $ui->wiki->getPlugin('media');
+$files = $plugin->list($ui->wiki->getWikiPath());
 
 ?>
 <section class="banner">
@@ -47,7 +41,7 @@ function mediaSize(int $bytes): string
             echo '<table><thead><tr><th>File</th><th>Size</th><th>Date</th><th>Actions</th></tr></thead>' . PHP_EOL . '<tbody>';
             foreach ($files as $file) {
                 echo '<tr><td><a href="' . urlencode($file['name']) . '" target="_blank">' .
-                    $file['name'] . '</a></td><td>' . mediaSize($file['size']) .
+                    $file['name'] . '</a></td><td>' . $plugin->mediaSize($file['size']) .
                     '</td><td>' . localDateString($file['mtime']) . '</td><td><a href="' .
                     urlencode($file['name']) . '?media=delete">' . ___('Delete') . '</a></td></tr>';
             }
@@ -59,13 +53,13 @@ function mediaSize(int $bytes): string
     <form class="col-12 form-upload" action="?media=upload" method="post" enctype="multipart/form-data">
       <h2><?php __('Upload'); ?></h2>
       <p>
-          <?php __('Allowed media types %s.', $ui->wiki->getMediaTypes()); ?>
-          <?php __('File size limit %s.', mediaSize($ui->wiki->getMediaSizeLimit() * 1024)); ?>
+          <?php __('Allowed media types %s.', $plugin->getMediaTypes()); ?>
+          <?php __('File size limit %s.', $plugin->mediaSize($plugin->getMediaSizeLimit() * 1024)); ?>
       </p>
       <input type="file" name="wikimedia" id="wikimedia"
         onchange="document.getElementById('filename').value = this.value">
       <input type="text" name="filename" id="filename"
-        placeholder="<?php __('Select file'); ?>" pattern="|.*\.(<?php echo $ui->wiki->getMediaTypes(); ?>)">
+        placeholder="<?php __('Select file'); ?>" pattern="|.*\.(<?php echo $plugin->getMediaTypes(); ?>)">
       <input type="submit" value="Upload" name="submit">
     </form>
   </div>

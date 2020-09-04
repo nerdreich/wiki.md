@@ -23,30 +23,11 @@
 
 namespace at\nerdreich;
 
-require_once('dist/wiki.md/core/UserSession.php');
+require_once('test/php/WikiTestCase.php');
 
-final class UserSessionTest extends \PHPUnit\Framework\TestCase
+final class UserSessionTest extends WikiTestCase
 {
     private static $htpasswd = '';
-
-    // --- helpers -------------------------------------------------------------
-
-    public function getPrivateProperty(string $propertyName): \ReflectionProperty
-    {
-        $reflector = new \ReflectionClass('\at\nerdreich\UserSession');
-        $property = $reflector->getProperty($propertyName);
-        $property->setAccessible(true);
-        return $property;
-    }
-
-    private function getAsPublicMethod(string $methodName): \ReflectionMethod
-    {
-        // make private method public for testing
-        $reflector = new \ReflectionClass('\at\nerdreich\UserSession');
-        $method = $reflector->getMethod($methodName);
-        $method->setAccessible(true);
-        return $method;
-    }
 
     // --- tests ---------------------------------------------------------------
 
@@ -75,7 +56,6 @@ final class UserSessionTest extends \PHPUnit\Framework\TestCase
         $this->assertFalse($user->mayCreate(''));
         $this->assertFalse($user->mayUpdate(''));
         $this->assertFalse($user->mayDelete(''));
-        $this->assertFalse($user->mayMedia(''));
         $this->assertFalse($user->mayAdmin(''));
 
         $this->assertTrue($user->mayRead('/'));
@@ -98,11 +78,6 @@ final class UserSessionTest extends \PHPUnit\Framework\TestCase
         $this->assertFalse($user->mayDelete('/somefolder/'));
         $this->assertFalse($user->mayDelete('/somefolder/somepage'));
         $this->assertFalse($user->mayDelete('/somefolder/somefolder/somepage'));
-        $this->assertFalse($user->mayMedia('/'));
-        $this->assertFalse($user->mayMedia('/somepage'));
-        $this->assertFalse($user->mayMedia('/somefolder/'));
-        $this->assertFalse($user->mayMedia('/somefolder/somepage'));
-        $this->assertFalse($user->mayMedia('/somefolder/somefolder/somepage'));
         $this->assertFalse($user->mayAdmin('/'));
         $this->assertFalse($user->mayAdmin('/somepage'));
         $this->assertFalse($user->mayAdmin('/somefolder/'));
@@ -125,10 +100,6 @@ final class UserSessionTest extends \PHPUnit\Framework\TestCase
         $this->assertFalse($user->mayDelete('/docs/'));
         $this->assertFalse($user->mayDelete('/docs/install'));
         $this->assertFalse($user->mayDelete('/docs/install/'));
-        $this->assertFalse($user->mayMedia('/docs'));
-        $this->assertFalse($user->mayMedia('/docs/'));
-        $this->assertFalse($user->mayMedia('/docs/install'));
-        $this->assertFalse($user->mayMedia('/docs/install/'));
         $this->assertFalse($user->mayAdmin('/docs'));
         $this->assertFalse($user->mayAdmin('/docs/'));
         $this->assertFalse($user->mayAdmin('/docs/install'));
@@ -140,68 +111,59 @@ final class UserSessionTest extends \PHPUnit\Framework\TestCase
         // the 'docs' user is allowed to do everything one subdir, but not in others
         $config = parse_ini_file('dist/wiki.md/data/config.ini');
         $user = new UserSession($config);
+        $this->getPrivateProperty('\at\nerdreich\UserSession', 'username')->setValue($user, 'docs'); // pseudo-login
 
-        $this->assertFalse($user->hasExplicitPermission('docs', 'userCreate', '/docs')); // a page in the root folder!
-        $this->assertTrue($user->hasExplicitPermission('docs', 'userCreate', '/docs/'));
-        $this->assertTrue($user->hasExplicitPermission('docs', 'userCreate', '/docs/install'));
-        $this->assertTrue($user->hasExplicitPermission('docs', 'userCreate', '/docs/more/infos'));
-        $this->assertTrue($user->hasExplicitPermission('docs', 'userCreate', '/docs/more/infos/'));
-        $this->assertTrue($user->hasExplicitPermission('docs', 'userRead', '/docs'));
-        $this->assertTrue($user->hasExplicitPermission('docs', 'userRead', '/docs/'));
-        $this->assertTrue($user->hasExplicitPermission('docs', 'userRead', '/docs/install'));
-        $this->assertTrue($user->hasExplicitPermission('docs', 'userRead', '/docs/more/infos'));
-        $this->assertTrue($user->hasExplicitPermission('docs', 'userRead', '/docs/more/infos/'));
-        $this->assertFalse($user->hasExplicitPermission('docs', 'userUpdate', '/docs'));
-        $this->assertTrue($user->hasExplicitPermission('docs', 'userUpdate', '/docs/'));
-        $this->assertTrue($user->hasExplicitPermission('docs', 'userUpdate', '/docs/install'));
-        $this->assertTrue($user->hasExplicitPermission('docs', 'userUpdate', '/docs/more/infos'));
-        $this->assertTrue($user->hasExplicitPermission('docs', 'userUpdate', '/docs/more/infos/'));
-        $this->assertFalse($user->hasExplicitPermission('docs', 'userDelete', '/docs'));
-        $this->assertTrue($user->hasExplicitPermission('docs', 'userDelete', '/docs/'));
-        $this->assertTrue($user->hasExplicitPermission('docs', 'userDelete', '/docs/install'));
-        $this->assertTrue($user->hasExplicitPermission('docs', 'userDelete', '/docs/more/infos'));
-        $this->assertTrue($user->hasExplicitPermission('docs', 'userDelete', '/docs/more/infos/'));
-        $this->assertFalse($user->hasExplicitPermission('docs', 'userMedia', '/docs'));
-        $this->assertTrue($user->hasExplicitPermission('docs', 'userMedia', '/docs/'));
-        $this->assertTrue($user->hasExplicitPermission('docs', 'userMedia', '/docs/install'));
-        $this->assertTrue($user->hasExplicitPermission('docs', 'userMedia', '/docs/more/infos'));
-        $this->assertTrue($user->hasExplicitPermission('docs', 'userMedia', '/docs/more/infos/'));
-        $this->assertFalse($user->hasExplicitPermission('docs', 'userAdmin', '/docs'));
-        $this->assertFalse($user->hasExplicitPermission('docs', 'userAdmin', '/docs/'));
-        $this->assertFalse($user->hasExplicitPermission('docs', 'userAdmin', '/docs/install'));
-        $this->assertFalse($user->hasExplicitPermission('docs', 'userAdmin', '/docs/more/infos'));
-        $this->assertFalse($user->hasExplicitPermission('docs', 'userAdmin', '/docs/more/infos/'));
+        $this->assertFalse($user->hasExplicitPermission('userCreate', '/docs')); // a page in the root folder!
+        $this->assertTrue($user->hasExplicitPermission('userCreate', '/docs/'));
+        $this->assertTrue($user->hasExplicitPermission('userCreate', '/docs/install'));
+        $this->assertTrue($user->hasExplicitPermission('userCreate', '/docs/more/infos'));
+        $this->assertTrue($user->hasExplicitPermission('userCreate', '/docs/more/infos/'));
+        $this->assertTrue($user->hasExplicitPermission('userRead', '/docs'));
+        $this->assertTrue($user->hasExplicitPermission('userRead', '/docs/'));
+        $this->assertTrue($user->hasExplicitPermission('userRead', '/docs/install'));
+        $this->assertTrue($user->hasExplicitPermission('userRead', '/docs/more/infos'));
+        $this->assertTrue($user->hasExplicitPermission('userRead', '/docs/more/infos/'));
+        $this->assertFalse($user->hasExplicitPermission('userUpdate', '/docs'));
+        $this->assertTrue($user->hasExplicitPermission('userUpdate', '/docs/'));
+        $this->assertTrue($user->hasExplicitPermission('userUpdate', '/docs/install'));
+        $this->assertTrue($user->hasExplicitPermission('userUpdate', '/docs/more/infos'));
+        $this->assertTrue($user->hasExplicitPermission('userUpdate', '/docs/more/infos/'));
+        $this->assertFalse($user->hasExplicitPermission('userDelete', '/docs'));
+        $this->assertTrue($user->hasExplicitPermission('userDelete', '/docs/'));
+        $this->assertTrue($user->hasExplicitPermission('userDelete', '/docs/install'));
+        $this->assertTrue($user->hasExplicitPermission('userDelete', '/docs/more/infos'));
+        $this->assertTrue($user->hasExplicitPermission('userDelete', '/docs/more/infos/'));
+        $this->assertFalse($user->hasExplicitPermission('userAdmin', '/docs'));
+        $this->assertFalse($user->hasExplicitPermission('userAdmin', '/docs/'));
+        $this->assertFalse($user->hasExplicitPermission('userAdmin', '/docs/install'));
+        $this->assertFalse($user->hasExplicitPermission('userAdmin', '/docs/more/infos'));
+        $this->assertFalse($user->hasExplicitPermission('userAdmin', '/docs/more/infos/'));
 
-        $this->assertFalse($user->hasExplicitPermission('docs', 'userCreate', '/'));
-        $this->assertFalse($user->hasExplicitPermission('docs', 'userCreate', '/somepage'));
-        $this->assertFalse($user->hasExplicitPermission('docs', 'userCreate', '/somefolder/'));
-        $this->assertFalse($user->hasExplicitPermission('docs', 'userCreate', '/somefolder/somepage'));
-        $this->assertFalse($user->hasExplicitPermission('docs', 'userCreate', '/somefolder/somefolder/somepage'));
-        $this->assertTrue($user->hasExplicitPermission('docs', 'userRead', '/'));
-        $this->assertTrue($user->hasExplicitPermission('docs', 'userRead', '/somepage'));
-        $this->assertTrue($user->hasExplicitPermission('docs', 'userRead', '/somefolder/'));
-        $this->assertTrue($user->hasExplicitPermission('docs', 'userRead', '/somefolder/somepage'));
-        $this->assertTrue($user->hasExplicitPermission('docs', 'userRead', '/somefolder/somefolder/somepage'));
-        $this->assertFalse($user->hasExplicitPermission('docs', 'userUpdate', '/'));
-        $this->assertFalse($user->hasExplicitPermission('docs', 'userUpdate', '/somepage'));
-        $this->assertFalse($user->hasExplicitPermission('docs', 'userUpdate', '/somefolder/'));
-        $this->assertFalse($user->hasExplicitPermission('docs', 'userUpdate', '/somefolder/somepage'));
-        $this->assertFalse($user->hasExplicitPermission('docs', 'userUpdate', '/somefolder/somefolder/somepage'));
-        $this->assertFalse($user->hasExplicitPermission('docs', 'userDelete', '/'));
-        $this->assertFalse($user->hasExplicitPermission('docs', 'userDelete', '/somepage'));
-        $this->assertFalse($user->hasExplicitPermission('docs', 'userDelete', '/somefolder/'));
-        $this->assertFalse($user->hasExplicitPermission('docs', 'userDelete', '/somefolder/somepage'));
-        $this->assertFalse($user->hasExplicitPermission('docs', 'userDelete', '/somefolder/somefolder/somepage'));
-        $this->assertFalse($user->hasExplicitPermission('docs', 'userMedia', '/'));
-        $this->assertFalse($user->hasExplicitPermission('docs', 'userMedia', '/somepage'));
-        $this->assertFalse($user->hasExplicitPermission('docs', 'userMedia', '/somefolder/'));
-        $this->assertFalse($user->hasExplicitPermission('docs', 'userMedia', '/somefolder/somepage'));
-        $this->assertFalse($user->hasExplicitPermission('docs', 'userMedia', '/somefolder/somefolder/somepage'));
-        $this->assertFalse($user->hasExplicitPermission('docs', 'userAdmin', '/'));
-        $this->assertFalse($user->hasExplicitPermission('docs', 'userAdmin', '/somepage'));
-        $this->assertFalse($user->hasExplicitPermission('docs', 'userAdmin', '/somefolder/'));
-        $this->assertFalse($user->hasExplicitPermission('docs', 'userAdmin', '/somefolder/somepage'));
-        $this->assertFalse($user->hasExplicitPermission('docs', 'userAdmin', '/somefolder/somefolder/somepage'));
+        $this->assertFalse($user->hasExplicitPermission('userCreate', '/'));
+        $this->assertFalse($user->hasExplicitPermission('userCreate', '/somepage'));
+        $this->assertFalse($user->hasExplicitPermission('userCreate', '/somefolder/'));
+        $this->assertFalse($user->hasExplicitPermission('userCreate', '/somefolder/somepage'));
+        $this->assertFalse($user->hasExplicitPermission('userCreate', '/somefolder/somefolder/somepage'));
+        $this->assertTrue($user->hasExplicitPermission('userRead', '/'));
+        $this->assertTrue($user->hasExplicitPermission('userRead', '/somepage'));
+        $this->assertTrue($user->hasExplicitPermission('userRead', '/somefolder/'));
+        $this->assertTrue($user->hasExplicitPermission('userRead', '/somefolder/somepage'));
+        $this->assertTrue($user->hasExplicitPermission('userRead', '/somefolder/somefolder/somepage'));
+        $this->assertFalse($user->hasExplicitPermission('userUpdate', '/'));
+        $this->assertFalse($user->hasExplicitPermission('userUpdate', '/somepage'));
+        $this->assertFalse($user->hasExplicitPermission('userUpdate', '/somefolder/'));
+        $this->assertFalse($user->hasExplicitPermission('userUpdate', '/somefolder/somepage'));
+        $this->assertFalse($user->hasExplicitPermission('userUpdate', '/somefolder/somefolder/somepage'));
+        $this->assertFalse($user->hasExplicitPermission('userDelete', '/'));
+        $this->assertFalse($user->hasExplicitPermission('userDelete', '/somepage'));
+        $this->assertFalse($user->hasExplicitPermission('userDelete', '/somefolder/'));
+        $this->assertFalse($user->hasExplicitPermission('userDelete', '/somefolder/somepage'));
+        $this->assertFalse($user->hasExplicitPermission('userDelete', '/somefolder/somefolder/somepage'));
+        $this->assertFalse($user->hasExplicitPermission('userAdmin', '/'));
+        $this->assertFalse($user->hasExplicitPermission('userAdmin', '/somepage'));
+        $this->assertFalse($user->hasExplicitPermission('userAdmin', '/somefolder/'));
+        $this->assertFalse($user->hasExplicitPermission('userAdmin', '/somefolder/somepage'));
+        $this->assertFalse($user->hasExplicitPermission('userAdmin', '/somefolder/somefolder/somepage'));
     }
 
     public function testUserAdmin(): void
@@ -210,8 +172,8 @@ final class UserSessionTest extends \PHPUnit\Framework\TestCase
         $user = new UserSession($config);
 
         $hash = hash('sha1', file_get_contents(self::$htpasswd));
-        $this->getPrivateProperty('username')->setValue($user, '*');
-        $methodLogin = $this->getAsPublicMethod('getUserForPassword');
+        $this->getPrivateProperty('\at\nerdreich\UserSession', 'username')->setValue($user, '*');
+        $methodLogin = $this->getAsPublicMethod('\at\nerdreich\UserSession', 'getUserForPassword');
 
         // no permissions -> no data
         $data = $user->adminFolder('/');
@@ -220,14 +182,14 @@ final class UserSessionTest extends \PHPUnit\Framework\TestCase
         $this->assertFalse($user->deleteUser('docs'));
 
         // user docs can't read/update it
-        $this->getPrivateProperty('username')->setValue($user, 'docs');
+        $this->getPrivateProperty('\at\nerdreich\UserSession', 'username')->setValue($user, 'docs');
         $data = $user->adminFolder('/');
         $this->assertEquals(null, $data);
         $this->assertFalse($user->addSecret('docs', '*****'));
         $this->assertFalse($user->deleteUser('docs'));
 
         // user admin can read it
-        $this->getPrivateProperty('username')->setValue($user, 'admin');
+        $this->getPrivateProperty('\at\nerdreich\UserSession', 'username')->setValue($user, 'admin');
         $data = $user->adminFolder('/');
         $this->assertCount(2, $data['users']);
         $this->assertContains('admin', $data['users']);
@@ -298,7 +260,7 @@ final class UserSessionTest extends \PHPUnit\Framework\TestCase
     {
         $config = parse_ini_file('dist/wiki.md/data/config.ini');
         $user = new UserSession($config);
-        $this->getPrivateProperty('username')->setValue($user, '*');
+        $this->getPrivateProperty('\at\nerdreich\UserSession', 'username')->setValue($user, '*');
 
         // anonymous can't set permissions
         $this->assertFalse(
@@ -306,13 +268,13 @@ final class UserSessionTest extends \PHPUnit\Framework\TestCase
         );
 
         // non-admin user can't set permissions
-        $this->getPrivateProperty('username')->setValue($user, 'docs');
+        $this->getPrivateProperty('\at\nerdreich\UserSession', 'username')->setValue($user, 'docs');
         $this->assertFalse(
             $user->setPermissions('/some/test/folder/', ['admin'], ['admin'], ['admin'], ['admin'], ['admin'], ['admin'])
         );
 
         // admin can set permissions
-        $this->getPrivateProperty('username')->setValue($user, 'admin');
+        $this->getPrivateProperty('\at\nerdreich\UserSession', 'username')->setValue($user, 'admin');
         $this->assertTrue(
             $user->setPermissions('/some/test/folder/', ['admin'], ['admin'], ['admin'], ['admin'], ['admin'], ['admin'])
         );
@@ -330,7 +292,7 @@ final class UserSessionTest extends \PHPUnit\Framework\TestCase
             ['*', '*'],
             ['admin', 'admin']
         );
-        $permissions = $this->getAsPublicMethod('loadPermissionFile')->invokeArgs($user, ['/some/test/folder/']);
+        $permissions = $this->getAsPublicMethod('\at\nerdreich\UserSession', 'loadPermissionFile')->invokeArgs($user, ['/some/test/folder/']);
         $this->assertEquals('admin,docs', $permissions['userCreate']);
         $this->assertEquals('*', $permissions['userRead']);
         $this->assertEquals('*', $permissions['userUpdate']);

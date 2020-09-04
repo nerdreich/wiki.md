@@ -22,50 +22,36 @@ require_once 'core/WikiUI.php';
 $ui = new \at\nerdreich\WikiUI();
 require_once $ui->getThemeSetupFile();
 
-// --- register a default route ------------------------------------------------
-
-$ui->registerRouteDefault(function ($ui) {
-    if ($ui->wiki->isMedia() && $ui->user->mayRead($ui->wiki->getWikiPath())) {
-        $ui->renderMedia($ui->wiki->getContentFileFS());
-    }
-    if (!$ui->wiki->exists()) {
-        $ui->renderThemeFile('404', 404);
-    }
-    if ($ui->wiki->readPage()) {
-        $ui->renderThemeFile('view');
-    }
-});
-
 // --- register authentication routes ------------------------------------------
 
-$ui->registerRoute('auth', 'login', function ($ui) {
+$ui->registerActionRoute('auth', 'login', function ($ui) {
     if ($ui->user->login(trim($_POST['username'] ?? ''), trim($_POST['password'] ?? ''))) {
         $ui->redirect($ui->wiki->getLocation(), $ui->getActions()); // successfull -> redirect back
     }
     $ui->renderThemeFile('login', 401); // unsuccessful -> show login again
 });
 
-$ui->registerRoute('auth', 'logout', function ($ui) {
+$ui->registerActionRoute('auth', 'logout', function ($ui) {
     $ui->user->logout();
     $ui->redirect($ui->wiki->getLocation(), $ui->getActions());
 });
 
 // --- register user management routes -----------------------------------------
 
-$ui->registerRoute('user', 'list', function ($ui) {
+$ui->registerActionRoute('user', 'list', function ($ui) {
     if ($ui->user->adminFolder($ui->wiki->getWikiPath()) !== null) {
         $ui->renderThemeFile('admin_folder');
     }
     $ui->renderLoginOrDenied(); // transparent login
 });
 
-$ui->registerRoute('user', 'delete', function ($ui) {
+$ui->registerActionRoute('user', 'delete', function ($ui) {
     if ($ui->user->deleteUser($_GET['name'])) {
         $ui->redirect($ui->wiki->getLocation(), 'user=list');
     }
 });
 
-$ui->registerRoute('user', 'set', function ($ui) {
+$ui->registerActionRoute('user', 'set', function ($ui) {
     if (
         $ui->user->setPermissions(
             $ui->wiki->getWikiPath(),
@@ -81,46 +67,15 @@ $ui->registerRoute('user', 'set', function ($ui) {
     }
 });
 
-$ui->registerRoute('user', 'secret', function ($ui) {
+$ui->registerActionRoute('user', 'secret', function ($ui) {
     if ($ui->user->addSecret($_POST['username'], $_POST['secret'])) {
         $ui->redirect($ui->wiki->getLocation(), 'user=list');
     }
 });
 
-// --- register media routes ---------------------------------------------------
-
-$ui->registerRoute('media', 'list', function ($ui) {
-    if ($ui->wiki->media($ui->wiki->getWikiPath()) !== null) {
-        $ui->renderThemeFile('media');
-    }
-    $ui->renderLoginOrDenied(); // transparent login
-});
-
-$ui->registerRoute('media', 'upload', function ($ui) {
-    if ($_FILES['wikimedia'] && $_FILES['wikimedia']['error'] === UPLOAD_ERR_OK) {
-        if (
-            $ui->wiki->mediaUpload(
-                $_FILES['wikimedia']['tmp_name'],
-                strtolower(trim($_FILES['wikimedia']['name'])),
-                $ui->wiki->getWikiPath()
-            )
-        ) {
-            $ui->redirect($ui->wiki->getLocation(), 'media=list');
-        }
-    } else { // upload failed, probably due empty selector on submit
-        $ui->redirect($ui->wiki->getLocation(), 'media=list');
-    }
-});
-
-$ui->registerRoute('media', 'delete', function ($ui) {
-    if ($ui->wiki->mediaDelete($ui->wiki->getWikiPath()) !== null) {
-        $ui->redirect(dirname($ui->wiki->getLocation()) . '/', 'media=list');
-    }
-});
-
 // --- register page routes ----------------------------------------------------
 
-$ui->registerRoute('page', 'save', function ($ui) {
+$ui->registerActionRoute('page', 'save', function ($ui) {
     $alias = trim(preg_replace('/\s+/', ' ', $_POST['author']));
     if (
         $ui->wiki->savePage(
@@ -136,19 +91,19 @@ $ui->registerRoute('page', 'save', function ($ui) {
 
 if ($ui->wiki->exists()) {
     // these routes are only added if the item exists
-    $ui->registerRoute('page', 'edit', function ($ui) {
+    $ui->registerActionRoute('page', 'edit', function ($ui) {
         if ($ui->wiki->editPage()) {
             $ui->renderThemeFile('edit');
         }
         $ui->renderLoginOrDenied(); // transparent login
     });
-    $ui->registerRoute('page', 'history', function ($ui) {
+    $ui->registerActionRoute('page', 'history', function ($ui) {
         if ($ui->wiki->history()) {
             $ui->renderThemeFile('history');
         }
         $ui->renderLoginOrDenied(); // transparent login
     });
-    $ui->registerRoute('page', 'restore', function ($ui) {
+    $ui->registerActionRoute('page', 'restore', function ($ui) {
         $version = (int) preg_replace('/[^0-9]/', '', $_GET['version']);
         if ($version > 0) {
             if ($ui->wiki->revertToVersion($version)) {
@@ -156,19 +111,19 @@ if ($ui->wiki->exists()) {
             }
         }
     });
-    $ui->registerRoute('page', 'delete', function ($ui) {
+    $ui->registerActionRoute('page', 'delete', function ($ui) {
         if ($ui->wiki->deletePage(true)) {
             $ui->renderThemeFile('delete');
         }
     });
-    $ui->registerRoute('page', 'deleteOK', function ($ui) {
+    $ui->registerActionRoute('page', 'deleteOK', function ($ui) {
         if ($ui->wiki->deletePage()) {
             $ui->redirect($ui->wiki->getLocation());
         }
     });
 } else {
     // these routes are only added if the item does not exist
-    $ui->registerRoute('page', 'create', function ($ui) {
+    $ui->registerActionRoute('page', 'create', function ($ui) {
         if ($ui->wiki->create()) {
             $ui->renderThemeFile('edit');
         }

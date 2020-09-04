@@ -1,6 +1,6 @@
 # Filter chains
 
-Before wiki.md delivers content to the browser, it will go through a series of chains of filters to (post)process it. Themes can add their own filters to chains to expand functionality of the wiki.
+Before wiki.md delivers content to the browser, it will go through a series of chains of filters to (post)process it. [Themes](themes_create.md) and [plugins](plugins_create.md) can add their own filters to chains to expand functionality of the wiki.
 
 The following chains exist:
 
@@ -12,7 +12,7 @@ Note: [Macros](macros.md) are not filters - but the the framework code that expa
 
 ## Adding filters
 
-To add a filter, add the following to your theme's `setup.php`:
+To add a filter, add the following to your theme's `theme.php`:
 
 ```php
 $wiki->registerFilter(

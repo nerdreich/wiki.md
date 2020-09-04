@@ -34,38 +34,55 @@ class WikiUI
     public $user;
     public $wiki;
     private $config;
-    private $routes;
-    private $routeDefault;
+    private $actionRoutes = [];
+    private $pageRoutes = [];
 
     /**
      * Constructor
      *
      * Startup wiki for further processing.
      */
-    public function __construct()
+    public function __construct($wikiPath = null)
     {
-        // general setup
-        $this->config = parse_ini_file(dirname(__FILE__) . '/../data/config.ini');
+        $root = dirname(dirname(__FILE__));
+        // load wiki
+        $this->config = parse_ini_file($root . '/data/config.ini');
         $this->user = new UserSession($this->config);
         $this->wiki = new Wiki($this->config, $this->user);
-        $this->routes = [];
-        $this->routeDefault = function ($ui) {
-        };
 
         // determine content path. will trim folder if wiki.md is installed in a sub-folder.
-        $contentPath = substr($this->sanitizePath(
+        $wikiPath = $wikiPath ?? substr($this->sanitizePath(
             parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)
         ), strlen($this->wiki->getWikiRoot()));
 
         // if there is a better path name for the same resource, redirect there
-        $canonicalPath = $this->wiki->init($contentPath);
-        if ($contentPath !== $canonicalPath) {
+        $canonicalPath = $this->wiki->init($wikiPath);
+        if ($wikiPath !== $canonicalPath) {
             $this->redirect($canonicalPath);
+        }
+
+        // set a default route for viewing pages
+        $this->registerPageRoute(function ($ui) {
+            if (!$ui->wiki->exists()) {
+                $ui->renderThemeFile('404', 404);
+            }
+            if ($ui->wiki->readPage()) {
+                $ui->renderThemeFile('view');
+            }
+            $ui->renderThemeFile('error', 400);
+        });
+
+        // load plugins
+        foreach (explode(',', $this->config['plugins'] ?? '') as $plugin) {
+            $plugin = preg_replace('/[^\w]+/', '', $plugin); // sanitize folder name
+            $ui = $this; // put WikiUI in scope of plugin
+            require $root . '/plugins/' . $plugin . '/plugin.php';
         }
 
         // setup theme config
         $this->config['themePath'] = $this->wiki->getLocation('/themes/' . $this->config['theme']) . '/';
         $this->config['themeDirFS'] = dirname(__FILE__) . '/../themes/' . $this->config['theme'];
+        $this->config['pluginDirFS'] = dirname(__FILE__) . '/../plugins';
     }
 
     // --- static helpers ------------------------------------------------------
@@ -98,25 +115,10 @@ class WikiUI
         string $path
     ): string {
         $path = urldecode($path);
-        $path = mb_ereg_replace('([^\w\s\d\-_~,;/\[\]\(\).])', '', $path); // only whitelisted chars
-        $path = mb_ereg_replace('([\.]{2,})', '', $path); // no '..'
-        $path = mb_ereg_replace('^/*', '/', $path); // make sure there is only one leading slash
+        $path = preg_replace('/[^\w\s\d\-_~,;\/\[\]\(\)\.]/', '', $path); // only whitelisted chars
+        $path = preg_replace('/\.\.+/', '', $path); // no '..'
+        $path = preg_replace('/^\/*/', '/', $path); // make sure there is only one leading slash
         return $path;
-    }
-
-    /**
-     * Deliver a file, usually an image or uploaded file, to the client.
-     *
-     * Will set proper HTTP headers and terminate execution after sending the blob.
-     *
-     * @param string $pathFS Absolute path of file to send.
-     */
-    public static function renderMedia(string $pathFS): void
-    {
-        header('Content-Type:' . mime_content_type($pathFS));
-        header('Content-Length: ' . filesize($pathFS));
-        readfile($pathFS);
-        exit;
     }
 
     /**
@@ -138,43 +140,48 @@ class WikiUI
     public function run(): void
     {
         // execute handler
-        $handler = null;
-        foreach (array_keys($this->routes) as $action) {
-            if (array_key_exists($action, $_POST)) { // prefer POST over GET
-                $handler = $this->routes[$action][$_POST[$action]];
+        $action = null;
+        $routes = array_keys($this->actionRoutes);
+        sort($routes);
+        foreach ($routes as $category) {
+            if (array_key_exists($category, $_POST)) { // prefer POST over GET
+                $action = $this->actionRoutes[$category][$_POST[$category]];
                 break;
-            } elseif (array_key_exists($action, $_GET)) {
-                $handler = $this->routes[$action][$_GET[$action]];
+            } elseif (array_key_exists($category, $_GET)) {
+                $action = $this->actionRoutes[$category][$_GET[$category]];
                 break;
             }
         }
-        if ($handler !== null) {
-            $handler($this);
+        if ($action !== null) {
+            $action($this);
             $this->renderThemeFile('error', 401); // route didn't exit
             exit;
         }
-        ($this->routeDefault)($this); // fallback
+        // fallback(s)
+        foreach ($this->pageRoutes as $action) {
+            $action($this);
+        }
     }
 
-    public function registerRoute(
+    public function registerActionRoute(
         string $category,
         string $action,
         callable $handler
     ): void {
-        $this->routes[$category][$action] = $handler;
+        $this->actionRoutes[$category][$action] = $handler;
     }
 
-    public function registerRouteDefault(
+    public function registerPageRoute(
         callable $handler
     ): void {
-        $this->routeDefault = $handler;
+        array_unshift($this->pageRoutes, $handler);
     }
 
     // --- theme file handling -------------------------------------------------
 
     public function getThemeSetupFile(): string
     {
-        return $this->config['themeDirFS'] . '/setup.php';
+        return $this->config['themeDirFS'] . '/theme.php';
     }
 
     public function getThemePath(): string
@@ -193,10 +200,25 @@ class WikiUI
     }
 
     /**
+     * Output a plugin file and terminate further execution.
+     *
+     * This puts the the theme file into a function scope.
+     *
+     * @param string $filename Theme file to load, e.g. 'edit.php'.
+     * @param int $httpResponseCode Code to send this page with to the client.
+     */
+    public function renderPluginFile(string $pluginname, string $filename, $httpResponseCode = 200): void
+    {
+        $ui = $this; // to be used in the required theme file
+        http_response_code($httpResponseCode);
+        require($this->config['pluginDirFS'] . '/' . $pluginname . '/' . $filename . '.php');
+        exit;
+    }
+
+    /**
      * Output a theme file and terminate further execution.
      *
-     * This puts the the theme file into a function scope, so it can only access
-     * global-declared variables.
+     * This puts the the theme file into a function scope.
      *
      * @param string $filename Theme file to load, e.g. 'edit.php'.
      * @param int $httpResponseCode Code to send this page with to the client.

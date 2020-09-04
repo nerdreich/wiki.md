@@ -2,7 +2,8 @@
 
 [Install & Config](install.md)  
 [Permissions](permissions.md)  
-[Themes](themes.md)
+[Themes](themes.md)  
+[Plugins](plugins.md)
 
 ## Usage
 
@@ -14,5 +15,6 @@
 [Snippets & Navigation](snippets.md)  
 [Macros](macros.md)  
 [Creating themes](themes_create.md)  
-[Filters](filters.md)  
+[Creating plugins](plugins_create.md)  
+[Creating filters](filters.md)  
 [Content format](content.md)
