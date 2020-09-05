@@ -22,7 +22,7 @@ Your `_plugin.php` should at the bare minimum contain the following:
 
 namespace org\example;
 
-class MyPlugin extends Plugin
+class MyPlugin extends \at\nerdreich\WikiPlugin
 {
   public function setup();
   {
@@ -53,7 +53,7 @@ private function doSomething()
 }
 ```
 
-Now if someone would call `wiki.example.org/some/page?myplugin=list`, `doSomething()` would run. You probably will want to check for [permissions](permissions.md) before executing code.
+Now if someone would call `wiki.example.org/some/page?myplugin=list`, `doSomething()` would run. You'll probably want to check for [user permissions](permissions.md) before executing code.
 
 ## Menu items
 

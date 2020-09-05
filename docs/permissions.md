@@ -35,7 +35,7 @@ pageUpdate: docs
 pageDelete: docs
 ```
 
-This defines that, everyone (`*`) can read pages, but only `docs` might create (`pageCreate`), update (`pageUpdate`) or delete (`pageDelete`) pages. As there is no reference to `userAdmin` or `mediaAdmin`, these roles are inherited from the parent folder.
+This example defines that everyone (`*`) can read pages, but only `docs` might create (`pageCreate`), update (`pageUpdate`) or delete (`pageDelete`) pages. As there is no reference to `userAdmin` or `mediaAdmin`, these roles are inherited from the parent folder.
 
 If no `_.yaml` file exists in a directory, it inherits all permissions from the parent folder.
 

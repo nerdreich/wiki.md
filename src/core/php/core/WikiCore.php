@@ -665,19 +665,16 @@ class WikiCore
             if ($this->user->isLoggedIn()) {
                 $folder = $this->getWikiPathParentFolder($this->contentFileFSToWikiPath($fsPath));
 
-                preg_match_all('/\[([^]]*)\]\(([^)]*)\)/', $markdown, $matches); // fetch all markup links
-                list($matchFull, $matchText, $matchLink) = $matches;
-                for ($index = 0; $index < count($matchLink); $index++) {
-                    if (preg_match('/^https?:/', $matchLink[$index])) { // skip http[s]: links
-                        continue;
+                $markdown = preg_replace_callback('/\[([^]]*)\]\(([^)]*)\)/', function ($matches) {
+                    list($matchFull, $matchText, $matchLink) = $matches;
+                    if (preg_match('/^https?:/', $matchLink)) { // skip http[s]: links
+                        return $matchFull;
                     }
-
-                    // at this point we can assume that we have an internal, absolute wikipath
-                    if (!$this->exists($matchLink[$index])) {
-                        // append Markdown-extra css markup to link
-                        $markdown = str_replace($matchFull[$index], $matchFull[$index] . '{.broken}', $markdown);
+                    if (!$this->exists($matchLink)) {
+                        return $matchFull . '{.broken}';
                     }
-                }
+                    return $matchFull;
+                }, $markdown);
             }
             return $markdown;
         });

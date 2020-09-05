@@ -41,18 +41,13 @@ if (!class_exists('\at\nerdreich\MacroPlugin')) {
 
             // register plugin itself
             $this->core->registerFilter('raw', 'macros', function (string $markup, string $pathFS): string {
-                if (preg_match_all('/{{[^}]*}}/', $markup, $matches)) {
-                    foreach ($matches[0] as $macro) {
-                        list($command, $primary, $secondary) = $this->splitMacro($macro);
-                        if (array_key_exists($command, $this->macros)) {
-                            $markup = str_replace(
-                                $macro,
-                                $this->macros[$command]($primary, $secondary, $pathFS),
-                                $markup
-                            );
-                        }
+                $markup = preg_replace_callback('/{{[^}]*}}/', function ($matches) use ($pathFS) {
+                    list($command, $primary, $secondary) = $this->splitMacro($matches[0]);
+                    if (array_key_exists($command, $this->macros)) {
+                        return $this->macros[$command]($primary, $secondary, $pathFS);
                     }
-                }
+                    return $matches[0];
+                }, $markup);
                 return $markup;
             });
         }
