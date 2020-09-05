@@ -2,8 +2,9 @@
 
 Plugins are a way to add functionalty to wiki.md. The following are shipped with the core and enabled by default:
 
-* Media (media management/upload)
 * Macros (expansion of `{{}}` in markup)
+* Media (Media upload & management UI)
+* User (User & permission management UI)
 
 ## Install a 3rd party plugin
 

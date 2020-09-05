@@ -36,45 +36,6 @@ $wiki->registerActionRoute('auth', 'logout', function ($wiki) {
     $wiki->redirect($wiki->core->getLocation(), $wiki->getActions());
 });
 
-// --- register user management routes -----------------------------------------
-
-$wiki->registerActionRoute('user', 'list', function ($wiki) {
-    if ($wiki->user->adminFolder($wiki->core->getWikiPath()) !== null) {
-        $wiki->renderThemeFile('admin_folder');
-    }
-    $wiki->renderLoginOrDenied(); // transparent login
-});
-
-$wiki->registerActionRoute('user', 'delete', function ($wiki) {
-    if ($wiki->user->deleteUser($_GET['name'])) {
-        $wiki->redirect($wiki->core->getLocation(), 'user=list');
-    }
-});
-
-$wiki->registerActionRoute('user', 'set', function ($wiki) {
-    if (
-        $wiki->user->setPermissions(
-            $wiki->core->getWikiPath(),
-            [
-                'pageCreate' => preg_split('/,/', preg_replace('/\s+/', '', $_POST['pageCreate'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
-                'pageRead' => preg_split('/,/', preg_replace('/\s+/', '', $_POST['pageRead'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
-                'pageUpdate' => preg_split('/,/', preg_replace('/\s+/', '', $_POST['pageUpdate'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
-                'pageDelete' => preg_split('/,/', preg_replace('/\s+/', '', $_POST['pageDelete'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
-                'mediaAdmin' => preg_split('/,/', preg_replace('/\s+/', '', $_POST['mediaAdmin'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
-                'userAdmin' => preg_split('/,/', preg_replace('/\s+/', '', $_POST['userAdmin'] ?? ''), -1, PREG_SPLIT_NO_EMPTY)
-            ]
-        )
-    ) {
-        $wiki->redirect($wiki->core->getLocation(), 'user=list');
-    }
-});
-
-$wiki->registerActionRoute('user', 'secret', function ($wiki) {
-    if ($wiki->user->addSecret($_POST['username'], $_POST['secret'])) {
-        $wiki->redirect($wiki->core->getLocation(), 'user=list');
-    }
-});
-
 // --- register page routes ----------------------------------------------------
 
 $wiki->registerActionRoute('page', 'save', function ($wiki) {

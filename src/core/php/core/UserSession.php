@@ -127,7 +127,7 @@ class UserSession
     private function getUserForPassword(
         string $password
     ): ?string {
-        foreach ($this->loadAllUsersFS() as $username => $hash) {
+        foreach ($this->loadUserFileFS() as $username => $hash) {
             if (password_verify($password, trim($hash))) {
                 return trim($username);
             }
@@ -146,7 +146,7 @@ class UserSession
         string $name,
         string $password
     ): ?string {
-        foreach ($this->loadAllUsersFS() as $username => $hash) {
+        foreach ($this->loadUserFileFS() as $username => $hash) {
             if ($username === $name) {
                 if (password_verify($password, trim($hash))) {
                     return trim($username);
@@ -260,6 +260,16 @@ class UserSession
     // -------------------------------------------------------------------------
 
     /**
+     * Get the user db file.
+     *
+     * @return string Absolute path.
+     */
+    public function getHtpasswd(): string
+    {
+        return $this->htpasswd;
+    }
+
+    /**
      * Get the name of the superuser.
      *
      * @return string Superuser name.
@@ -270,66 +280,11 @@ class UserSession
     }
 
     /**
-     * (Try to) Delete a user.
-     *
-     * Will just remove it from the user db, not the _.yaml pages.
-     *
-     * @param string $username User to delete.
-     * @param bool True if successfull.
-     */
-    public function deleteUser(
-        string $username
-    ): bool {
-        if ($username !== $this->superuser && $this->mayAdmin('/')) {
-            $username = preg_replace('/[^a-zA-Z]+/', '', $username);
-            $users = $this->loadAllUsersFS();
-            if (array_key_exists($username, $users)) {
-                $users = \array_diff_key($users, [$username => 'delete']);
-                $this->persistUsersFS($users);
-                return true;
-            }
-            return false;
-        }
-        return false;
-    }
-
-    /**
-     * Add a password to the user db.
-     *
-     * If the user already exists, the password is set to the new secret.
-     * Otherwise, a new user entry is added.
-     *
-     * @param string $username User to add/set. Only letters, 2-32 length.
-     * @param string $secret Password to add/set. No whitespace. 6-128 length.
-     * @param bool True if successfull.
-     */
-    public function addSecret(
-        string $username,
-        string $secret
-    ): bool {
-        if ($this->mayAdmin('/')) {
-            $username2 = preg_replace('/[^a-zA-Z]+/', '', $username);
-            if ($username2 !== $username || strlen($username2) < 2 || strlen($username2) > 32) {
-                return false;
-            }
-            $secret2 = preg_replace('/[\s]+/', '', $secret);
-            if ($secret2 !== $secret || strlen($secret2) < 6 || strlen($secret2) > 128) {
-                return false;
-            }
-            $users = $this->loadAllUsersFS();
-            $users[$username2] = password_hash(trim($secret2), PASSWORD_BCRYPT);
-            $this->persistUsersFS($users);
-            return true;
-        }
-        return false;
-    }
-
-    /**
      * Get the content of the user db parsed into an array.
      *
      * @return array User->bcrypt array.
      */
-    private function loadAllUsersFS(): array
+    public function loadUserFileFS(): array
     {
         $data = [];
         foreach (file($this->htpasswd) as $line) {
@@ -337,50 +292,6 @@ class UserSession
             $data[$username] = $hash;
         }
         return $data;
-    }
-
-    /**
-     * Write a user array back to the filesystem.
-     *
-     * @param array $users User->bcrypt array.
-     */
-    private function persistUsersFS(array $users): void
-    {
-        $content = '';
-        foreach ($users as $username => $secret) {
-            $content .= $username . ':' . $secret . "\n";
-        }
-        file_put_contents($this->htpasswd, $content, LOCK_EX);
-    }
-
-    /**
-     * Prepare user list to be written into a yaml file.
-     *
-     * Will sort entries, eliminate duplicates/non-exisiting user and handle '*'.
-     *
-     * @param array $permissionList A list of users/permissions.
-     * @param array $userDB The user DB as provided by loadAllUsersFS().
-     * @return string Comma-separated userlist or null if empty.
-     */
-    private function sanitizeUserlist(array $userList, array $userDB): ?string
-    {
-        $userList = array_unique($userList);
-
-        // if at least one asterisk is there, additional individual users are pointless
-        if (in_array('*', $userList)) {
-            return '*';
-        }
-
-        // remove non-existing users
-        $finalPermissionList = [];
-        foreach ($userList as $user) {
-            if (array_key_exists($user, $userDB)) {
-                $finalPermissionList[] = $user;
-            }
-        }
-
-        sort($finalPermissionList);
-        return $finalPermissionList === [] ? null : implode(',', $finalPermissionList);
     }
 
     // -------------------------------------------------------------------------
@@ -393,7 +304,7 @@ class UserSession
      * @param string $path WikiPath to fetch the file for.
      * @return array YAML data parsed into an array or null if not found.
      */
-    private function loadPermissionFile(
+    public function loadPermissionFileFS(
         string $path
     ): ?array {
         $filename = $this->contentdir . $path . '_.yaml';
@@ -401,35 +312,6 @@ class UserSession
             return \Spyc::YAMLLoadString(file_get_contents($filename));
         }
         return null;
-    }
-
-    /**
-     * Write a permission _.yaml back to the filesystem.
-     *
-     * If permissions are empty, it will remove the now unnecessary file.
-     *
-     * @param string $path WikiPath to write the file into.
-     * @param array $yaml Array containing user... entries. Will not be validated.
-     */
-    private function persistPermissions(
-        string $path,
-        array $yaml
-    ): void {
-        $filename = $this->contentdir . $path . '_.yaml';
-
-        // create parent dir if necessary
-        if (!\file_exists(dirname($filename))) {
-            mkdir(dirname($filename), 0777, true);
-        }
-
-        // delete yaml file if no entries remain
-        if (count($yaml) <= 0 && file_exists($filename)) {
-            unlink($filename);
-            return;
-        }
-
-        // write file
-        file_put_contents($filename, \Spyc::YAMLDump($yaml), LOCK_EX);
     }
 
     /**
@@ -453,7 +335,7 @@ class UserSession
         $scanpath = preg_replace('/[^\/]*$/', '', $path);
 
         while (strlen($scanpath) > 0) { // path left to traverse
-            if ($yaml = $this->loadPermissionFile($scanpath)) {
+            if ($yaml = $this->loadPermissionFileFS($scanpath)) {
                 // check if user is explicitly listed
                 // note that "any user" and "anonymous" are both '*'
                 if (array_key_exists($permission, $yaml)) {
@@ -494,84 +376,5 @@ class UserSession
         string $path
     ): bool {
         return $this->isSuperuser() || $this->hasExplicitPermission($permission, $path);
-    }
-
-    /**
-     * Check if the current user may administrate a path.
-     *
-     * @param string $path The path to check the permission for.
-     * @return boolean True, if permissions are sufficient. False otherwise.
-     */
-    public function mayAdmin(
-        string $path
-    ): bool {
-        return $this->hasPermission('userAdmin', $path);
-    }
-
-    // --- UI methods ----------------------------------------------------------
-
-    /**
-     * Load all data for the administration page.
-     *
-     * @param string $path WikiPath of folder to administer.
-     * @param array Array containing 'permissions' and 'users'.
-     */
-    public function adminFolder(
-        string $path
-    ): ?array {
-        if (preg_match('/[^\/]$/', $path)) {
-            $path = dirname($path); // folder of files
-            $path = $path === '/' ? '/' : $path . '/';
-        }
-        if ($this->mayAdmin($path)) {
-            $infos['folder'] = $path;
-
-            if ($yaml = $this->loadPermissionFile($path)) {
-                // TODO: remove hardcoded values from plugins
-                foreach (['pageCreate', 'pageRead', 'pageUpdate', 'pageDelete', 'userAdmin', 'mediaAdmin'] as $permission) {
-                    if (array_key_exists($permission, $yaml)) {
-                        $permissions[$permission] = $yaml[$permission];
-                    }
-                }
-            }
-            $infos['permissions'] = $permissions;
-
-            foreach ($this->loadAllUsersFS() as $username => $hash) {
-                $users[] = $username;
-            }
-            $infos['users'] = $users;
-
-            return $infos;
-        }
-        return null;
-    }
-
-    /**
-     * Set permissions on a folder.
-     *
-     * Will remove unknown users and replace all old values.
-     *
-     * @param string $path The path to set the permissions for.
-     * @param array $permissions Array of permission => ['list', 'of', 'users'].
-     * @return bool True if successfull.
-     */
-    public function setPermissions(
-        string $path,
-        array $permissions
-    ): bool {
-        if (preg_match('/\/$/', $path) && $this->mayAdmin($path)) { // can only set permissions on folders
-            $userDB = $this->loadAllUsersFS();
-
-            $yaml = [];
-            foreach ($permissions as $permission => $users) {
-                if ($userlist = $this->sanitizeUserlist($users, $userDB)) {
-                    $yaml[$permission] = $userlist;
-                }
-            }
-
-            $this->persistPermissions($path, $yaml);
-            return true;
-        }
-        return false;
     }
 }

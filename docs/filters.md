@@ -12,7 +12,7 @@ Note: [Macros](macros.md) are not filters - but the the framework code that expa
 
 ## Adding filters
 
-To add a filter, add the following to your theme's `theme.php`:
+To add a filter, add the following to your theme's `_theme.php`:
 
 ```php
 $wiki->registerFilter(

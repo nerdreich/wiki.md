@@ -8,14 +8,14 @@ Plugins are a way to extend wiki.md with new functionality. Common use cases are
 A minimal plugin consists of only one file. Let's assume you want to create `MyPlugin`:
 
 ```
-.../plugins/myplugin/plugin.php
+.../plugins/myplugin/_plugin.php
 ```
 
 You can add all additinal files that your plugin needs (e.g. templates) in that folder, too.
 
 ## Plugin structure
 
-Your `plugin.php` should at the bare minimum contain the following:
+Your `_plugin.php` should at the bare minimum contain the following:
 
 ```
 <?php

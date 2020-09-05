@@ -1202,7 +1202,7 @@ abstract class WikiPlugin // phpcs:ignore PSR1.Classes.ClassDeclaration.Multiple
     protected $wiki;
     protected $config;
     protected $core;
-    protected $user;
+    public $user;
 
     public function __construct($wiki, $core, $user, $config)
     {

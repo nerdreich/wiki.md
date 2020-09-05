@@ -77,7 +77,7 @@ class WikiUI
         // load plugins
         foreach (explode(',', $this->config['plugins'] ?? '') as $plugin) {
             $plugin = preg_replace('/[^\w]+/', '', $plugin); // sanitize folder name
-            require $root . '/plugins/' . $plugin . '/plugin.php';
+            require $root . '/plugins/' . $plugin . '/_plugin.php';
         }
         foreach ($GLOBALS['wiki.md-plugins'] as $plugin => $className) {
             $handler = new $className($this, $this->core, $this->user, $this->config);
@@ -249,9 +249,6 @@ class WikiUI
                 $this->addMenuItem('page=delete', 'Delete');
             }
         }
-        if ($this->user->mayAdmin($this->core->getWikiPath())) {
-            $this->addMenuItem('user=list', 'Permissions');
-        }
         if ($this->user->isLoggedIn()) {
             $this->addMenuItem('auth=logout', 'Logout');
         } else {
@@ -265,7 +262,7 @@ class WikiUI
 
     public function getThemeSetupFile(): string
     {
-        return $this->config['themeDirFS'] . '/theme.php';
+        return $this->config['themeDirFS'] . '/_theme.php';
     }
 
     public function getThemePath(): string
@@ -298,7 +295,8 @@ class WikiUI
     ): void {
         $wiki = $this; // to be used in the required theme file
         http_response_code($httpResponseCode);
-        require($this->config['pluginDirFS'] . '/' . $pluginname . '/' . $filename . '.php');
+        $pluginFileFS = $this->config['pluginDirFS'] . '/' . $pluginname . '/' . $filename . '.php';
+        require($this->config['themeDirFS'] . '/plugin.php');
         exit;
     }
 
