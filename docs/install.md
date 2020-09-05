@@ -43,11 +43,16 @@ wiki.md adds its documentation as /docs to your installation. You can safely del
 
 ## Upgrading
 
-While wiki.md is still in its v0.* stage, there is no specific upgrade documentation provided. Breaking changes in the file-system or data structures are unlikely but might occur. Assuming they don't, upgrading boils down to:
+This section lists breaking changes.
 
-* Replace `index.html` and `core/` with the new version.
-* Replace `themes/elegant` with the new version.
-* Check `data/config.ini` if there are new entries you need to add to your config file.
+### From v1.x.x to v2.x.x
+
+* The names of most permissions have changed. See [permissions](permissions.md) and change the values in your `data/content/**/_.yaml` files accordingly.
+* If you do not use the default theme (_Elegant_), you need to upgrade your theme.
+
+### From earlier versions
+
+No direct upgrade path is available. Please update to an interim version first.
 
 ## Advanced configuration
 

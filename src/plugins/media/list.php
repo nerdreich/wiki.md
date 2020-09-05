@@ -18,11 +18,11 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
-outputHeader($ui, ___('Media'));
-outputNavbar($ui);
+outputHeader($wiki, ___('Media'));
+outputNavbar($wiki);
 
-$plugin = $ui->wiki->getPlugin('media');
-$files = $plugin->list($ui->wiki->getWikiPath());
+$plugin = $wiki->core->getPlugin('media');
+$files = $plugin->list();
 
 ?>
 <section class="banner">
@@ -64,4 +64,4 @@ $files = $plugin->list($ui->wiki->getWikiPath());
     </form>
   </div>
 </section>
-<?php outputFooter($ui); ?>
+<?php outputFooter($wiki); ?>

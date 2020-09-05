@@ -18,9 +18,9 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
-outputHeader($ui, ___('Error'));
-outputNavbar($ui);
-outputBanner($ui);
+outputHeader($wiki, ___('Error'));
+outputNavbar($wiki);
+outputBanner($wiki);
 
 ?>
 <section class="section-main container">
@@ -30,4 +30,4 @@ outputBanner($ui);
     </div>
   </div>
 </section>
-<?php outputFooter($ui); ?>
+<?php outputFooter($wiki); ?>

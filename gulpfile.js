@@ -56,6 +56,7 @@ gulp.task('test-core-php', function () {
       warningSeverity: 0
     }))
     .pipe(phpcs.reporter('log'))
+    .pipe(phpcs.reporter('fail'))
 })
 
 gulp.task('test-theme-elegant-php', function () {
@@ -73,6 +74,7 @@ gulp.task('test-theme-elegant-php', function () {
       warningSeverity: 0
     }))
     .pipe(phpcs.reporter('log'))
+    .pipe(phpcs.reporter('fail'))
 })
 
 gulp.task('test-plugin-media-php', function () {
@@ -90,6 +92,7 @@ gulp.task('test-plugin-media-php', function () {
       warningSeverity: 0
     }))
     .pipe(phpcs.reporter('log'))
+    .pipe(phpcs.reporter('fail'))
 })
 
 gulp.task('test-plugin-macro-php', function () {
@@ -107,6 +110,7 @@ gulp.task('test-plugin-macro-php', function () {
       warningSeverity: 0
     }))
     .pipe(phpcs.reporter('log'))
+    .pipe(phpcs.reporter('fail'))
 })
 
 gulp.task('tests', gulp.series('test-theme-elegant-sass', 'test-core-php', 'test-plugin-media-php', 'test-plugin-macro-php', 'test-theme-elegant-php'))

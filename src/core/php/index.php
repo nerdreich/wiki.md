@@ -19,117 +19,119 @@
  */
 
 require_once 'core/WikiUI.php';
-$ui = new \at\nerdreich\WikiUI();
-require_once $ui->getThemeSetupFile();
+$wiki = new \at\nerdreich\WikiUI();
+require_once $wiki->getThemeSetupFile();
 
 // --- register authentication routes ------------------------------------------
 
-$ui->registerActionRoute('auth', 'login', function ($ui) {
-    if ($ui->user->login(trim($_POST['username'] ?? ''), trim($_POST['password'] ?? ''))) {
-        $ui->redirect($ui->wiki->getLocation(), $ui->getActions()); // successfull -> redirect back
+$wiki->registerActionRoute('auth', 'login', function ($wiki) {
+    if ($wiki->user->login(trim($_POST['username'] ?? ''), trim($_POST['password'] ?? ''))) {
+        $wiki->redirect($wiki->core->getLocation(), $wiki->getActions()); // successfull -> redirect back
     }
-    $ui->renderThemeFile('login', 401); // unsuccessful -> show login again
+    $wiki->renderThemeFile('login', 401); // unsuccessful -> show login again
 });
 
-$ui->registerActionRoute('auth', 'logout', function ($ui) {
-    $ui->user->logout();
-    $ui->redirect($ui->wiki->getLocation(), $ui->getActions());
+$wiki->registerActionRoute('auth', 'logout', function ($wiki) {
+    $wiki->user->logout();
+    $wiki->redirect($wiki->core->getLocation(), $wiki->getActions());
 });
 
 // --- register user management routes -----------------------------------------
 
-$ui->registerActionRoute('user', 'list', function ($ui) {
-    if ($ui->user->adminFolder($ui->wiki->getWikiPath()) !== null) {
-        $ui->renderThemeFile('admin_folder');
+$wiki->registerActionRoute('user', 'list', function ($wiki) {
+    if ($wiki->user->adminFolder($wiki->core->getWikiPath()) !== null) {
+        $wiki->renderThemeFile('admin_folder');
     }
-    $ui->renderLoginOrDenied(); // transparent login
+    $wiki->renderLoginOrDenied(); // transparent login
 });
 
-$ui->registerActionRoute('user', 'delete', function ($ui) {
-    if ($ui->user->deleteUser($_GET['name'])) {
-        $ui->redirect($ui->wiki->getLocation(), 'user=list');
+$wiki->registerActionRoute('user', 'delete', function ($wiki) {
+    if ($wiki->user->deleteUser($_GET['name'])) {
+        $wiki->redirect($wiki->core->getLocation(), 'user=list');
     }
 });
 
-$ui->registerActionRoute('user', 'set', function ($ui) {
+$wiki->registerActionRoute('user', 'set', function ($wiki) {
     if (
-        $ui->user->setPermissions(
-            $ui->wiki->getWikiPath(),
-            preg_split('/,/', preg_replace('/\s+/', '', $_POST['userCreate'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
-            preg_split('/,/', preg_replace('/\s+/', '', $_POST['userRead'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
-            preg_split('/,/', preg_replace('/\s+/', '', $_POST['userUpdate'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
-            preg_split('/,/', preg_replace('/\s+/', '', $_POST['userDelete'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
-            preg_split('/,/', preg_replace('/\s+/', '', $_POST['userMedia'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
-            preg_split('/,/', preg_replace('/\s+/', '', $_POST['userAdmin'] ?? ''), -1, PREG_SPLIT_NO_EMPTY)
+        $wiki->user->setPermissions(
+            $wiki->core->getWikiPath(),
+            [
+                'pageCreate' => preg_split('/,/', preg_replace('/\s+/', '', $_POST['pageCreate'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
+                'pageRead' => preg_split('/,/', preg_replace('/\s+/', '', $_POST['pageRead'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
+                'pageUpdate' => preg_split('/,/', preg_replace('/\s+/', '', $_POST['pageUpdate'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
+                'pageDelete' => preg_split('/,/', preg_replace('/\s+/', '', $_POST['pageDelete'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
+                'mediaAdmin' => preg_split('/,/', preg_replace('/\s+/', '', $_POST['mediaAdmin'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
+                'userAdmin' => preg_split('/,/', preg_replace('/\s+/', '', $_POST['userAdmin'] ?? ''), -1, PREG_SPLIT_NO_EMPTY)
+            ]
         )
     ) {
-        $ui->redirect($ui->wiki->getLocation(), 'user=list');
+        $wiki->redirect($wiki->core->getLocation(), 'user=list');
     }
 });
 
-$ui->registerActionRoute('user', 'secret', function ($ui) {
-    if ($ui->user->addSecret($_POST['username'], $_POST['secret'])) {
-        $ui->redirect($ui->wiki->getLocation(), 'user=list');
+$wiki->registerActionRoute('user', 'secret', function ($wiki) {
+    if ($wiki->user->addSecret($_POST['username'], $_POST['secret'])) {
+        $wiki->redirect($wiki->core->getLocation(), 'user=list');
     }
 });
 
 // --- register page routes ----------------------------------------------------
 
-$ui->registerActionRoute('page', 'save', function ($ui) {
+$wiki->registerActionRoute('page', 'save', function ($wiki) {
     $alias = trim(preg_replace('/\s+/', ' ', $_POST['author']));
     if (
-        $ui->wiki->savePage(
+        $wiki->core->savePage(
             trim(str_replace("\r", '', $_POST['content'])),
             trim(preg_replace('/\s+/', ' ', $_POST['title'])),
             $alias
         )
     ) {
-        $ui->user->setAlias($alias);
-        $ui->redirect($ui->wiki->getLocation());
+        $wiki->user->setAlias($alias);
+        $wiki->redirect($wiki->core->getLocation());
     };
 });
 
-if ($ui->wiki->exists()) {
+if ($wiki->core->exists()) {
     // these routes are only added if the item exists
-    $ui->registerActionRoute('page', 'edit', function ($ui) {
-        if ($ui->wiki->editPage()) {
-            $ui->renderThemeFile('edit');
+    $wiki->registerActionRoute('page', 'edit', function ($wiki) {
+        if ($wiki->core->editPage()) {
+            $wiki->renderThemeFile('edit');
         }
-        $ui->renderLoginOrDenied(); // transparent login
+        $wiki->renderLoginOrDenied(); // transparent login
     });
-    $ui->registerActionRoute('page', 'history', function ($ui) {
-        if ($ui->wiki->history()) {
-            $ui->renderThemeFile('history');
+    $wiki->registerActionRoute('page', 'history', function ($wiki) {
+        if ($wiki->core->history()) {
+            $wiki->renderThemeFile('history');
         }
-        $ui->renderLoginOrDenied(); // transparent login
+        $wiki->renderLoginOrDenied(); // transparent login
     });
-    $ui->registerActionRoute('page', 'restore', function ($ui) {
+    $wiki->registerActionRoute('page', 'restore', function ($wiki) {
         $version = (int) preg_replace('/[^0-9]/', '', $_GET['version']);
         if ($version > 0) {
-            if ($ui->wiki->revertToVersion($version)) {
-                $ui->renderThemeFile('edit');
+            if ($wiki->core->revertToVersion($version)) {
+                $wiki->renderThemeFile('edit');
             }
         }
     });
-    $ui->registerActionRoute('page', 'delete', function ($ui) {
-        if ($ui->wiki->deletePage(true)) {
-            $ui->renderThemeFile('delete');
+    $wiki->registerActionRoute('page', 'delete', function ($wiki) {
+        if ($wiki->core->deletePage(true)) {
+            $wiki->renderThemeFile('delete');
         }
     });
-    $ui->registerActionRoute('page', 'deleteOK', function ($ui) {
-        if ($ui->wiki->deletePage()) {
-            $ui->redirect($ui->wiki->getLocation());
+    $wiki->registerActionRoute('page', 'deleteOK', function ($wiki) {
+        if ($wiki->core->deletePage()) {
+            $wiki->redirect($wiki->core->getLocation());
         }
     });
 } else {
     // these routes are only added if the item does not exist
-    $ui->registerActionRoute('page', 'create', function ($ui) {
-        if ($ui->wiki->create()) {
-            $ui->renderThemeFile('edit');
+    $wiki->registerActionRoute('page', 'create', function ($wiki) {
+        if ($wiki->core->create()) {
+            $wiki->renderThemeFile('edit');
         }
     });
 }
 
 // --- ready! ------------------------------------------------------------------
 
-$ui->run();
+$wiki->run();

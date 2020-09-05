@@ -27,54 +27,51 @@ if (!class_exists('\at\nerdreich\MediaPlugin')) {
      *
      * Adds management UIs to list, upload and delete media files (e.g. pictures).
      */
-    class MediaPlugin
+    class MediaPlugin extends WikiPlugin
     {
-        private $ui;
         private $pregMedia = '/\.(gif|jpg|png)$/i'; // files matching this are considered media
         private $mediaTypes = 'gif|jpg|png';        // shown to humans
 
-        public function __construct($ui)
+        public function setup()
         {
-            $this->ui = $ui;
-
-            $ui->registerPageRoute(function ($ui) {
-                $wikiPath = $this->ui->wiki->getWikiPath();
-                if ($this->isMedia() && $this->ui->user->mayRead($wikiPath)) {
+            $this->wiki->registerPageRoute(function ($wiki) {
+                $wikiPath = $wiki->core->getWikiPath();
+                if ($this->isMedia() && $wiki->core->mayReadPath($wikiPath)) {
                     $this->renderMedia($this->getMediaFileFS($wikiPath));
                 }
             });
 
-            $ui->registerActionRoute('media', 'list', function ($ui) {
-                if ($this->list($ui->wiki->getWikiPath()) !== null) {
-                    $ui->renderPluginFile('media', 'list');
+            $this->wiki->registerActionRoute('media', 'list', function ($wiki) {
+                if ($this->list() !== null) {
+                    $wiki->renderPluginFile('media', 'list');
                 }
-                $ui->renderLoginOrDenied(); // transparent login
+                $wiki->renderLoginOrDenied(); // transparent login
             });
 
-            $ui->registerActionRoute('media', 'upload', function ($ui) {
+            $this->wiki->registerActionRoute('media', 'upload', function ($wiki) {
                 if ($_FILES['wikimedia'] && $_FILES['wikimedia']['error'] === UPLOAD_ERR_OK) {
                     if (
                         $this->upload(
                             $_FILES['wikimedia']['tmp_name'],
                             strtolower(trim($_FILES['wikimedia']['name'])),
-                            $ui->wiki->getWikiPath()
+                            $wiki->core->getWikiPath()
                         )
                     ) {
-                        $ui->redirect($ui->wiki->getLocation(), 'media=list');
+                        $wiki->redirect($wiki->core->getLocation(), 'media=list');
                     }
                 } else { // upload failed, probably due empty selector on submit
-                    $ui->redirect($ui->wiki->getLocation(), 'media=list');
+                    $wiki->redirect($wiki->core->getLocation(), 'media=list');
                 }
             });
 
-            $ui->registerActionRoute('media', 'delete', function ($ui) {
-                if ($this->delete($ui->wiki->getWikiPath()) !== null) {
-                    $ui->redirect(dirname($ui->wiki->getLocation()) . '/', 'media=list');
+            $this->wiki->registerActionRoute('media', 'delete', function ($wiki) {
+                if ($this->delete($wiki->core->getWikiPath()) !== null) {
+                    $wiki->redirect(dirname($wiki->core->getLocation()) . '/', 'media=list');
                 }
             });
 
-            if ($this->mayMedia($ui->wiki->getWikiPath())) {
-                $ui->wiki->addMenuItem('media=list', 'Media');
+            if ($this->mayMedia($this->core->getWikiPath())) {
+                $this->wiki->addMenuItem('media=list', 'Media');
             }
         }
 
@@ -102,7 +99,7 @@ if (!class_exists('\at\nerdreich\MediaPlugin')) {
         public function mayMedia(
             string $path
         ): bool {
-            return $this->ui->user->isSuperuser() || $this->ui->user->hasExplicitPermission('userMedia', $path);
+            return $this->user->hasPermission('mediaAdmin', $path);
         }
 
         /**
@@ -112,7 +109,7 @@ if (!class_exists('\at\nerdreich\MediaPlugin')) {
          */
         public function isMedia(): bool
         {
-            $wikiPath = $this->ui->wiki->getWikiPath();
+            $wikiPath = $this->core->getWikiPath();
             if (preg_match($this->pregMedia, $wikiPath)) {
                 if (is_file($this->getMediaFileFS($wikiPath))) {
                     return true;
@@ -143,9 +140,9 @@ if (!class_exists('\at\nerdreich\MediaPlugin')) {
             string $wikiPath
         ): string {
             if (preg_match('/\/$/', $wikiPath)) {
-                return $this->ui->wiki->getContentDirFS() . $wikiPath . '_media';
+                return $this->core->getContentDirFS() . $wikiPath . '_media';
             } else {
-                return $this->ui->wiki->getContentDirFS() . dirname($wikiPath) . '/_media';
+                return $this->core->getContentDirFS() . dirname($wikiPath) . '/_media';
             }
         }
 
@@ -169,7 +166,7 @@ if (!class_exists('\at\nerdreich\MediaPlugin')) {
         public function getMediaSizeLimit(): string
         {
             return min(
-                (int)($this->ui->config['media_size_limit_kb'] ?? 4096),
+                (int)($this->config['media_size_limit_kb'] ?? 4096),
                 ((int)(ini_get('upload_max_filesize'))) * 1024,
                 ((int)(ini_get('post_max_size'))) * 1024,
                 ((int)(ini_get('memory_limit'))) * 1024
@@ -183,9 +180,9 @@ if (!class_exists('\at\nerdreich\MediaPlugin')) {
          * @param array Array containing 'media'.
          */
         public function list(
-            string $wikiPath
+            string $wikiPath = null
         ): ?array {
-            $mediaFolder = $this->ui->wiki->getWikiPathParentFolder($wikiPath);
+            $mediaFolder = $this->core->getWikiPathParentFolder($wikiPath ?? $this->core->getWikiPath());
             if ($this->mayMedia($mediaFolder)) {
                 $files = [];
                 $mediaDirFS = $this->getMediaDirFS($mediaFolder);
@@ -216,7 +213,7 @@ if (!class_exists('\at\nerdreich\MediaPlugin')) {
             string $wikiPath
         ): bool {
             if ($this->mayMedia($wikiPath)) {
-                $file = $this->ui->wiki->wikiPathToContentFileFS($wikiPath);
+                $file = $this->core->wikiPathToContentFileFS($wikiPath);
                 if (is_file($file)) {
                     unlink($file);
                     return true;

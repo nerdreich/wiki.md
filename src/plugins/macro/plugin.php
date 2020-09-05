@@ -28,22 +28,19 @@ if (!class_exists('\at\nerdreich\MacroPlugin')) {
      * Will add the capability of using {{...}} macros in markdown and provide a
      * default macro, {{include ...}}.
      */
-    class MacroPlugin
+    class MacroPlugin extends WikiPlugin
     {
-        private $ui;
         private $macros = [];          // array of {{macro ...}} handlers
 
-        public function __construct($ui)
+        public function setup()
         {
-            $this->ui = $ui;
-
             // register core macros
             $this->registerMacro('include', function (?string $primary, ?array $secondary, string $path) {
                 return $this->macroInclude($primary, $secondary, $path);
             });
 
             // register plugin itself
-            $ui->wiki->registerFilter('raw', 'macros', function (string $markup, string $pathFS): string {
+            $this->core->registerFilter('raw', 'macros', function (string $markup, string $pathFS): string {
                 if (preg_match_all('/{{[^}]*}}/', $markup, $matches)) {
                     foreach ($matches[0] as $macro) {
                         list($command, $primary, $secondary) = $this->splitMacro($macro);
@@ -133,11 +130,11 @@ if (!class_exists('\at\nerdreich\MacroPlugin')) {
 
             // now we need to convert the potentially relative $includePath in an absolute $wikiPath
             if (strpos($includePath, '/') === 0) { // absolute include
-                $wikiPath = $this->ui->wiki->canonicalWikiPath($includePath);
+                $wikiPath = $this->core->canonicalWikiPath($includePath);
             } else { // relative include
-                $wikiPathCaller = $this->ui->wiki->contentFileFSToWikiPath($pathFS);
-                $wikiPath = $this->ui->wiki->canonicalWikiPath(
-                    $this->ui->wiki->getWikiPathParentFolder($wikiPathCaller) . $includePath
+                $wikiPathCaller = $this->core->contentFileFSToWikiPath($pathFS);
+                $wikiPath = $this->core->canonicalWikiPath(
+                    $this->core->getWikiPathParentFolder($wikiPathCaller) . $includePath
                 );
             }
 
@@ -147,11 +144,11 @@ if (!class_exists('\at\nerdreich\MacroPlugin')) {
             }
 
             // now we fetch the included file's content if possible
-            $includeFileFS = $this->ui->wiki->wikiPathToContentFileFS($wikiPath);
-            if ($this->ui->user->mayRead($wikiPath)) {
+            $includeFileFS = $this->core->wikiPathToContentFileFS($wikiPath);
+            if ($this->core->mayReadPath($wikiPath)) {
                 if (is_file($includeFileFS)) {
-                    list($metadata, $content) = $this->ui->wiki->loadFile($includeFileFS);
-                    return $this->ui->wiki->markupToHTML($content, $includeFileFS);
+                    list($metadata, $content) = $this->core->loadFile($includeFileFS);
+                    return $this->core->markupToHTML($content, $includeFileFS);
                 } else {
                     return '{{error include-not-found}}';
                 }

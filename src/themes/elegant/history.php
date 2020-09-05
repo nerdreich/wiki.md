@@ -19,22 +19,22 @@
  */
 
 // load history
-$history = $ui->wiki->getHistory();
+$history = $wiki->core->getHistory();
 
-outputHeader($ui, ___('History') . ': ' . $ui->wiki->getTitle());
-outputNavbar($ui);
-outputBanner($ui);
+outputHeader($wiki, ___('History') . ': ' . $wiki->core->getTitle());
+outputNavbar($wiki);
+outputBanner($wiki);
 
 function historyDate($date): string
 {
-    global $ui;
+    global $wiki;
     if ($date === null) {
         return ___('unknown');
     }
     if (is_string($date)) { // transparently convert string date (from history)
         $date = \DateTime::createFromFormat(\DateTimeInterface::ATOM, $date);
     }
-    return $date->format($ui->getDateTimeFormat());
+    return $date->format($wiki->getDateTimeFormat());
 }
 
 $restoreEnabled = true;
@@ -42,8 +42,8 @@ $restoreEnabled = true;
 ?><section class="section-main container page-history">
   <div class="row">
     <div class="col-12 col-md-8 col-lg-9">
-      <h2><?php __('History for %s', $ui->wiki->getWikiPath()); ?></h2>
-      <?php if ($ui->wiki->isDirty()) { ?>
+      <h2><?php __('History for %s', $wiki->core->getWikiPath()); ?></h2>
+      <?php if ($wiki->core->isDirty()) { ?>
         <p><?php __('The checksum of this page is invalid. Save the page in wiki.md again to correct this.') ?>
       <?php } ?>
 
@@ -60,11 +60,11 @@ $restoreEnabled = true;
             <dt id="history-<?php echo $version; ?>">
               <h2 class="h4"><?php __('Version'); ?> <?php echo $version--; ?> (<?php __('current'); ?>)</h2>
               <p>
-                <span class="minor"><?php __('by %s at %s', $ui->wiki->getAuthor(), historyDate($ui->wiki->getDate())); ?></span>
+                <span class="minor"><?php __('by %s at %s', $wiki->core->getAuthor(), historyDate($wiki->core->getDate())); ?></span>
               </p>
             </dt>
         <?php } ?>
-        <?php foreach (array_reverse($ui->wiki->getHistory() ?? []) as $change) { ?>
+        <?php foreach (array_reverse($wiki->core->getHistory() ?? []) as $change) { ?>
           <dd><?php if ($change['diff'] !== null) {
                     echo diff2html(gzuncompress(base64_decode($change['diff'])));
               } else {
@@ -75,7 +75,7 @@ $restoreEnabled = true;
             <h2 class="h4"><?php __('Version'); ?> <?php echo $version; ?></h2>
             <p>
               <span class="minor"><?php __('by %s at %s', $change['author'], historyDate($change['date'])); ?></span>
-              <?php if ($restoreEnabled && !$ui->wiki->isDirty()) { ?>
+              <?php if ($restoreEnabled && !$wiki->core->isDirty()) { ?>
                 - <a href="?page=restore&version=<?php echo $version; ?>"><?php __('restore'); ?></a>
               <?php } ?>
             </p>
@@ -85,8 +85,8 @@ $restoreEnabled = true;
       </dl>
     </div>
     <nav class="col-12 col-md-4 col-lg-3 sidenav">
-      <?php echo $ui->wiki->getSnippetHTML('nav'); ?>
+      <?php echo $wiki->core->getSnippetHTML('nav'); ?>
     </nav>
   </div>
 </section>
-<?php outputFooter($ui); ?>
+<?php outputFooter($wiki); ?>

@@ -35,7 +35,6 @@ final class WikiTest extends WikiTestCase
             '/^[0-9]+\.[0-9]+\.[0-9]+/',
             $wiki->getVersion()
         );
-        $this->assertStringStartsWith('https://github', $wiki->getRepo());
     }
 
     public function testExists(): void
@@ -73,10 +72,59 @@ final class WikiTest extends WikiTestCase
         $this->assertIsString($wiki->getContentMarkup());
     }
 
+    public function testAnonymoususer(): void
+    {
+        // anonymous users should only be able to read stuff
+        $wiki = $this->getNewWiki();
+
+        $this->assertFalse($wiki->mayReadPath(''));
+        $this->assertFalse($wiki->mayCreatePath(''));
+        $this->assertFalse($wiki->mayUpdatePath(''));
+        $this->assertFalse($wiki->mayDeletePath(''));
+
+        $this->assertTrue($wiki->mayReadPath('/'));
+        $this->assertTrue($wiki->mayReadPath('/somepage'));
+        $this->assertTrue($wiki->mayReadPath('/somefolder/'));
+        $this->assertTrue($wiki->mayReadPath('/somefolder/somepage'));
+        $this->assertTrue($wiki->mayReadPath('/somefolder/somefolder/somepage'));
+        $this->assertFalse($wiki->mayCreatePath('/'));
+        $this->assertFalse($wiki->mayCreatePath('/somepage'));
+        $this->assertFalse($wiki->mayCreatePath('/somefolder/'));
+        $this->assertFalse($wiki->mayCreatePath('/somefolder/somepage'));
+        $this->assertFalse($wiki->mayCreatePath('/somefolder/somefolder/somepage'));
+        $this->assertFalse($wiki->mayUpdatePath('/'));
+        $this->assertFalse($wiki->mayUpdatePath('/somepage'));
+        $this->assertFalse($wiki->mayUpdatePath('/somefolder/'));
+        $this->assertFalse($wiki->mayUpdatePath('/somefolder/somepage'));
+        $this->assertFalse($wiki->mayUpdatePath('/somefolder/somefolder/somepage'));
+        $this->assertFalse($wiki->mayDeletePath('/'));
+        $this->assertFalse($wiki->mayDeletePath('/somepage'));
+        $this->assertFalse($wiki->mayDeletePath('/somefolder/'));
+        $this->assertFalse($wiki->mayDeletePath('/somefolder/somepage'));
+        $this->assertFalse($wiki->mayDeletePath('/somefolder/somefolder/somepage'));
+
+        $this->assertTrue($wiki->mayReadPath('/docs'));
+        $this->assertTrue($wiki->mayReadPath('/docs/'));
+        $this->assertTrue($wiki->mayReadPath('/docs/install'));
+        $this->assertTrue($wiki->mayReadPath('/docs/install/'));
+        $this->assertFalse($wiki->mayCreatePath('/docs'));
+        $this->assertFalse($wiki->mayCreatePath('/docs/'));
+        $this->assertFalse($wiki->mayCreatePath('/docs/install'));
+        $this->assertFalse($wiki->mayCreatePath('/docs/install/'));
+        $this->assertFalse($wiki->mayUpdatePath('/docs'));
+        $this->assertFalse($wiki->mayUpdatePath('/docs/'));
+        $this->assertFalse($wiki->mayUpdatePath('/docs/install'));
+        $this->assertFalse($wiki->mayUpdatePath('/docs/install/'));
+        $this->assertFalse($wiki->mayDeletePath('/docs'));
+        $this->assertFalse($wiki->mayDeletePath('/docs/'));
+        $this->assertFalse($wiki->mayDeletePath('/docs/install'));
+        $this->assertFalse($wiki->mayDeletePath('/docs/install/'));
+    }
+
     public function testwikiPathToContentFileFS(): void
     {
         $wiki = $this->getNewWiki();
-        $method = $this->getAsPublicMethod('\at\nerdreich\Wiki', 'wikiPathToContentFileFS');
+        $method = $this->getAsPublicMethod('\at\nerdreich\WikiCore', 'wikiPathToContentFileFS');
 
         $this->assertEquals(
             $wiki->getContentDirFS() . '/README.md',
@@ -100,7 +148,7 @@ final class WikiTest extends WikiTestCase
     {
         $wiki = $this->getNewWiki();
         $wiki->init('/animal/lion');
-        $method = $this->getAsPublicMethod('\at\nerdreich\Wiki', 'canonicalWikiPath');
+        $method = $this->getAsPublicMethod('\at\nerdreich\WikiCore', 'canonicalWikiPath');
 
         // absolute pages
         $this->assertEquals('/animal/lion', $method->invokeArgs($wiki, ['/animal/lion']));
@@ -130,7 +178,7 @@ final class WikiTest extends WikiTestCase
     public function testFilterBrokenLinks(): void
     {
         $wiki = $this->getNewWiki();
-        $method = $this->getAsPublicMethod('\at\nerdreich\Wiki', 'runFilters');
+        $method = $this->getAsPublicMethod('\at\nerdreich\WikiCore', 'runFilters');
 
         // nothing changes while not logged-in
         $this->assertEquals('[link](/)', $method->invokeArgs($wiki, ['markup', '[link](/)', '/path']));

@@ -60,9 +60,8 @@ Read the [Documentation](docs/) to learn more.
 
 Feel free to report any [issues](https://github.com/nerdreich/wiki.md/issues) you find.
 
-### Planned for v1.1.0
+### Planned for v2.0.0
 
-* file/media uploads
 * rename-page feature
 
 ### Unscheduled ideas

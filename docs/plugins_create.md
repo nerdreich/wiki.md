@@ -22,13 +22,10 @@ Your `plugin.php` should at the bare minimum contain the following:
 
 namespace org\example;
 
-class MyPlugin
+class MyPlugin extends Plugin
 {
-  private $ui;
-
-  public function __construct($ui)
+  public function setup();
   {
-    $this->ui = $ui;
     // TODO: initialize plugin here
   }
 }
@@ -36,16 +33,16 @@ class MyPlugin
 $GLOBALS['wiki.md-plugins']['myplugin'] = '\org\example\MyPlugin';
 ```
 
-Your plugin can assume that it will get a `$ui` variable passed to its constructor, containing a reference to the currently running wiki. It's probably a good idea to store it in your plugin so you can access the UI, config and core later on. Don't forget the last line - this will let the core know about your plugin.
+Your plugin can assume that it will have access to `$wiki`/`$core`/`$config`/`$user` via it's abstract parent class (`Plugin`). Don't forget the last line - this will let the core know about your plugin.
 
 ## Routes
 
 If you want your plugin to have a UI / run for certain pages, you'll have to register a route:
 
 ```
-public function __construct($ui)
+public function setup()
 {
-  $ui->registerActionRoute('myplugin', 'list', function ($ui) {
+  $this->wiki->registerActionRoute('myplugin', 'list', function () {
     $this->doSomething();
   });
 }
@@ -63,10 +60,10 @@ Now if someone would call `wiki.example.org/some/page?myplugin=list`, `doSomethi
 If you want your plugin to be visible in wiki.md's menu, you can register a menu entry:
 
 ```
-public function __construct($ui)
+public function setup()
 {
-  if ($ui->user->mayRead($ui->wiki->getWikiPath())) {
-    $ui->wiki->addMenuItem('myplugin=list', 'Awesome');
+  if ($this->core->mayReadPath()) {
+    $this->wiki->addMenuItem('myplugin=list', 'Awesome');
   }
 }
 ```
@@ -78,11 +75,11 @@ This example will add a menu item `Awesome` that link to `?myplugin=list` on eve
 If you want your plugin to hook into a [filter chain](filters.md) to change markup or HTML, do:
 
 ```
-public function __construct($ui)
+public function setup()
 {
-  $ui->wiki->registerFilter('markup', 'myFilter',
+  $this->core->registerFilter('markup', 'myFilter',
     function (string $content, string $path): string {
-      $content = ... // TODO: manipulate the content here
+      // TODO: manipulate $content here
       return $content;
     }
   );

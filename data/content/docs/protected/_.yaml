@@ -1,5 +1,5 @@
 ---
-  userCreate: docs
-  userRead: docs
-  userUpdate: docs
-  userDelete: docs
+  pageCreate: docs
+  pageRead: docs
+  pageUpdate: docs
+  pageDelete: docs

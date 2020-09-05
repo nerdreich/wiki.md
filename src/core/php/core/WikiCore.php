@@ -26,12 +26,13 @@ require_once('lib/Parsedown.php');      // markdown parser
 require_once('lib/ParsedownExtra.php'); // better markdown parser
 
 /**
- * wiki.md - A markdown wiki.
+ * Core wiki document handling.
+ *
+ * This class will do path/file conversion, read/write pages from/to the FS and
+ * handle markup conversion.
  */
-class Wiki
+class WikiCore
 {
-    private $version = '$VERSION$';
-    private $repo = '$URL$';
     private $config = [];
     private $user;
 
@@ -44,9 +45,7 @@ class Wiki
     private $content = '';         // the markdown body for a content
 
     private $filters = [];
-
     private $plugins = [];
-    private $menuItems = [];
 
     /**
      * Constructor
@@ -61,7 +60,7 @@ class Wiki
         $this->user = $user;
 
         // wiki path + files
-        $wikiDirFS = dirname(dirname(__FILE__)); // Wiki.php is in the ../core folder
+        $wikiDirFS = dirname(dirname(__FILE__)); // WikiCore.php is in the ../core folder
         $this->contentDirFS = $wikiDirFS . '/' . ($this->config['datafolder'] ?? 'data') . '/content';
         $this->wikiRoot = substr($wikiDirFS, strlen($_SERVER['DOCUMENT_ROOT']));
 
@@ -91,9 +90,6 @@ class Wiki
         $this->wikiPath = $wikiPath;
         $this->contentFileFS = $this->wikiPathToContentFileFS($this->wikiPath);
 
-        // setup page actions
-        $this->setupMenuItems();
-
         // if this is both a file and a folder, redirect to the folder instead
         if (is_dir(preg_replace('/\.md$/', '/', $this->contentFileFS))) {
             return $wikiPath . '/';
@@ -103,59 +99,13 @@ class Wiki
     }
 
     /**
-     * Add a menu item to this page's actions.
+     * Get the wiki.md version.
      *
-     * @param string $action An action=value string.
-     * @param string $label A label for the menu item.
+     * @return string SemVer version, e.g. '1.0.2'.
      */
-    public function addMenuItem(
-        string $action,
-        string $label
-    ): void {
-        $this->menuItems[$action] = $label;
-    }
-
-    /**
-     * Get all registered menu items for this page.
-     *
-     * @return array $action Aray with 'action=value' as key and label as value.
-     */
-    public function getMenuItems(): array
+    public function getVersion(): string
     {
-        return $this->menuItems;
-    }
-
-    /**
-     * Determine what the current user may do with the current page.
-     *
-     * Will update internal $pageActions array.
-     */
-    public function setupMenuItems(): void
-    {
-        $wikiPath = $this->getWikiPath();
-        if ($this->user->mayUpdate($wikiPath)) {
-            if ($this->exists()) {
-                $this->addMenuItem('page=edit', 'Edit');
-            } else {
-                $this->addMenuItem('page=create', 'Create');
-            }
-        }
-        if ($this->exists()) {
-            if ($this->user->mayRead($wikiPath) && $this->user->mayUpdate($wikiPath)) {
-                $this->addMenuItem('page=history', 'History');
-            }
-            if ($this->user->mayDelete($wikiPath)) {
-                $this->addMenuItem('page=delete', 'Delete');
-            }
-        }
-        if ($this->user->mayAdmin($wikiPath)) {
-            $this->addMenuItem('user=list', 'Permissions');
-        }
-        if ($this->user->isLoggedIn()) {
-            $this->addMenuItem('auth=logout', 'Logout');
-        } else {
-            $this->addMenuItem('auth=login', 'Login');
-        }
+        return '$VERSION$';
     }
 
     // -------------------------------------------------------------------------
@@ -345,28 +295,60 @@ class Wiki
     }
 
     // -------------------------------------------------------------------------
-    // --- content access for theme/plugin files -------------------------------
+    // --- permissions ---------------------------------------------------------
     // -------------------------------------------------------------------------
 
     /**
-     * Get the wiki.md version.
+     * Check if the current user may read/view a path.
      *
-     * @return string SemVer version, e.g. '1.0.2'.
+     * @param string $path The path to check the permission for. Defaults to current wikiPath.
+     * @return boolean True, if permissions are sufficient. False otherwise.
      */
-    public function getVersion(): string
-    {
-        return $this->version;
+    public function mayCreatePath(
+        ?string $path = null
+    ): bool {
+        return $this->user->hasPermission('pageCreate', $path ?? $this->wikiPath);
     }
 
     /**
-     * Get the wiki.md source code repository URL.
+     * Check if the current user may edit/create a path.
      *
-     * @return string Link to repo/homepage.
+     * @param string $path The path to check the permission for. Defaults to current wikiPath.
+     * @return boolean True, if permissions are sufficient. False otherwise.
      */
-    public function getRepo(): string
-    {
-        return $this->repo;
+    public function mayReadPath(
+        ?string $path = null
+    ): bool {
+        return $this->user->hasPermission('pageRead', $path ?? $this->wikiPath);
     }
+
+    /**
+     * Check if the current user may read/view a path.
+     *
+     * @param string $path The path to check the permission for. Defaults to current wikiPath.
+     * @return boolean True, if permissions are sufficient. False otherwise.
+     */
+    public function mayUpdatePath(
+        ?string $path = null
+    ): bool {
+        return $this->user->hasPermission('pageUpdate', $path ?? $this->wikiPath);
+    }
+
+    /**
+     * Check if the current user may edit/create a path.
+     *
+     * @param string $path The path to check the permission for. Defaults to current wikiPath.
+     * @return boolean True, if permissions are sufficient. False otherwise.
+     */
+    public function mayDeletePath(
+        ?string $path = null
+    ): bool {
+        return $this->user->hasPermission('pageDelete', $path ?? $this->wikiPath);
+    }
+
+    // -------------------------------------------------------------------------
+    // --- content access for theme/plugin files -------------------------------
+    // -------------------------------------------------------------------------
 
     /**
      * Check if a wiki page exists.
@@ -519,8 +501,8 @@ class Wiki
     public function revertToVersion(
         int $version
     ): bool {
-        if ($this->user->mayRead($this->wikiPath) && $this->user->mayUpdate($this->wikiPath)) {
-            $this->loadFS();
+        if ($this->mayReadPath() && $this->mayUpdatePath()) {
+            $this->load();
 
             if ($this->isDirty()) {
                 // direct changes in the FS prevent the history from working
@@ -638,8 +620,8 @@ class Wiki
         string $markdown,
         string $fsPath
     ): string {
-        foreach ($this->filters[$hook] ?? [] as $plugin) {
-            $markdown = $plugin($markdown, $fsPath);
+        foreach ($this->filters[$hook] ?? [] as $filter) {
+            $markdown = $filter($markdown, $fsPath);
         }
         return $markdown;
     }
@@ -725,7 +707,7 @@ class Wiki
      * @param $filename Path to file to read.
      * @return Content, nor null if file could not be read.
      */
-    private function fileReadContent(
+    private function readContentFS(
         string $filename
     ): string {
         $contents = null;
@@ -751,7 +733,7 @@ class Wiki
      * @param $content Data to write into file.
      * @return Content, nor null if file could not be read.
      */
-    private function fileWriteContent(
+    private function writeContentFS(
         string $filename,
         string $content
     ): bool {
@@ -810,9 +792,9 @@ class Wiki
      */
     public function editPage(): bool
     {
-        if ($this->user->mayRead($this->wikiPath) && $this->user->mayUpdate($this->wikiPath)) {
+        if ($this->mayReadPath() && $this->mayUpdatePath()) {
             if ($this->exists()) {
-                $this->loadFS();
+                $this->load();
                 if (!array_key_exists('edit', $this->metadata)) {
                     $this->metadata['edit'] = date(\DateTimeInterface::ATOM); // mark wip
                     $this->metadata['editBy'] = $this->user->getSessionToken();
@@ -912,7 +894,7 @@ class Wiki
             $this->metadata['title'] = '';
             $this->metadata['hash'] = hash('sha1', $this->content);
             $this->persist();
-            $this->loadFS();
+            $this->load();
         }
     }
 
@@ -929,8 +911,8 @@ class Wiki
         string $title,
         string $author
     ): bool {
-        if ($this->user->mayUpdate($this->wikiPath)) {
-            $this->loadFS();
+        if ($this->mayUpdatePath($this->wikiPath)) {
+            $this->load();
 
             // did someone edited the .md file directly in the filesystem?
             if ($this->isDirty()) {
@@ -975,7 +957,7 @@ class Wiki
 
         // write out new content
         $mtime = $keepmtime && $this->exists() ? filemtime($this->contentFileFS) : time();
-        $this->fileWriteContent(
+        $this->writeContentFS(
             $this->contentFileFS,
             \Spyc::YAMLDump($this->metadata) . "---\n" . trim($this->content) . "\n"
         );
@@ -985,7 +967,7 @@ class Wiki
     /**
      * Load the content for this page from the filesystem.
      */
-    private function loadFS(): void
+    private function load(): void
     {
         list($this->metadata, $this->content) = $this->loadFile($this->contentFileFS, true);
     }
@@ -1000,7 +982,7 @@ class Wiki
      */
     public function create(): bool
     {
-        if ($this->user->mayCreate($this->wikiPath)) {
+        if ($this->mayCreatePath($this->wikiPath)) {
             // reset internal data to empty page
             $this->metadata = [];
             $this->metadata['date'] = date(\DateTimeInterface::ATOM);
@@ -1032,8 +1014,8 @@ class Wiki
      */
     public function deletePage(bool $dryRun = false): bool
     {
-        if ($this->user->mayDelete($this->wikiPath)) {
-            $this->loadFS();
+        if ($this->mayDeletePath($this->wikiPath)) {
+            $this->load();
             if ($this->exists()) {
                 if (!$dryRun) {
                     rename(
@@ -1066,8 +1048,8 @@ class Wiki
      */
     public function readPage(): bool
     {
-        if ($this->user->mayRead($this->wikiPath)) {
-            $this->loadFS();
+        if ($this->mayReadPath()) {
+            $this->load();
             return true;
         }
 
@@ -1159,7 +1141,7 @@ class Wiki
     ): array {
         // load data
         if ($filename !== false && is_file($filename)) {
-            $content = $this->fileReadContent($filename);
+            $content = $this->readContentFS($filename);
         } else {
             $content = '';
         }
@@ -1206,11 +1188,29 @@ class Wiki
         $changelog = $this->contentDirFS . '/CHANGELOG.md';
         touch($changelog); // make sure file exists
 
-        $log = '* [' . $this->getTitle() . '](' . $this->getWikiPath() . ')'
+        $log = '* [' . $this->getTitle() . '](' . $this->wikiPath . ')'
             . ' ' . $this->getAuthor()
             . ' ' . $this->metadata['date']
             . PHP_EOL;
 
-        $this->fileWriteContent($changelog, $log . $this->fileReadContent($changelog), LOCK_EX);
+        $this->writeContentFS($changelog, $log . $this->readContentFS($changelog), LOCK_EX);
     }
+}
+
+abstract class WikiPlugin // phpcs:ignore PSR1.Classes.ClassDeclaration.MultipleClasses
+{
+    protected $wiki;
+    protected $config;
+    protected $core;
+    protected $user;
+
+    public function __construct($wiki, $core, $user, $config)
+    {
+        $this->wiki = $wiki;
+        $this->core = $core;
+        $this->user = $user;
+        $this->config = $config;
+    }
+
+    abstract public function setup();
 }

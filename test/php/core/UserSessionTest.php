@@ -50,56 +50,16 @@ final class UserSessionTest extends WikiTestCase
         // anonymous users should only be able to read stuff
 
         $config = parse_ini_file('dist/wiki.md/data/config.ini');
-        $user = new UserSession($config); // this will be the anonymous user
+        $user = new UserSession($config['datafolder'], $config['login_simple']); // this will be the anonymous user
 
-        $this->assertFalse($user->mayRead(''));
-        $this->assertFalse($user->mayCreate(''));
-        $this->assertFalse($user->mayUpdate(''));
-        $this->assertFalse($user->mayDelete(''));
         $this->assertFalse($user->mayAdmin(''));
 
-        $this->assertTrue($user->mayRead('/'));
-        $this->assertTrue($user->mayRead('/somepage'));
-        $this->assertTrue($user->mayRead('/somefolder/'));
-        $this->assertTrue($user->mayRead('/somefolder/somepage'));
-        $this->assertTrue($user->mayRead('/somefolder/somefolder/somepage'));
-        $this->assertFalse($user->mayCreate('/'));
-        $this->assertFalse($user->mayCreate('/somepage'));
-        $this->assertFalse($user->mayCreate('/somefolder/'));
-        $this->assertFalse($user->mayCreate('/somefolder/somepage'));
-        $this->assertFalse($user->mayCreate('/somefolder/somefolder/somepage'));
-        $this->assertFalse($user->mayUpdate('/'));
-        $this->assertFalse($user->mayUpdate('/somepage'));
-        $this->assertFalse($user->mayUpdate('/somefolder/'));
-        $this->assertFalse($user->mayUpdate('/somefolder/somepage'));
-        $this->assertFalse($user->mayUpdate('/somefolder/somefolder/somepage'));
-        $this->assertFalse($user->mayDelete('/'));
-        $this->assertFalse($user->mayDelete('/somepage'));
-        $this->assertFalse($user->mayDelete('/somefolder/'));
-        $this->assertFalse($user->mayDelete('/somefolder/somepage'));
-        $this->assertFalse($user->mayDelete('/somefolder/somefolder/somepage'));
         $this->assertFalse($user->mayAdmin('/'));
         $this->assertFalse($user->mayAdmin('/somepage'));
         $this->assertFalse($user->mayAdmin('/somefolder/'));
         $this->assertFalse($user->mayAdmin('/somefolder/somepage'));
         $this->assertFalse($user->mayAdmin('/somefolder/somefolder/somepage'));
 
-        $this->assertTrue($user->mayRead('/docs'));
-        $this->assertTrue($user->mayRead('/docs/'));
-        $this->assertTrue($user->mayRead('/docs/install'));
-        $this->assertTrue($user->mayRead('/docs/install/'));
-        $this->assertFalse($user->mayCreate('/docs'));
-        $this->assertFalse($user->mayCreate('/docs/'));
-        $this->assertFalse($user->mayCreate('/docs/install'));
-        $this->assertFalse($user->mayCreate('/docs/install/'));
-        $this->assertFalse($user->mayUpdate('/docs'));
-        $this->assertFalse($user->mayUpdate('/docs/'));
-        $this->assertFalse($user->mayUpdate('/docs/install'));
-        $this->assertFalse($user->mayUpdate('/docs/install/'));
-        $this->assertFalse($user->mayDelete('/docs'));
-        $this->assertFalse($user->mayDelete('/docs/'));
-        $this->assertFalse($user->mayDelete('/docs/install'));
-        $this->assertFalse($user->mayDelete('/docs/install/'));
         $this->assertFalse($user->mayAdmin('/docs'));
         $this->assertFalse($user->mayAdmin('/docs/'));
         $this->assertFalse($user->mayAdmin('/docs/install'));
@@ -110,66 +70,66 @@ final class UserSessionTest extends WikiTestCase
     {
         // the 'docs' user is allowed to do everything one subdir, but not in others
         $config = parse_ini_file('dist/wiki.md/data/config.ini');
-        $user = new UserSession($config);
+        $user = new UserSession($config['datafolder'], $config['login_simple']);
         $this->getPrivateProperty('\at\nerdreich\UserSession', 'username')->setValue($user, 'docs'); // pseudo-login
 
-        $this->assertFalse($user->hasExplicitPermission('userCreate', '/docs')); // a page in the root folder!
-        $this->assertTrue($user->hasExplicitPermission('userCreate', '/docs/'));
-        $this->assertTrue($user->hasExplicitPermission('userCreate', '/docs/install'));
-        $this->assertTrue($user->hasExplicitPermission('userCreate', '/docs/more/infos'));
-        $this->assertTrue($user->hasExplicitPermission('userCreate', '/docs/more/infos/'));
-        $this->assertTrue($user->hasExplicitPermission('userRead', '/docs'));
-        $this->assertTrue($user->hasExplicitPermission('userRead', '/docs/'));
-        $this->assertTrue($user->hasExplicitPermission('userRead', '/docs/install'));
-        $this->assertTrue($user->hasExplicitPermission('userRead', '/docs/more/infos'));
-        $this->assertTrue($user->hasExplicitPermission('userRead', '/docs/more/infos/'));
-        $this->assertFalse($user->hasExplicitPermission('userUpdate', '/docs'));
-        $this->assertTrue($user->hasExplicitPermission('userUpdate', '/docs/'));
-        $this->assertTrue($user->hasExplicitPermission('userUpdate', '/docs/install'));
-        $this->assertTrue($user->hasExplicitPermission('userUpdate', '/docs/more/infos'));
-        $this->assertTrue($user->hasExplicitPermission('userUpdate', '/docs/more/infos/'));
-        $this->assertFalse($user->hasExplicitPermission('userDelete', '/docs'));
-        $this->assertTrue($user->hasExplicitPermission('userDelete', '/docs/'));
-        $this->assertTrue($user->hasExplicitPermission('userDelete', '/docs/install'));
-        $this->assertTrue($user->hasExplicitPermission('userDelete', '/docs/more/infos'));
-        $this->assertTrue($user->hasExplicitPermission('userDelete', '/docs/more/infos/'));
-        $this->assertFalse($user->hasExplicitPermission('userAdmin', '/docs'));
-        $this->assertFalse($user->hasExplicitPermission('userAdmin', '/docs/'));
-        $this->assertFalse($user->hasExplicitPermission('userAdmin', '/docs/install'));
-        $this->assertFalse($user->hasExplicitPermission('userAdmin', '/docs/more/infos'));
-        $this->assertFalse($user->hasExplicitPermission('userAdmin', '/docs/more/infos/'));
+        $this->assertFalse($user->hasPermission('pageCreate', '/docs')); // a page in the root folder!
+        $this->assertTrue($user->hasPermission('pageCreate', '/docs/'));
+        $this->assertTrue($user->hasPermission('pageCreate', '/docs/install'));
+        $this->assertTrue($user->hasPermission('pageCreate', '/docs/more/infos'));
+        $this->assertTrue($user->hasPermission('pageCreate', '/docs/more/infos/'));
+        $this->assertTrue($user->hasPermission('pageRead', '/docs'));
+        $this->assertTrue($user->hasPermission('pageRead', '/docs/'));
+        $this->assertTrue($user->hasPermission('pageRead', '/docs/install'));
+        $this->assertTrue($user->hasPermission('pageRead', '/docs/more/infos'));
+        $this->assertTrue($user->hasPermission('pageRead', '/docs/more/infos/'));
+        $this->assertFalse($user->hasPermission('pageUpdate', '/docs'));
+        $this->assertTrue($user->hasPermission('pageUpdate', '/docs/'));
+        $this->assertTrue($user->hasPermission('pageUpdate', '/docs/install'));
+        $this->assertTrue($user->hasPermission('pageUpdate', '/docs/more/infos'));
+        $this->assertTrue($user->hasPermission('pageUpdate', '/docs/more/infos/'));
+        $this->assertFalse($user->hasPermission('pageDelete', '/docs'));
+        $this->assertTrue($user->hasPermission('pageDelete', '/docs/'));
+        $this->assertTrue($user->hasPermission('pageDelete', '/docs/install'));
+        $this->assertTrue($user->hasPermission('pageDelete', '/docs/more/infos'));
+        $this->assertTrue($user->hasPermission('pageDelete', '/docs/more/infos/'));
+        $this->assertFalse($user->hasPermission('userAdmin', '/docs'));
+        $this->assertFalse($user->hasPermission('userAdmin', '/docs/'));
+        $this->assertFalse($user->hasPermission('userAdmin', '/docs/install'));
+        $this->assertFalse($user->hasPermission('userAdmin', '/docs/more/infos'));
+        $this->assertFalse($user->hasPermission('userAdmin', '/docs/more/infos/'));
 
-        $this->assertFalse($user->hasExplicitPermission('userCreate', '/'));
-        $this->assertFalse($user->hasExplicitPermission('userCreate', '/somepage'));
-        $this->assertFalse($user->hasExplicitPermission('userCreate', '/somefolder/'));
-        $this->assertFalse($user->hasExplicitPermission('userCreate', '/somefolder/somepage'));
-        $this->assertFalse($user->hasExplicitPermission('userCreate', '/somefolder/somefolder/somepage'));
-        $this->assertTrue($user->hasExplicitPermission('userRead', '/'));
-        $this->assertTrue($user->hasExplicitPermission('userRead', '/somepage'));
-        $this->assertTrue($user->hasExplicitPermission('userRead', '/somefolder/'));
-        $this->assertTrue($user->hasExplicitPermission('userRead', '/somefolder/somepage'));
-        $this->assertTrue($user->hasExplicitPermission('userRead', '/somefolder/somefolder/somepage'));
-        $this->assertFalse($user->hasExplicitPermission('userUpdate', '/'));
-        $this->assertFalse($user->hasExplicitPermission('userUpdate', '/somepage'));
-        $this->assertFalse($user->hasExplicitPermission('userUpdate', '/somefolder/'));
-        $this->assertFalse($user->hasExplicitPermission('userUpdate', '/somefolder/somepage'));
-        $this->assertFalse($user->hasExplicitPermission('userUpdate', '/somefolder/somefolder/somepage'));
-        $this->assertFalse($user->hasExplicitPermission('userDelete', '/'));
-        $this->assertFalse($user->hasExplicitPermission('userDelete', '/somepage'));
-        $this->assertFalse($user->hasExplicitPermission('userDelete', '/somefolder/'));
-        $this->assertFalse($user->hasExplicitPermission('userDelete', '/somefolder/somepage'));
-        $this->assertFalse($user->hasExplicitPermission('userDelete', '/somefolder/somefolder/somepage'));
-        $this->assertFalse($user->hasExplicitPermission('userAdmin', '/'));
-        $this->assertFalse($user->hasExplicitPermission('userAdmin', '/somepage'));
-        $this->assertFalse($user->hasExplicitPermission('userAdmin', '/somefolder/'));
-        $this->assertFalse($user->hasExplicitPermission('userAdmin', '/somefolder/somepage'));
-        $this->assertFalse($user->hasExplicitPermission('userAdmin', '/somefolder/somefolder/somepage'));
+        $this->assertFalse($user->hasPermission('pageCreate', '/'));
+        $this->assertFalse($user->hasPermission('pageCreate', '/somepage'));
+        $this->assertFalse($user->hasPermission('pageCreate', '/somefolder/'));
+        $this->assertFalse($user->hasPermission('pageCreate', '/somefolder/somepage'));
+        $this->assertFalse($user->hasPermission('pageCreate', '/somefolder/somefolder/somepage'));
+        $this->assertTrue($user->hasPermission('pageRead', '/'));
+        $this->assertTrue($user->hasPermission('pageRead', '/somepage'));
+        $this->assertTrue($user->hasPermission('pageRead', '/somefolder/'));
+        $this->assertTrue($user->hasPermission('pageRead', '/somefolder/somepage'));
+        $this->assertTrue($user->hasPermission('pageRead', '/somefolder/somefolder/somepage'));
+        $this->assertFalse($user->hasPermission('pageUpdate', '/'));
+        $this->assertFalse($user->hasPermission('pageUpdate', '/somepage'));
+        $this->assertFalse($user->hasPermission('pageUpdate', '/somefolder/'));
+        $this->assertFalse($user->hasPermission('pageUpdate', '/somefolder/somepage'));
+        $this->assertFalse($user->hasPermission('pageUpdate', '/somefolder/somefolder/somepage'));
+        $this->assertFalse($user->hasPermission('pageDelete', '/'));
+        $this->assertFalse($user->hasPermission('pageDelete', '/somepage'));
+        $this->assertFalse($user->hasPermission('pageDelete', '/somefolder/'));
+        $this->assertFalse($user->hasPermission('pageDelete', '/somefolder/somepage'));
+        $this->assertFalse($user->hasPermission('pageDelete', '/somefolder/somefolder/somepage'));
+        $this->assertFalse($user->hasPermission('userAdmin', '/'));
+        $this->assertFalse($user->hasPermission('userAdmin', '/somepage'));
+        $this->assertFalse($user->hasPermission('userAdmin', '/somefolder/'));
+        $this->assertFalse($user->hasPermission('userAdmin', '/somefolder/somepage'));
+        $this->assertFalse($user->hasPermission('userAdmin', '/somefolder/somefolder/somepage'));
     }
 
     public function testUserAdmin(): void
     {
         $config = parse_ini_file('dist/wiki.md/data/config.ini');
-        $user = new UserSession($config);
+        $user = new UserSession($config['datafolder'], $config['login_simple']);
 
         $hash = hash('sha1', file_get_contents(self::$htpasswd));
         $this->getPrivateProperty('\at\nerdreich\UserSession', 'username')->setValue($user, '*');
@@ -259,45 +219,88 @@ final class UserSessionTest extends WikiTestCase
     public function testPermissionAdmin(): void
     {
         $config = parse_ini_file('dist/wiki.md/data/config.ini');
-        $user = new UserSession($config);
+        $user = new UserSession($config['datafolder'], $config['login_simple']);
         $this->getPrivateProperty('\at\nerdreich\UserSession', 'username')->setValue($user, '*');
 
         // anonymous can't set permissions
         $this->assertFalse(
-            $user->setPermissions('/some/test/folder/', ['admin'], ['admin'], ['admin'], ['admin'], ['admin'], ['admin'])
+            $user->setPermissions(
+                '/some/test/folder/',
+                [
+                    'pageCreate' => ['admin'],
+                    'pageRead' => ['admin'],
+                    'pageUpdate' => ['admin'],
+                    'pageDelete' => ['admin'],
+                    'mediaAdmin' => ['admin'],
+                    'userAdmin' => ['admin']
+                ]
+            )
         );
 
         // non-admin user can't set permissions
         $this->getPrivateProperty('\at\nerdreich\UserSession', 'username')->setValue($user, 'docs');
         $this->assertFalse(
-            $user->setPermissions('/some/test/folder/', ['admin'], ['admin'], ['admin'], ['admin'], ['admin'], ['admin'])
+            $user->setPermissions(
+                '/some/test/folder/',
+                [
+                    'pageCreate' => ['admin'],
+                    'pageRead' => ['admin'],
+                    'pageUpdate' => ['admin'],
+                    'pageDelete' => ['admin'],
+                    'mediaAdmin' => ['admin'],
+                    'userAdmin' => ['admin']
+                ]
+            )
         );
 
         // admin can set permissions
         $this->getPrivateProperty('\at\nerdreich\UserSession', 'username')->setValue($user, 'admin');
         $this->assertTrue(
-            $user->setPermissions('/some/test/folder/', ['admin'], ['admin'], ['admin'], ['admin'], ['admin'], ['admin'])
+            $user->setPermissions(
+                '/some/test/folder/',
+                [
+                    'pageCreate' => ['admin'],
+                    'pageRead' => ['admin'],
+                    'pageUpdate' => ['admin'],
+                    'pageDelete' => ['admin'],
+                    'mediaAdmin' => ['admin'],
+                    'userAdmin' => ['admin']
+                ]
+            )
         );
         $this->assertFalse(
-            $user->setPermissions('/some/test/folder', ['admin'], ['admin'], ['admin'], ['admin'], ['admin'], ['admin'])
+            $user->setPermissions(
+                '/some/test/page',
+                [
+                    'pageCreate' => ['admin'],
+                    'pageRead' => ['admin'],
+                    'pageUpdate' => ['admin'],
+                    'pageDelete' => ['admin'],
+                    'mediaAdmin' => ['admin'],
+                    'userAdmin' => ['admin']
+                ]
+            )
         ); // even admin can't set permissions on a file
 
         // check for auto-correction of various element combinations
         $user->setPermissions(
             '/some/test/folder/',
-            ['admin', 'docs'],
-            ['*'],
-            ['admin', '*', 'docs'],
-            ['docs', 'someone', 'admin', 'unknown'],
-            ['*', '*'],
-            ['admin', 'admin']
+            [
+                'pageCreate' => ['admin', 'docs'],
+                'pageRead' => ['*'],
+                'pageUpdate' => ['admin', '*', 'docs'],
+                'pageDelete' => ['docs', 'someone', 'admin', 'unknown'],
+                'mediaAdmin' => ['*', '*'],
+                'userAdmin' => ['admin', 'admin']
+            ]
         );
-        $permissions = $this->getAsPublicMethod('\at\nerdreich\UserSession', 'loadPermissionFile')->invokeArgs($user, ['/some/test/folder/']);
-        $this->assertEquals('admin,docs', $permissions['userCreate']);
-        $this->assertEquals('*', $permissions['userRead']);
-        $this->assertEquals('*', $permissions['userUpdate']);
-        $this->assertEquals('admin,docs', $permissions['userDelete']);
-        $this->assertEquals('*', $permissions['userMedia']);
+        $permissions = $this->getAsPublicMethod('\at\nerdreich\UserSession', 'loadPermissionFile')
+            ->invokeArgs($user, ['/some/test/folder/']);
+        $this->assertEquals('admin,docs', $permissions['pageCreate']);
+        $this->assertEquals('*', $permissions['pageRead']);
+        $this->assertEquals('*', $permissions['pageUpdate']);
+        $this->assertEquals('admin,docs', $permissions['pageDelete']);
+        $this->assertEquals('*', $permissions['mediaAdmin']);
         $this->assertEquals('admin', $permissions['userAdmin']);
     }
 }

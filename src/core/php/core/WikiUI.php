@@ -20,22 +20,23 @@
 
 namespace at\nerdreich;
 
-require_once('Wiki.php');
+require_once('WikiCore.php');
 require_once('UserSession.php');
 
 /**
  * Wiki.md UI handling.
  *
- * This class is in charge of HTTP requests, handling themes and forwarding the
+ * This class is responsible to handle HTTP requests, themes and forwarding the
  * raw wiki requests to the core Wiki class.
  */
 class WikiUI
 {
     public $user;
-    public $wiki;
+    public $core;
     private $config;
     private $actionRoutes = [];
     private $pageRoutes = [];
+    private $menuItems = [];
 
     /**
      * Constructor
@@ -45,31 +46,32 @@ class WikiUI
     public function __construct($wikiPath = null)
     {
         $root = dirname(dirname(__FILE__));
+
         // load wiki
         $this->config = parse_ini_file($root . '/data/config.ini');
-        $this->user = new UserSession($this->config);
-        $this->wiki = new Wiki($this->config, $this->user);
+        $this->user = new UserSession($this->config['datafolder'], $this->config['login_simple']);
+        $this->core = new WikiCore($this->config, $this->user);
 
         // determine content path. will trim folder if wiki.md is installed in a sub-folder.
         $wikiPath = $wikiPath ?? substr($this->sanitizePath(
             parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)
-        ), strlen($this->wiki->getWikiRoot()));
+        ), strlen($this->core->getWikiRoot()));
 
         // if there is a better path name for the same resource, redirect there
-        $canonicalPath = $this->wiki->init($wikiPath);
+        $canonicalPath = $this->core->init($wikiPath);
         if ($wikiPath !== $canonicalPath) {
             $this->redirect($canonicalPath);
         }
 
         // set a default route for viewing pages
-        $this->registerPageRoute(function ($ui) {
-            if (!$ui->wiki->exists()) {
-                $ui->renderThemeFile('404', 404);
+        $this->registerPageRoute(function ($wiki) {
+            if (!$wiki->core->exists()) {
+                $wiki->renderThemeFile('404', 404);
             }
-            if ($ui->wiki->readPage()) {
-                $ui->renderThemeFile('view');
+            if ($wiki->core->readPage()) {
+                $wiki->renderThemeFile('view');
             }
-            $ui->renderThemeFile('error', 400);
+            $wiki->renderThemeFile('error', 400);
         });
 
         // load plugins
@@ -78,16 +80,23 @@ class WikiUI
             require $root . '/plugins/' . $plugin . '/plugin.php';
         }
         foreach ($GLOBALS['wiki.md-plugins'] as $plugin => $className) {
-            $this->wiki->registerPlugin($plugin, new $className($this));
+            $handler = new $className($this, $this->core, $this->user, $this->config);
+            $handler->setup();
+            $this->core->registerPlugin($plugin, $handler);
         }
 
         // setup theme config
-        $this->config['themePath'] = $this->wiki->getLocation('/themes/' . $this->config['theme']) . '/';
+        $this->config['themePath'] = $this->core->getLocation('/themes/' . $this->config['theme']) . '/';
         $this->config['themeDirFS'] = dirname(__FILE__) . '/../themes/' . $this->config['theme'];
         $this->config['pluginDirFS'] = dirname(__FILE__) . '/../plugins';
+
+        // setup page actions
+        $this->setupMenuItems();
     }
 
+    // -------------------------------------------------------------------------
     // --- static helpers ------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     /**
      * Terminate further execution and redirect the client to another page.
@@ -137,7 +146,19 @@ class WikiUI
         return $actions === '' ? $actions : substr($actions, 1);
     }
 
+    /**
+     * Get the wiki.md source code repository URL.
+     *
+     * @return string Link to repo/homepage.
+     */
+    public static function getRepo(): string
+    {
+        return '$URL$';
+    }
+
+    // -------------------------------------------------------------------------
     // --- request routing -----------------------------------------------------
+    // -------------------------------------------------------------------------
 
     public function run(): void
     {
@@ -179,7 +200,68 @@ class WikiUI
         array_unshift($this->pageRoutes, $handler);
     }
 
+    // -------------------------------------------------------------------------
+    // --- menu handling -------------------------------------------------------
+    // -------------------------------------------------------------------------
+
+    /**
+     * Add a menu item to this page's actions.
+     *
+     * @param string $action An action=value string.
+     * @param string $label A label for the menu item.
+     */
+    public function addMenuItem(
+        string $action,
+        string $label
+    ): void {
+        $this->menuItems[$action] = $label;
+    }
+
+    /**
+     * Get all registered menu items for this page.
+     *
+     * @return array $action Aray with 'action=value' as key and label as value.
+     */
+    public function getMenuItems(): array
+    {
+        return $this->menuItems;
+    }
+
+    /**
+     * Determine what the current user may do with the current page.
+     *
+     * Will update internal $pageActions array.
+     */
+    public function setupMenuItems(): void
+    {
+        if ($this->core->mayUpdatePath()) {
+            if ($this->core->exists()) {
+                $this->addMenuItem('page=edit', 'Edit');
+            } else {
+                $this->addMenuItem('page=create', 'Create');
+            }
+        }
+        if ($this->core->exists()) {
+            if ($this->core->mayReadPath() && $this->core->mayUpdatePath()) {
+                $this->addMenuItem('page=history', 'History');
+            }
+            if ($this->core->mayDeletePath()) {
+                $this->addMenuItem('page=delete', 'Delete');
+            }
+        }
+        if ($this->user->mayAdmin($this->core->getWikiPath())) {
+            $this->addMenuItem('user=list', 'Permissions');
+        }
+        if ($this->user->isLoggedIn()) {
+            $this->addMenuItem('auth=logout', 'Logout');
+        } else {
+            $this->addMenuItem('auth=login', 'Login');
+        }
+    }
+
+    // -------------------------------------------------------------------------
     // --- theme file handling -------------------------------------------------
+    // -------------------------------------------------------------------------
 
     public function getThemeSetupFile(): string
     {
@@ -209,9 +291,12 @@ class WikiUI
      * @param string $filename Theme file to load, e.g. 'edit.php'.
      * @param int $httpResponseCode Code to send this page with to the client.
      */
-    public function renderPluginFile(string $pluginname, string $filename, $httpResponseCode = 200): void
-    {
-        $ui = $this; // to be used in the required theme file
+    public function renderPluginFile(
+        string $pluginname,
+        string $filename,
+        $httpResponseCode = 200
+    ): void {
+        $wiki = $this; // to be used in the required theme file
         http_response_code($httpResponseCode);
         require($this->config['pluginDirFS'] . '/' . $pluginname . '/' . $filename . '.php');
         exit;
@@ -225,9 +310,11 @@ class WikiUI
      * @param string $filename Theme file to load, e.g. 'edit.php'.
      * @param int $httpResponseCode Code to send this page with to the client.
      */
-    public function renderThemeFile(string $filename, $httpResponseCode = 200): void
-    {
-        $ui = $this; // to be used in the required theme file
+    public function renderThemeFile(
+        string $filename,
+        $httpResponseCode = 200
+    ): void {
+        $wiki = $this; // to be used in the required theme file
         http_response_code($httpResponseCode);
         require($this->config['themeDirFS'] . '/' . $filename . '.php');
         exit;
@@ -245,6 +332,16 @@ class WikiUI
         } else {
             // user has to login-first
             $this->renderThemeFile('login', 401);
+        }
+    }
+
+    public static function echoIf(
+        ?string $prefix,
+        ?string $content,
+        ?string $postfix
+    ): void {
+        if ($content !== null && $content !== '') {
+            echo ($prefix ?? '') . htmlspecialchars($content) . ($postfix ?? '');
         }
     }
 }

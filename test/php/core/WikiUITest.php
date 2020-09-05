@@ -18,20 +18,19 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
-outputHeader($wiki, $wiki->core->getTitle(), $wiki->core->getDescription());
-outputNavbar($wiki);
-outputBanner($wiki);
+// Note: All tests operate on `dist/*` to QA the release version. You need to
+//       build the project using `gulp dist` first.
 
-?>
-<section class="section-main container">
-  <div class="row">
-    <div class="col-12 col-md-8 col-lg-9">
-      <?php $wiki->echoIf('<h1>', $wiki->core->getTitle(), '</h1>'); ?>
-      <?php echo $wiki->core->getContentHTML(); ?>
-    </div>
-    <nav class="col-12 col-md-4 col-lg-3 sidenav">
-      <?php echo $wiki->core->getSnippetHTML('nav'); ?>
-    </nav>
-  </div>
-</section>
-<?php outputFooter($wiki); ?>
+namespace at\nerdreich;
+
+require_once('test/php/WikiTestCase.php');
+
+final class WikiUITest extends WikiTestCase
+{
+    public function testDefaultValues(): void
+    {
+        $wikiUI = $this->getNewWikiUi('/test');
+
+        $this->assertStringStartsWith('https://github', $wikiUI->getRepo());
+    }
+}

@@ -29,24 +29,24 @@ final class MediaTest extends WikiTestCase
 {
     public function testwikiPathToContentFileFS(): void
     {
-        $ui = $this->getNewWikiUI('/test');
-        $plugin = $ui->wiki->getPlugin('media');
+        $wiki = $this->getNewWikiUI('/test');
+        $plugin = $wiki->core->getPlugin('media');
         $method = $this->getAsPublicMethod('\at\nerdreich\MediaPlugin', 'getMediaFileFS');
 
         $this->assertEquals(
-            $ui->wiki->getContentDirFS() . '/animal/_media/lion.png',
+            $wiki->core->getContentDirFS() . '/animal/_media/lion.png',
             $method->invokeArgs($plugin, ['/animal/lion.png'])
         );
         $this->assertEquals(
-            $ui->wiki->getContentDirFS() . '/animal/_media/LION.JPG.PNG',
+            $wiki->core->getContentDirFS() . '/animal/_media/LION.JPG.PNG',
             $method->invokeArgs($plugin, ['/animal/LION.JPG.PNG'])
         );
         $this->assertEquals(
-            $ui->wiki->getContentDirFS() . '/animal/_media/lion.jpg',
+            $wiki->core->getContentDirFS() . '/animal/_media/lion.jpg',
             $method->invokeArgs($plugin, ['/animal/lion.jpg'])
         );
         $this->assertEquals(
-            $ui->wiki->getContentDirFS() . '/animal/_media/lion.gif',
+            $wiki->core->getContentDirFS() . '/animal/_media/lion.gif',
             $method->invokeArgs($plugin, ['/animal/lion.gif'])
         );
     }
@@ -54,8 +54,8 @@ final class MediaTest extends WikiTestCase
     public function testAnonymoususer(): void
     {
         // anonymous users should only be able to read stuff
-        $ui = $this->getNewWikiUI('/test');
-        $plugin = $ui->wiki->getPlugin('media');
+        $wiki = $this->getNewWikiUI('/test');
+        $plugin = $wiki->core->getPlugin('media');
 
         $this->assertFalse($plugin->mayMedia(''));
 
@@ -75,19 +75,19 @@ final class MediaTest extends WikiTestCase
     {
         // the 'docs' user is allowed to do everything one subdir, but not in others
         $config = parse_ini_file('dist/wiki.md/data/config.ini');
-        $user = new UserSession($config);
+        $user = new UserSession($config['datafolder'], $config['login_simple']);
         $this->getPrivateProperty('\at\nerdreich\UserSession', 'username')->setValue($user, 'docs'); // pseudo-login
 
-        $this->assertFalse($user->hasExplicitPermission('userMedia', '/docs'));
-        $this->assertTrue($user->hasExplicitPermission('userMedia', '/docs/'));
-        $this->assertTrue($user->hasExplicitPermission('userMedia', '/docs/install'));
-        $this->assertTrue($user->hasExplicitPermission('userMedia', '/docs/more/infos'));
-        $this->assertTrue($user->hasExplicitPermission('userMedia', '/docs/more/infos/'));
+        $this->assertFalse($user->hasPermission('mediaAdmin', '/docs'));
+        $this->assertTrue($user->hasPermission('mediaAdmin', '/docs/'));
+        $this->assertTrue($user->hasPermission('mediaAdmin', '/docs/install'));
+        $this->assertTrue($user->hasPermission('mediaAdmin', '/docs/more/infos'));
+        $this->assertTrue($user->hasPermission('mediaAdmin', '/docs/more/infos/'));
 
-        $this->assertFalse($user->hasExplicitPermission('userMedia', '/'));
-        $this->assertFalse($user->hasExplicitPermission('userMedia', '/somepage'));
-        $this->assertFalse($user->hasExplicitPermission('userMedia', '/somefolder/'));
-        $this->assertFalse($user->hasExplicitPermission('userMedia', '/somefolder/somepage'));
-        $this->assertFalse($user->hasExplicitPermission('userMedia', '/somefolder/somefolder/somepage'));
+        $this->assertFalse($user->hasPermission('mediaAdmin', '/'));
+        $this->assertFalse($user->hasPermission('mediaAdmin', '/somepage'));
+        $this->assertFalse($user->hasPermission('mediaAdmin', '/somefolder/'));
+        $this->assertFalse($user->hasPermission('mediaAdmin', '/somefolder/somepage'));
+        $this->assertFalse($user->hasPermission('mediaAdmin', '/somefolder/somefolder/somepage'));
     }
 }

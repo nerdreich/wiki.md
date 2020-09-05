@@ -18,26 +18,29 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
+// Note: All tests operate on `dist/*` to QA the release version. You need to
+//       build the project using `gulp dist` first.
+
 namespace at\nerdreich;
 
-require_once('dist/wiki.md/core/Wiki.php');
+require_once('dist/wiki.md/core/WikiCore.php');
 require_once('dist/wiki.md/core/WikiUI.php');
 require_once('dist/wiki.md/core/UserSession.php');
 
 class WikiTestCase extends \PHPUnit\Framework\TestCase
 {
-    protected function getNewWiki(): Wiki
+    protected function getNewWiki(): WikiCore
     {
         $config = parse_ini_file('dist/wiki.md/data/config.ini');
-        $user = new UserSession($config);
-        return new Wiki($config, $user);
+        $user = new UserSession($config['datafolder'], $config['login_simple']);
+        return new WikiCore($config, $user);
     }
 
     protected function getNewWikiUI(string $wikiPath): WikiUI
     {
-        $ui = new \at\nerdreich\WikiUI($wikiPath);
-        require_once $ui->getThemeSetupFile();
-        return $ui;
+        $wiki = new \at\nerdreich\WikiUI($wikiPath);
+        require_once $wiki->getThemeSetupFile();
+        return $wiki;
     }
 
     protected function getAsPublicMethod(string $className, string $methodName): \ReflectionMethod

@@ -638,20 +638,20 @@ class IntegrationTest extends IntegrationTestCase
         // docs default permissions
         $this->get('/docs/?user=list');
         $this->assertPage();
-        $this->assertPayloadContainsPreg('/name="userCreate" value="docs"/');
-        $this->assertPayloadContainsPreg('/name="userRead" value=""/');
-        $this->assertPayloadContainsPreg('/name="userUpdate" value="docs"/');
-        $this->assertPayloadContainsPreg('/name="userDelete" value="docs"/');
-        $this->assertPayloadContainsPreg('/name="userMedia" value="docs"/');
+        $this->assertPayloadContainsPreg('/name="pageCreate" value="docs"/');
+        $this->assertPayloadContainsPreg('/name="pageRead" value=""/');
+        $this->assertPayloadContainsPreg('/name="pageUpdate" value="docs"/');
+        $this->assertPayloadContainsPreg('/name="pageDelete" value="docs"/');
+        $this->assertPayloadContainsPreg('/name="mediaAdmin" value="docs"/');
         $this->assertPayloadContainsPreg('/name="userAdmin" value=""/');
 
         // set permissions on a test folder
         $this->post('/docs/perms/?user=set', [
-            'userCreate' => 'admin',
-            'userRead' => 'docs,admin',
-            'userUpdate' => 'admin,docs',
-            'userDelete' => '',
-            'userMedia' => 'admin,admin',
+            'pageCreate' => 'admin',
+            'pageRead' => 'docs,admin',
+            'pageUpdate' => 'admin,docs',
+            'pageDelete' => '',
+            'mediaAdmin' => 'admin,admin',
             'userAdmin' => '*'
         ]);
         $this->assertRedirect('/docs/perms/?user=list');
@@ -659,20 +659,20 @@ class IntegrationTest extends IntegrationTestCase
         // check changes
         $this->get('/docs/perms/?user=list');
         $this->assertPage();
-        $this->assertPayloadContainsPreg('/name="userCreate" value="admin"/');
-        $this->assertPayloadContainsPreg('/name="userRead" value="admin,docs"/');
-        $this->assertPayloadContainsPreg('/name="userUpdate" value="admin,docs"/');
-        $this->assertPayloadContainsPreg('/name="userDelete" value=""/');
-        $this->assertPayloadContainsPreg('/name="userMedia" value="admin"/');
+        $this->assertPayloadContainsPreg('/name="pageCreate" value="admin"/');
+        $this->assertPayloadContainsPreg('/name="pageRead" value="admin,docs"/');
+        $this->assertPayloadContainsPreg('/name="pageUpdate" value="admin,docs"/');
+        $this->assertPayloadContainsPreg('/name="pageDelete" value=""/');
+        $this->assertPayloadContainsPreg('/name="mediaAdmin" value="admin"/');
         $this->assertPayloadContainsPreg('/name="userAdmin" value="\*"/');
 
         // set edge cases
         $this->post('/docs/perms/?user=set', [
-            // no create - 'userCreate' => null,
-            'userRead' => ' docs',
-            'userUpdate' => null,
-            'userDelete' => 'docs,',
-            // no upload - 'userMedia' => null,
+            // no create - 'pageCreate' => null,
+            'pageRead' => ' docs',
+            'pageUpdate' => null,
+            'pageDelete' => 'docs,',
+            // no upload - 'mediaAdmin' => null,
             'userAdmin' => ',docs, docs'
         ]);
         $this->assertRedirect('/docs/perms/?user=list');
@@ -680,11 +680,11 @@ class IntegrationTest extends IntegrationTestCase
         // check changes
         $this->get('/docs/perms/?user=list');
         $this->assertPage();
-        $this->assertPayloadContainsPreg('/name="userCreate" value=""/');
-        $this->assertPayloadContainsPreg('/name="userRead" value="docs"/');
-        $this->assertPayloadContainsPreg('/name="userUpdate" value=""/');
-        $this->assertPayloadContainsPreg('/name="userDelete" value="docs"/');
-        $this->assertPayloadContainsPreg('/name="userMedia" value=""/');
+        $this->assertPayloadContainsPreg('/name="pageCreate" value=""/');
+        $this->assertPayloadContainsPreg('/name="pageRead" value="docs"/');
+        $this->assertPayloadContainsPreg('/name="pageUpdate" value=""/');
+        $this->assertPayloadContainsPreg('/name="pageDelete" value="docs"/');
+        $this->assertPayloadContainsPreg('/name="mediaAdmin" value=""/');
         $this->assertPayloadContainsPreg('/name="userAdmin" value="docs"/');
     }
 

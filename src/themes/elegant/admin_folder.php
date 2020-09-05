@@ -18,10 +18,10 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
-outputHeader($ui, ___('Edit') . ': ' . $ui->wiki->getTitle());
-outputNavbar($ui);
+outputHeader($wiki, ___('Edit') . ': ' . $wiki->core->getTitle());
+outputNavbar($wiki);
 
-$infos = $ui->user->adminFolder($ui->wiki->getWikiPath());
+$infos = $wiki->user->adminFolder($wiki->core->getWikiPath());
 
 $userPattern = '(' . implode(',|', $infos['users']) . ',)*(' . implode('|', $infos['users']) . ')?|\*';
 
@@ -41,19 +41,19 @@ $userPattern = '(' . implode(',|', $infos['users']) . ',)*(' . implode('|', $inf
       <h2><?php __('Folder permissions'); ?></h2>
       <p class="minor"><?php __('valid for %s and below', $infos['folder']); ?></p>
       <label class="in-border"><?php __('Create'); ?></label>
-      <input type="text" name="userCreate" value="<?php echo $infos['permissions']['userCreate']; ?>"
+      <input type="text" name="pageCreate" value="<?php echo $infos['permissions']['pageCreate']; ?>"
         placeholder="<?php __('like parent'); ?>" pattern="<?php echo $userPattern; ?>">
       <label class="in-border"><?php __('Read'); ?></label>
-      <input type="text" name="userRead" value="<?php echo $infos['permissions']['userRead']; ?>"
+      <input type="text" name="pageRead" value="<?php echo $infos['permissions']['pageRead']; ?>"
         placeholder="<?php __('like parent'); ?>" pattern="<?php echo $userPattern; ?>">
       <label class="in-border"><?php __('Update'); ?></label>
-      <input type="text" name="userUpdate" value="<?php echo $infos['permissions']['userUpdate']; ?>"
+      <input type="text" name="pageUpdate" value="<?php echo $infos['permissions']['pageUpdate']; ?>"
         placeholder="<?php __('like parent'); ?>" pattern="<?php echo $userPattern; ?>">
       <label class="in-border"><?php __('Delete'); ?></label>
-      <input type="text" name="userDelete" value="<?php echo $infos['permissions']['userDelete']; ?>"
+      <input type="text" name="pageDelete" value="<?php echo $infos['permissions']['pageDelete']; ?>"
         placeholder="<?php __('like parent'); ?>" pattern="<?php echo $userPattern; ?>">
       <label class="in-border"><?php __('Upload'); ?></label>
-      <input type="text" name="userMedia" value="<?php echo $infos['permissions']['userMedia']; ?>"
+      <input type="text" name="mediaAdmin" value="<?php echo $infos['permissions']['mediaAdmin']; ?>"
         placeholder="<?php __('like parent'); ?>" pattern="<?php echo $userPattern; ?>">
       <label class="in-border"><?php __('Admin'); ?></label>
       <input type="text" name="userAdmin" value="<?php echo $infos['permissions']['userAdmin']; ?>"
@@ -72,7 +72,7 @@ $userPattern = '(' . implode(',|', $infos['users']) . ',)*(' . implode('|', $inf
           <?php
             foreach ($infos['users'] as $entry) {
                 echo '<li>' . $entry;
-                if ($entry !== $ui->user->getSuperuser()) {
+                if ($entry !== $wiki->user->getSuperuser()) {
                     echo ' - <a href="?user=delete&amp;name=' . $entry . '">' . ___('Delete') . '</a>';
                 }
                 echo '</li>';
@@ -81,4 +81,4 @@ $userPattern = '(' . implode(',|', $infos['users']) . ',)*(' . implode('|', $inf
     </form>
   </div>
 </section>
-<?php outputFooter($ui); ?>
+<?php outputFooter($wiki); ?>
