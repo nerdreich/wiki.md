@@ -98,7 +98,7 @@ if (!class_exists('\at\nerdreich\wiki\UserPlugin')) {
             string $path = null
         ): ?array {
             $path = $path ?? $this->core->getWikiPath();
-            if (preg_match('/[^\/]$/', $path)) {
+            if ($path[-1] !== '/') {
                 $path = dirname($path); // folder of files
                 $path = $path === '/' ? '/' : $path . '/';
             }
@@ -245,7 +245,7 @@ if (!class_exists('\at\nerdreich\wiki\UserPlugin')) {
             string $path,
             array $permissions
         ): bool {
-            if (preg_match('/\/$/', $path) && $this->mayUserAdmin($path)) { // can only set permissions on folders
+            if ($path[-1] === '/' && $this->mayUserAdmin($path)) { // can only set permissions on folders
                 $userDB = $this->user->loadUserFileFS();
 
                 $yaml = [];

@@ -227,10 +227,10 @@ final class WikiTest extends WikiTestCase
         $method = $this->getAsPublicMethod('\at\nerdreich\wiki\WikiCore', 'runFilters');
 
         // nothing changes while not logged-in
-        $this->assertEquals('[link](/)', $method->invokeArgs($wiki, ['markup', '[link](/)', '/path']));
+        $this->assertEquals('[link](/)', $method->invokeArgs($wiki, ['markup', '[link](/)', $wiki->getContentDirFS() . '/path/file.md']));
         $this->assertNotEquals(
             '[link](/nope){.broken}',
-            $method->invokeArgs($wiki, ['markup', '[link](/nope)', '/path'])
+            $method->invokeArgs($wiki, ['markup', '[link](/nope)', $wiki->getContentDirFS() . '/path/file.md'])
         );
 
         // we can't test logged-in version without sessions/header errors :(

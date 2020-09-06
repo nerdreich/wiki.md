@@ -139,7 +139,7 @@ if (!class_exists('\at\nerdreich\wiki\MediaPlugin')) {
         private function getMediaDirFS(
             string $wikiPath
         ): string {
-            if (preg_match('/\/$/', $wikiPath)) {
+            if ($wikiPath[-1] === '/') {
                 return $this->core->getContentDirFS() . $wikiPath . '_media';
             } else {
                 return $this->core->getContentDirFS() . dirname($wikiPath) . '/_media';

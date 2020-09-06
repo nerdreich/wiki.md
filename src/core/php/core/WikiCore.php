@@ -158,7 +158,7 @@ class WikiCore
     public function getWikiPathParentFolder(string $wikiPath = null): string
     {
         $wikiPath = $wikiPath ?? $this->wikiPath;
-        if (preg_match('/\/$/', $wikiPath)) { // README / it's own folder
+        if ($wikiPath[-1] === '/') { // README / it's own folder
             return $wikiPath;
         } else {
             $dir = dirname($wikiPath);

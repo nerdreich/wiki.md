@@ -133,12 +133,12 @@ final class MacroTest extends WikiTestCase
         $contentDirFS = $core->getContentDirFS() . '';
 
         // no macro
-        $this->assertEquals('body', $method->invokeArgs($core, ['markup', 'body', '/path']));
+        $this->assertEquals('body', $method->invokeArgs($core, ['markup', 'body', $contentDirFS . '/README.md']));
 
         // invalid macro
-        $this->assertEquals('{{include README}', $method->invokeArgs($core, ['raw', '{{include README}', '/path']));
-        $this->assertEquals('{include README}', $method->invokeArgs($core, ['raw', '{include README}', '/path']));
-        $this->assertEquals('include README', $method->invokeArgs($core, ['raw', 'include README', '/path']));
+        $this->assertEquals('{{include README}', $method->invokeArgs($core, ['raw', '{{include README}', $contentDirFS . '/README.md']));
+        $this->assertEquals('{include README}', $method->invokeArgs($core, ['raw', '{include README}', $contentDirFS . '/README.md']));
+        $this->assertEquals('include README', $method->invokeArgs($core, ['raw', 'include README', $contentDirFS . '/README.md']));
 
         // missing filename
         $this->assertEquals(
