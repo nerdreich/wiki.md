@@ -18,7 +18,7 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace at\nerdreich {
+namespace at\nerdreich\wiki {
     class Translate
     {
         private static $translations = [];
@@ -95,7 +95,7 @@ namespace { // global helpers to reduce clutter in templates
      */
     function __(): void
     {
-        echo htmlspecialchars(at\nerdreich\Translate::translate(func_get_args()));
+        echo htmlspecialchars(\at\nerdreich\wiki\Translate::translate(func_get_args()));
     }
 
     /**
@@ -109,7 +109,7 @@ namespace { // global helpers to reduce clutter in templates
      */
     function ___(): string
     {
-        return at\nerdreich\Translate::translate(func_get_args());
+        return \at\nerdreich\wiki\Translate::translate(func_get_args());
     }
 
 }

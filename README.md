@@ -2,6 +2,8 @@
 
 Yet another Wiki/CMS written in PHP.
 
+![https://img.shields.io/github/v/release/nerdreich/wiki.md](https://github.com/nerdreich/wiki.md/releases)
+
 ![wiki.md](preview.png)
 
 ## Key features
@@ -13,11 +15,14 @@ Yet another Wiki/CMS written in PHP.
   * Including Markdown Extra support (e.g. tables).
 * [YAML](https://en.wikipedia.org/wiki/YAML) front matter (YFM) metadata.
 * Page versioning / history (udiff).
-* Folder passwords.
+* Folder users/passwords.
   * Set separate permissions for create/read/edit/delete.
-* Snippet inheritance: Reference your partials (e.g. navigation or banner) in pages on the same/deeper directory levels.
-* Elegant, responsive default theme.
-* Custom theme support.
+* Content inheritance
+  * Reference partials (e.g. navigation or banner) in pages on the same/deeper directory levels.
+* Themes
+  * Ships with _Elegant_, a responsive default theme.
+  * Custom theme support.
+* Plugin support.
 * GNU AGPL-3.0 licensed.
 
 Due its file-based nature, wiki.md works best for small to medium traffic sites.
@@ -58,18 +63,16 @@ Read the [Documentation](docs/) to learn more.
 
 Feel free to report any [issues](https://github.com/nerdreich/wiki.md/issues) you find.
 
-### Planned for v1.1.0
+### Planned for v2.1.0
 
-* file/media uploads
-* full user (name+pwd) logins
-* plugin mechanism
 * rename-page feature
 
 ### Unscheduled ideas
 
+* RSS/feed for changes
+* `toc` macro
+* move-page feature
 * user settings
   * language
-* RSS/feed for changes
-* move-page feature
-* generate phpdocs during build
+* generate/check phpdocs during build
 * generate sassdocs during build

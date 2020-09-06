@@ -20,12 +20,12 @@
 
 // --- setup I18N --------------------------------------------------------------
 
-require_once('core/Translate.php');
-at\nerdreich\Translate::loadLanguage(dirname(__FILE__) . '/I18N/' . $config['language'] . '.yaml');
+require_once(dirname(__FILE__) . '/../../core/Translate.php');
+at\nerdreich\wiki\Translate::loadLanguage(dirname(__FILE__) . '/I18N/' . $wiki->getLanguage() . '.yaml');
 
 // --- register theme macros ---------------------------------------------------
 
-$wiki->registerMacro('paginate', function (
+$wiki->core->getPlugin('macro')->registerMacro('paginate', function (
     ?string $primary,
     ?array $secondary,
     string $path
@@ -63,33 +63,6 @@ $wiki->registerMacro('paginate', function (
 });
 
 // --- other theme helpers -----------------------------------------------------
-
-function getPageLinksHTML($user, $wiki)
-{
-    $html = '';
-    if ($user->mayUpdate($wiki->getWikiPath())) {
-        if ($wiki->exists()) {
-            $html .= '<a href="?action=edit">' . ___('Edit') . '</a><br>';
-        } else {
-            $html .= '<a href="?action=createPage">' . ___('Create') . '</a><br>';
-        }
-    }
-    if ($wiki->exists() && $user->mayRead($wiki->getWikiPath()) && $user->mayUpdate($wiki->getWikiPath())) {
-        $html .= '<a href="?action=history">' . ___('History') . '</a><br>';
-    }
-    if ($wiki->exists() && $user->mayDelete($wiki->getWikiPath())) {
-        $html .= '<a href="?action=delete">' . ___('Delete') . '</a><br>';
-    }
-    if ($user->mayAdmin($wiki->getWikiPath())) {
-        $html .= '<a href="./?admin=folder">' . ___('Permissions') . '</a><br>';
-    }
-    if ($user->isLoggedIn()) {
-        $html .= '<a href="?auth=logout">' . ___('Logout') . '</a>';
-    } else {
-        $html .= '<a href="?auth=login">' . ___('Login') . '</a>';
-    }
-    return $html;
-}
 
 /**
  * Convert a wiki path into a series of CSS classes.
@@ -148,48 +121,85 @@ function diff2html(
 }
 
 /**
+ * Convert a date or time to a string based on the current language/locale.
+ *
+ * Will auto-detect the format of the date.
+ *
+ * @param mixed $param A date of some kind.
+ * @return string Formatted date.
+ */
+function localDateString(
+    $param
+): string {
+    global $wiki;
+    if (gettype($param) === 'object' && get_class($param) === 'DateTime') {
+        return $param->format($wiki->getDateTimeFormat());
+    }
+    if (gettype($param) === 'integer') {
+        return (new \DateTime('@' . $param))->format($wiki->getDateTimeFormat());
+    }
+    return $param;
+}
+
+// --- output ------------------------------------------------------------------
+
+/**
+ * Assemble the navigation menu.
+ *
+ * @param\at\nerdreich\wiki\WikiUI $wiki Current UI object.
+ */
+function getPageLinksHTML(at\nerdreich\wiki\WikiUI $wiki): string
+{
+    $html = '';
+    foreach ($wiki->getMenuItems() as $action => $label) {
+        $html .= '<a href="?' . $action . '">' . ___($label) . '</a><br>';
+    }
+    return $html;
+}
+
+/**
  * Generate the HTML header and open the <body>.
  *
- * @param at\nerdreich\Wiki $wiki Current CMS object.
- * @param array $config Wiki configuration.
+ * @param\at\nerdreich\wiki\WikiUI $wiki Current UI object.
  */
-function outputHeader(array $config, string $path, string $title, string $description = '')
+function outputHeader(at\nerdreich\wiki\WikiUI $wiki, ?string $title = null, ?string $description = null): void
 {
     ?><!doctype html>
 <html class="no-js" lang="">
 <head>
   <meta charset="utf-8">
-  <title><?php echo htmlspecialchars($title); ?></title>
-  <meta name="description" content="<?php echo htmlspecialchars($description); ?>">
+    <?php
+    echo $title === null ? '' : '<title>' . htmlspecialchars($title) . '</title>';
+    echo $description === null ? '' : '<meta name="description" content="' . htmlspecialchars($description) . '">';
+    ?>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="manifest" href="<?php echo $config['themePath']; ?>site.webmanifest">
-  <link rel="apple-touch-icon" href="<?php echo $config['themePath']; ?>icon.png">
-  <link rel="icon" href="<?php echo $config['themePath']; ?>favicon.ico"  type="image/x-icon">
-  <link rel="stylesheet" href="<?php echo $config['themePath']; ?>style.css?v=$VERSION$">
+  <link rel="manifest" href="<?php echo htmlspecialchars($wiki->getThemePath()); ?>site.webmanifest">
+  <link rel="apple-touch-icon" href="<?php echo htmlspecialchars($wiki->getThemePath()); ?>icon.png">
+  <link rel="icon" href="<?php echo htmlspecialchars($wiki->getThemePath()); ?>favicon.ico"  type="image/x-icon">
+  <link rel="stylesheet" href="<?php echo htmlspecialchars($wiki->getThemePath()); ?>style.css?v=$VERSION$">
 </head>
-<body class="<?php echo htmlspecialchars(pathToClasses($path)); ?>">
+<body class="<?php echo htmlspecialchars(pathToClasses($wiki->core->getWikiPath())); ?>">
     <?php
 }
 
 /**
  * Generate the (top) navbar.
  *
- * @param at\nerdreich\Wiki $wiki Current CMS object.
- * @param at\nerdreich\UserSession $user Current user/Session object.
+ * @param\at\nerdreich\wiki\WikiUI $wiki Current UI object.
  */
-function outputNavbar(at\nerdreich\Wiki $wiki, at\nerdreich\UserSession $user)
+function outputNavbar(at\nerdreich\wiki\WikiUI $wiki): void
 {
     ?>
 <section class="navbar">
   <nav class="container">
     <div class="row">
       <div class="col-12">
-        <?php echo $wiki->getSnippetHTML('topnav'); ?>
+        <?php echo $wiki->core->getSnippetHTML('topnav'); ?>
         <div>
           <input id="wiki-burger" type="checkbox">
           <label for="wiki-burger"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></label>
           <div class="wiki-menu">
-            <?php echo getPageLinksHTML($user, $wiki); ?>
+            <?php echo getPageLinksHTML($wiki); ?>
           </div>
         </div>
       </div>
@@ -202,16 +212,16 @@ function outputNavbar(at\nerdreich\Wiki $wiki, at\nerdreich\UserSession $user)
 /**
  * Generate the banner area.
  *
- * @param at\nerdreich\Wiki $wiki Current CMS object.
+ * @param\at\nerdreich\wiki\WikiUI $wiki Current UI object.
  */
-function outputBanner(at\nerdreich\Wiki $wiki)
+function outputBanner(at\nerdreich\wiki\WikiUI $wiki): void
 {
     ?>
 <section class="banner">
   <nav class="container">
     <div class="row">
       <div class="col-12">
-        <?php echo $wiki->getSnippetHTML('banner'); ?>
+        <?php echo $wiki->core->getSnippetHTML('banner'); ?>
       </div>
     </div>
   </nav>
@@ -222,18 +232,18 @@ function outputBanner(at\nerdreich\Wiki $wiki)
 /**
  * Generate the footer and close <body> & <html>.
  *
- * @param at\nerdreich\Wiki $wiki Current CMS object.
+ * @param\at\nerdreich\wiki\WikiUI $wiki Current UI object.
  */
-function outputFooter(at\nerdreich\Wiki $wiki, array $config)
+function outputFooter(at\nerdreich\wiki\WikiUI $wiki): void
 {
     ?>
 <footer class="container">
   <div class="row">
     <div class="col-12">
       <p>
-        <a class="no-icon" href="<?php echo $wiki->getRepo(); ?>">wiki.md v<?php echo $wiki->getVersion(); ?></a>
-        <?php if ($wiki->getDate() !== null) {
-            echo '- ' . htmlspecialchars(___('Last saved %s', $wiki->getDate()->format($config['datetime'])));
+        <a class="no-icon" href="<?php echo $wiki->getRepo(); ?>">wiki.md v<?php echo $wiki->core->getVersion(); ?></a>
+        <?php if ($wiki->core->getDate() !== null) {
+            echo '- ' . htmlspecialchars(___('Last saved %s', localDateString($wiki->core->getDate())));
         } ?>
         - <a href="/<?php __('Privacy'); ?>"><?php __('Privacy'); ?></a>
       </p>

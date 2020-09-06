@@ -18,7 +18,7 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace at\nerdreich;
+namespace at\nerdreich\wiki;
 
 /**
  * Integration tests for PHP, tailored for wiki.md.
@@ -182,7 +182,7 @@ class IntegrationTestCase extends \PHPUnit\Framework\TestCase
      */
     public function assertPageError(): void
     {
-        $this->assertPage(400);
+        $this->assertPage(401);
         $this->assertPayloadContainsPreg('/an error occured/');
     }
 
@@ -192,7 +192,7 @@ class IntegrationTestCase extends \PHPUnit\Framework\TestCase
     public function assertPageLogin(): void
     {
         $this->assertPage(401);
-        $this->assertPayloadContainsPreg('/Password required/');
+        $this->assertPayloadContainsPreg('/Login required/');
     }
 
     /**

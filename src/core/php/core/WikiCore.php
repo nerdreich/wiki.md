@@ -18,7 +18,7 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace at\nerdreich;
+namespace at\nerdreich\wiki;
 
 require_once('UDiff.php');              // simple file-diff implementation
 require_once('lib/spyc.php');           // yaml parser
@@ -26,27 +26,26 @@ require_once('lib/Parsedown.php');      // markdown parser
 require_once('lib/ParsedownExtra.php'); // better markdown parser
 
 /**
- * wiki.md - A markdown wiki.
+ * Core wiki document handling.
+ *
+ * This class will do path/file conversion, read/write pages from/to the FS and
+ * handle markup conversion.
  */
-class Wiki
+class WikiCore
 {
-    private $version = '$VERSION$';
-    private $repo = '$URL$';
     private $config = [];
     private $user;
-    private $pregMedia =
-        '/\.(gif|jpe?g|png)$/i'; // files matching this are considered media
 
-    private $wikiDirFS = '';       // e.g. /var/www/www.mysite.com/mywiki
     private $contentDirFS = '';    // e.g. /var/www/www.mysite.com/mywiki/data/content
     private $contentFileFS = 'na'; // e.g. /var/www/www.mysite.com/mywiki/data/content/animal/lion.md
     private $wikiRoot = '';        // url-parent-folder of the wiki, e.g. /mywiki
     private $wikiPath = '/';       // current document path within the wiki, e.g. /animal/lion
 
-    private $metadata = [];   // yaml front matter for a content
-    private $content = '';    // the markdown body for a content
+    private $metadata = [];        // yaml front matter for a content
+    private $content = '';         // the markdown body for a content
 
-    private $macros = [];     // array of {{macro ...}} handlers
+    private $filters = [];
+    private $plugins = [];
 
     /**
      * Constructor
@@ -61,14 +60,14 @@ class Wiki
         $this->user = $user;
 
         // wiki path + files
-        $this->wikiDirFS = dirname(dirname(__FILE__)); // Wiki.php is in the ../core folder
-        $this->contentDirFS = $this->wikiDirFS . '/' . ($this->config['datafolder'] ?? 'data') . '/content';
-        $this->wikiRoot = substr($this->wikiDirFS, strlen($_SERVER['DOCUMENT_ROOT']));
+        $wikiDirFS = dirname(dirname(__FILE__)); // WikiCore.php is in the ../core folder
+        $this->contentDirFS = $wikiDirFS . '/data/content';
+        $this->wikiRoot = substr($wikiDirFS, strlen($_SERVER['DOCUMENT_ROOT']));
 
-        // register core macros
-        $this->registerMacro('include', function (?string $primary, ?array $secondary, string $path) {
-            return $this->resolveMacroInclude($primary, $secondary, $path);
-        });
+        // register core filters
+        $this->registerFilterFixLinks();
+        $this->registerFilterIndentHeadlines();
+        $this->registerFilterBrokenLinks();
     }
 
     /**
@@ -89,7 +88,7 @@ class Wiki
 
         // assemble absolute fs url
         $this->wikiPath = $wikiPath;
-        $this->contentFileFS = $this->wikiPathToContentFile($this->wikiPath);
+        $this->contentFileFS = $this->wikiPathToContentFileFS($this->wikiPath);
 
         // if this is both a file and a folder, redirect to the folder instead
         if (is_dir(preg_replace('/\.md$/', '/', $this->contentFileFS))) {
@@ -100,60 +99,27 @@ class Wiki
     }
 
     /**
-     * Load the content for this page from the filesystem.
-     */
-    private function loadFS(): void
-    {
-        list($this->metadata, $this->content) = $this->loadFile($this->contentFileFS, true);
-    }
-
-    // ----------------------------------------------------------------------
-    // --- content access for theme files -----------------------------------
-    // ----------------------------------------------------------------------
-
-    /**
      * Get the wiki.md version.
      *
      * @return string SemVer version, e.g. '1.0.2'.
      */
     public function getVersion(): string
     {
-        return $this->version;
+        return '$VERSION$';
     }
 
-    /**
-     * Get the wiki.md source code repository URL.
-     *
-     * @return string Link to repo/homepage.
-     */
-    public function getRepo(): string
-    {
-        return $this->repo;
-    }
+    // -------------------------------------------------------------------------
+    // --- various paths & converters ------------------------------------------
+    // -------------------------------------------------------------------------
 
     /**
-     * Check if the current wiki page exists.
+     * Get the full filesystem path to the wiki's content directory.
      *
-     * @return boolean True, if the current path matches a page. False if not.
+     * @return string URI Path, e.g. '/var/www/www.mysite.com/mywiki/data/content'.
      */
-    public function exists(): bool
+    public function getContentDirFS(): string
     {
-        return is_file($this->contentFileFS);
-    }
-
-    /**
-     * Check if the current wiki page is a media object (image, ...).
-     *
-     * @return boolean True, if so. False if not.
-     */
-    public function isMedia(): bool
-    {
-        if (preg_match($this->pregMedia, $this->contentFileFS)) {
-            if (is_file($this->contentFileFS)) {
-                return true;
-            };
-        }
-        return false;
+        return $this->contentDirFS;
     }
 
     /**
@@ -180,6 +146,27 @@ class Wiki
     }
 
     /**
+     * Get the user-visible folder for a wikiPath.
+     *
+     * In case wiki.md was installed in a sub-directory, the returned path does not
+     * contain that.
+     *
+     * @param string $wikiPath WikiPath to find the folder for. If null (default)
+     *               the current page will be used.
+     * @return string URI Path, e.g. '/animal/'.
+     */
+    public function getWikiPathParentFolder(string $wikiPath = null): string
+    {
+        $wikiPath = $wikiPath ?? $this->wikiPath;
+        if ($wikiPath[-1] === '/') { // README / it's own folder
+            return $wikiPath;
+        } else {
+            $dir = dirname($wikiPath);
+            return $dir === '/' ? $dir : $dir . '/'; // auto-append slash
+        }
+    }
+
+    /**
      * Get the parent directory of the wiki.
      *
      * @return string URL Path, e.g. '/mywiki'.
@@ -190,25 +177,197 @@ class Wiki
     }
 
     /**
-     * Return the absolute server path wiki.md is installed in.
+     * Get the full URL path including potential parent folders.
      *
-     * This might be the docroot or a subfolder.
-     *
-     * @return string URL Path, e.g. '/var/www/www.mysite.com/mywiki'.
+     * @param string (Optional) WikiPath. If non is provided, the current page
+     *               is used.
+     * @return string URL Path, e.g. '/mywiki/animal/lion'.
      */
-    public function getWikiDirFS(): string
+    public function getLocation(string $wikiPath = null): string
     {
-        return $this->wikiDirFS;
+        $wikiPath = $wikiPath ?? $this->wikiPath;
+        return $this->wikiRoot . $wikiPath;
     }
 
     /**
-     * Get the full url path including the url root.
+     * Resolve an (partly) absolute or relative wikiPath in relation to the
+     * current wiki path into an absolute wikiPath.
      *
-     * @return string URL Path, e.g. '/mywiki/animal/lion'.
+     * If wiki.md was installed in a subfolder, the resolved path will be absolute
+     * within that subfolder, but not contain the subfolder.
+     *
+     * @param string $path Path to convert, e.g. `animal/../rock/granite`.
+     * @return string Resolved path, e.g. `/rock/granite`. Null if invalid (e.g.
+     *                outside root).
      */
-    public function getLocation(): string
+    public function canonicalWikiPath(string $wikiPath): ?string
     {
-        return $this->wikiRoot . $this->wikiPath;
+        $absPath = preg_replace('/\/$/', '/.', $wikiPath); // treat folder as dot-file
+        if ($absPath[0] === '/') {
+            // absolute path
+            return $this->realpath($absPath);
+        } else {
+            // (probably) relative path
+            return $this->realpath(dirname($this->wikiPath) . '/' . $absPath);
+        }
+    }
+
+    /**
+     * Map URL path to markdown file.
+     *
+     * - /path/to/folder/ -> /path/to/folder/README.md
+     * - /path/to/item > /path/to/item.md
+     *
+     * @param string $wikiPath Path to lookup.
+     * @return mixed Path (string) to file or FALSE if not found.
+     */
+    public function wikiPathToContentFileFS(
+        string $wikiPath
+    ): string {
+        if ($wikiPath[-1] === '/') { // folder
+            $postfix = 'README.md';
+        } else { // page
+            $postfix = '.md';
+        }
+        return $this->contentDirFS . $wikiPath . $postfix;
+    }
+
+    /**
+     * Find the wiki-path of a content filename. E.g.
+     *
+     * /var/www/content/path/to/page.md -> /path/to/page
+     * /var/www/content/path/to -> /path/to
+     * /var/www/content/page.md -> /
+     *
+     * @param string $filename Filename to lookup.
+     * @return string Wiki path.
+     */
+    public function contentFileFSToWikiPath(
+        string $filename
+    ): string {
+        $path = substr($filename, strlen($this->contentDirFS));
+        $path = preg_replace('/.md$/', '', $path);
+        $path = preg_replace('/README$/', '', $path);
+        return $path;
+    }
+
+    /**
+     * Convert potentially relative path to abolute path.
+     *
+     * Files do not have to actually exist for this to work.
+     *
+     * @param string $filename Path to convert.
+     * @return string Path with all ./.. removed/resolved.
+     */
+    protected function realpath(string $filename): ?string
+    {
+        // $this->assertEquals('/animal/lion/', $method->invokeArgs($wiki, ['/animal/lion/']));
+
+        if ($filename === '') {
+            $filename = '.';
+        }
+        if ($filename[0] === '/') { // do we have to keep a leading slash?
+            $prefix = '/';
+        } else {
+            $prefix = '';
+        }
+        if ($filename[-1] === '/') { // do we have to keep a trailing slash?
+            $postfix = '/';
+        } elseif ($filename[-1] === '.' && strpos($filename, '/') !== false) { // do we have to add a trailing slash?
+            $postfix = '/';
+        } else {
+            $postfix = '';
+        }
+
+        $path = [];
+        foreach (explode('/', $filename) as $part) {
+            if (empty($part) || $part === '.') { // ignore parts that have no value
+                continue;
+            } elseif ($part !== '..') { // valid part
+                array_push($path, $part);
+            } elseif (count($path) > 0) { // going up via '..'
+                array_pop($path);
+            } else { // can't go beyond root
+                return null;
+            }
+        }
+        if (count($path) <= 0 && $prefix === $postfix) {
+            return $prefix; // avoid double slash
+        }
+        return $prefix . join('/', $path) . $postfix;
+    }
+
+    // -------------------------------------------------------------------------
+    // --- permissions ---------------------------------------------------------
+    // -------------------------------------------------------------------------
+
+    /**
+     * Check if the current user may read/view a path.
+     *
+     * @param string $path The path to check the permission for. Defaults to current wikiPath.
+     * @return boolean True, if permissions are sufficient. False otherwise.
+     */
+    public function mayCreatePath(
+        ?string $path = null
+    ): bool {
+        return $this->user->hasPermission('pageCreate', $path ?? $this->wikiPath);
+    }
+
+    /**
+     * Check if the current user may edit/create a path.
+     *
+     * @param string $path The path to check the permission for. Defaults to current wikiPath.
+     * @return boolean True, if permissions are sufficient. False otherwise.
+     */
+    public function mayReadPath(
+        ?string $path = null
+    ): bool {
+        return $this->user->hasPermission('pageRead', $path ?? $this->wikiPath);
+    }
+
+    /**
+     * Check if the current user may read/view a path.
+     *
+     * @param string $path The path to check the permission for. Defaults to current wikiPath.
+     * @return boolean True, if permissions are sufficient. False otherwise.
+     */
+    public function mayUpdatePath(
+        ?string $path = null
+    ): bool {
+        return $this->user->hasPermission('pageUpdate', $path ?? $this->wikiPath);
+    }
+
+    /**
+     * Check if the current user may edit/create a path.
+     *
+     * @param string $path The path to check the permission for. Defaults to current wikiPath.
+     * @return boolean True, if permissions are sufficient. False otherwise.
+     */
+    public function mayDeletePath(
+        ?string $path = null
+    ): bool {
+        return $this->user->hasPermission('pageDelete', $path ?? $this->wikiPath);
+    }
+
+    // -------------------------------------------------------------------------
+    // --- content access for theme/plugin files -------------------------------
+    // -------------------------------------------------------------------------
+
+    /**
+     * Check if a wiki page exists.
+     *
+     * @param $wikiPath WikiPath to check. If none/null, the currently loaded
+     *                  page is checked.
+     * @return boolean True, if the current path matches a page. False if not.
+     */
+    public function exists(string $wikiPath = null): bool
+    {
+        if ($wikiPath === null) {
+            return is_file($this->contentFileFS);
+        } else {
+            $wikiPath = $this->canonicalWikiPath($wikiPath);
+            return $wikiPath === null ? false : is_file($this->wikiPathToContentFileFS($wikiPath));
+        }
     }
 
     /**
@@ -260,15 +419,23 @@ class Wiki
     }
 
     /**
+     * Get the current wiki page's history.
+     *
+     * @return Array History.
+     */
+    public function getHistory(): ?array
+    {
+        return $this->metadata['history'];
+    }
+
+    /**
      * Get the HTML content for the current wiki page.
      *
      * @return string HTML snippet for the content part of this page.
      */
     public function getContentHTML(): string
     {
-        return $this->markdown2Html(
-            $this->preprocessMarkdown($this->content, $this->contentFileFS)
-        );
+        return $this->markupToHTML($this->content, $this->contentFileFS);
     }
 
     /**
@@ -295,7 +462,8 @@ class Wiki
     ): string {
         // fetch html for snippet
         $filename = $this->contentDirFS . $this->findSnippetPath("_$snippetName.md");
-        $html = $this->getHTML($filename);
+        list($metadata, $content) = $this->loadFile($filename);
+        $html = $this->markupToHTML($content, $filename);
 
         // convert headlines to look-alike divs
         $html = preg_replace('/<h([1-6])>/', '<div class="h$1">', $html);
@@ -305,28 +473,23 @@ class Wiki
     }
 
     /**
-     * Load a content file as HTML.
+     * Convert markup to HTML.
      *
-     * @param string $markdownPath Absolute path to .md file.
-     * @return string Rendered HTML.
+     * Will apply all markup and html filters.
+     *
+     * @param string $markup The raw markup to render.
+     * @param string $pathFS The absolute path to the content (e.g. for macros).
+     * @return string HTML version.
      */
-    public function getHTML(
-        string $markdownPath
+    public function markupToHTML(
+        string $markup,
+        string $pathFS
     ): string {
-        list($snippetMetadata, $snippetContent) = $this->loadFile($markdownPath);
-        return $this->markdown2Html(
-            $this->preprocessMarkdown($snippetContent, $markdownPath)
-        );
-    }
-
-    /**
-     * Get the current wiki page's history.
-     *
-     * @return Array History.
-     */
-    public function getHistory(): ?array
-    {
-        return $this->metadata['history'];
+        $markup = $this->runFilters('raw', $markup, $pathFS);
+        $markup = $this->runFilters('markup', $markup, $pathFS);
+        $html = $this->markdown2Html($markup);
+        $html = $this->runFilters('html', $html, $pathFS);
+        return $html;
     }
 
     /**
@@ -341,8 +504,8 @@ class Wiki
     public function revertToVersion(
         int $version
     ): bool {
-        if ($this->user->mayRead($this->wikiPath) && $this->user->mayUpdate($this->wikiPath)) {
-            $this->loadFS();
+        if ($this->mayReadPath() && $this->mayUpdatePath()) {
+            $this->load();
 
             if ($this->isDirty()) {
                 // direct changes in the FS prevent the history from working
@@ -377,7 +540,7 @@ class Wiki
     {
         if ($encodedDiff !== null) {
             $diff = gzuncompress(base64_decode($encodedDiff));
-            $this->content = \at\nerdreich\UDiff::patch($this->content, $diff, true);
+            $this->content = \at\nerdreich\wiki\UDiff::patch($this->content, $diff, true);
         }
     }
 
@@ -398,193 +561,143 @@ class Wiki
         }
     }
 
-    // ----------------------------------------------------------------------
-    // --- {{macro}} handling  ----------------------------------------------
-    // ----------------------------------------------------------------------
+    // -------------------------------------------------------------------------
+    // --- plugin handling  ----------------------------------------------------
+    // -------------------------------------------------------------------------
 
-    public function registerMacro(
+    /**
+     * Add/register a plugin.
+     *
+     * @param string $name Name of plugin, e.g. 'media'.
+     * @param object $plugin The plugin.
+     */
+    public function registerPlugin(
         string $name,
+        object $plugin
+    ): void {
+        $this->plugins[$name] = $plugin;
+    }
+
+    /**
+     * Access a registered/loaded plugin.
+     *
+     * @param string $name Name of plugin, e.g. 'media'.
+     * @return object The plugin.
+     */
+    public function getPlugin(
+        string $name
+    ): ?object {
+        return $this->plugins[$name];
+    }
+
+    // -------------------------------------------------------------------------
+    // --- filter handling  ----------------------------------------------------
+    // -------------------------------------------------------------------------
+
+    /**
+     * Add a filter to be executed during content delivery.
+     *
+     * @param string $hook When this filter should be run ('markup' or 'html').
+     * @param string $filterName Name of this filter.
+     * @param callable $handler A function (string, string): string filter.
+     */
+    public function registerFilter(
+        string $hook,
+        string $filterName,
         callable $handler
     ): void {
-        $this->macros[$name] = $handler;
+        $this->filters[$hook][$filterName] = $handler;
     }
 
     /**
-     * Split a {{macro}} into its components.
+     * Improve markdown for rendering.
      *
-     * @param string $macro The macro including curly braces.
-     * @return array The components: name, primary parameter, secondary parameters.
+     * Will apply all markup postprocess filters.
+     *
+     * @param string $markdown The Markdown content to apply the filters to.
+     * @param string $fsPath The absolute fs-path to the content.
+     * @return string Updated content.
      */
-    public static function splitMacro(
-        string $macro
-    ): array {
-        $macro = str_replace("\n", ' ', trim($macro));
-
-        // check for macros without parameter
-        if (preg_match_all('/{{\s*([^\s]+)\s*}}/', $macro, $matches)) {
-            $command = trim($matches[1][0]);
-            return [$command, null, null];
-        }
-
-        // now check for macro with only primary parameter
-        if (preg_match_all('/{{\s*([^\s|]+)\s+([^\s|]+)\s*}}/', $macro, $matches)) {
-            $command = trim($matches[1][0]);
-            $primary = trim($matches[2][0]);
-            return [$command, $primary, null];
-        }
-
-        // check for macro with extended secondary parameter
-        if (preg_match_all('/{{\s*([^\s]+)\s+([^|]+)\s*\|(.*)}}/', $macro, $matches)) {
-            $command = trim($matches[1][0]);
-            $primary = trim($matches[2][0]);
-            $secondary = [];
-            $secondaryPairs = explode('|', trim($matches[3][0]));
-            foreach ($secondaryPairs as $secondaryPair) {
-                list($key, $value) = explode('=', $secondaryPair);
-                $secondary[trim($key)] = trim($value);
-            }
-            return [$command, $primary, $secondary];
-        }
-
-        return [null, null, null];
-    }
-
-    protected function realpath(string $filename): ?string
-    {
-        if (preg_match('/\/$/', $filename)) {
-            // if this is a file, we switch to it's folder
-            $filename = dirname($filename);
-        }
-
-        $path = [];
-        foreach (explode('/', $filename) as $part) {
-            if (empty($part) || $part === '.') { // ignore parts that have no value
-                continue;
-            } elseif ($part !== '..') { // valid part
-                array_push($path, $part);
-            } elseif (count($path) > 0) { // going up via '..'
-                array_pop($path);
-            } else { // can't go beyond root
-                return null;
-            }
-        }
-        $path = '/' . join('/', $path);
-
-        return $path;
-    }
-
-    /**
-     * Resolve an (partly) absolute or relative wikiPath in relation to the
-     * current wiki path into an absolute wikiPath.
-     *
-     * If wiki.md was installed in a subfolder, the resolved path will be absolute
-     * within that subfolder, but not contain the subfolder.
-     *
-     * @param string $path Path to convert, e.g. `animal/../rock/granite`.
-     * @return string Resolved path, e.g. `/rock/granite`.
-     */
-    private function canonicalWikiPath(string $wikiPath): ?string
-    {
-        $absPath = preg_replace('/\/$/', '/.', $wikiPath); // treat folder as dot-file
-        if (strpos($absPath, '/') === 0) {
-            // absolute path
-            $absPath = $this->realpath($absPath);
-        } else {
-            // (probably) relative path
-            $absPath = $this->realpath(dirname($this->wikiPath) . '/' . $absPath);
-        }
-
-        if ($absPath === null) { // relative path went out of wiki dir
-            return null;
-        }
-
-        // keep a trailing slash but avoid doubles for the root
-        if (preg_match('/\/$/', $wikiPath)) {
-            $absPath = $absPath === '/' ? '/' : $absPath . '/';
-        }
-
-        return strlen($absPath) > 0 ? $absPath : '/';
-    }
-
-    /**
-     * Expand a {{include ...}} macro.
-     *
-     * @param string $primary The primary parameter. Path to file to include. Can be relative.
-     * @param array $options The secondary parameters. Not used.
-     * @param string $pathFS Absolute path to file containing the macro (for relative processing).
-     * @return string Expanded macro.
-     */
-    private function resolveMacroInclude(
-        ?string $includePath,
-        ?array $options,
-        string $pathFS
+    private function runFilters(
+        string $hook,
+        string $markdown,
+        string $fsPath
     ): string {
-        if ($includePath === null || $includePath === '') {
-            return '{{error include-invalid}}';
+        foreach ($this->filters[$hook] ?? [] as $filter) {
+            $markdown = $filter($markdown, $fsPath);
         }
-
-        // first we convert the caller (an absolute path to a content file) back to its wikiPath
-        $wikiPathCaller = substr(preg_replace('/.md$/', '', $pathFS), strlen($this->contentDirFS));
-        $wikiPathCaller = preg_replace('/README$/', '', $wikiPathCaller);
-
-        // now we need to convert the potentially relative $includePath in an absolute $wikiPath
-        if (strpos($includePath, '/') === 0) { // absolute include
-            $wikiPath = $this->canonicalWikiPath($includePath);
-        } else { // relative include
-            if (preg_match('/\/$/', $wikiPathCaller)) { // included by a folder
-                $wikiPath = $this->canonicalWikiPath($wikiPathCaller . '/' . $includePath);
-            } else { // included by a file/page
-                $wikiPath = $this->canonicalWikiPath(dirname($wikiPathCaller) . '/' . $includePath);
-            }
-        }
-
-        // deny caller walking up too far / outside the wiki dir
-        if ($wikiPath === null) {
-            return '{{error include-permission-denied}}';
-        }
-
-        // now we fetch the included file's content if possible
-        $includeFileFS = $this->wikiPathToContentFile($wikiPath);
-        if ($this->user->mayRead($wikiPath)) {
-            if (is_file($includeFileFS)) {
-                return $this->getHTML($includeFileFS);
-            } else {
-                return '{{error include-not-found}}';
-            }
-        } else {
-            return '{{error include-permission-denied}}';
-        }
+        return $markdown;
     }
 
     /**
-     * Expand all {{...}} macros with their dynamic content.
+     * Filter: Convert relative to absolute links in Markdown content.
      *
-     * @param string $markdown A markdown body of a page or snippet.
-     * @param string $pathFS Absolute path to file containing the macros (for relative processing).
-     * @return string New markdown with all macros expanded.
+     * Particularly usefull to fix snippets, which contain links relative to
+     * the snippet location, not to the page location that includes them.
      */
-    private function resolveMacros(
-        string $body,
-        string $pathFS
-    ): string {
-        if (preg_match_all('/{{[^}]*}}/', $body, $matches)) {
-            foreach ($matches[0] as $macro) {
-                list($command, $primary, $secondary) = $this->splitMacro($macro);
-                if (array_key_exists($command, $this->macros)) {
-                    $body = str_replace(
-                        $macro,
-                        $this->macros[$command]($primary, $secondary, $pathFS),
-                        $body
-                    );
+    private function registerFilterFixLinks(): void
+    {
+        $this->registerFilter('markup', 'markdownFixLinks', function (string $markdown, string $fsPath): string {
+            $folder = $this->getWikiPathParentFolder($this->contentFileFSToWikiPath($fsPath));
+
+            // add absolute path to all relative links
+            preg_match_all('/\[([^]]*)\]\(([^)]*)\)/', $markdown, $matches);
+            list($matchFull, $matchText, $matchLink) = $matches;
+            for ($index = 0; $index < count($matchLink); $index++) {
+                if ($matchLink[$index][0] === '/') { // skip absolute urls and //-urls
+                    continue;
                 }
+                if (preg_match('/^https?:/', $matchLink[$index])) { // skip http[s]: links
+                    continue;
+                }
+                $markdown = str_replace($matchFull[$index], '[' . $matchText[$index] . ']('
+                    . $this->getLocation($folder . $matchLink[$index]) . ')', $markdown);
             }
-        }
-        return $body;
+            return $markdown;
+        });
     }
 
-    // ----------------------------------------------------------------------
-    // --- file handling  ---------------------------------------------------
-    // ----------------------------------------------------------------------
+    /**
+     * Filter: Mark internal links to non-exisiting pages 'broken'.
+     *
+     * For performance reasons, this will only run when a user is logged-in.
+     */
+    private function registerFilterBrokenLinks(): void
+    {
+        $this->registerFilter('markup', 'markdownDeadLinks', function (string $markdown, string $fsPath): string {
+            if ($this->user->isLoggedIn()) {
+                $folder = $this->getWikiPathParentFolder($this->contentFileFSToWikiPath($fsPath));
+
+                $markdown = preg_replace_callback('/\[([^]]*)\]\(([^)]*)\)/', function ($matches) {
+                    list($matchFull, $matchText, $matchLink) = $matches;
+                    if (preg_match('/^https?:/', $matchLink)) { // skip http[s]: links
+                        return $matchFull;
+                    }
+                    if (!$this->exists($matchLink)) {
+                        return $matchFull . '{.broken}';
+                    }
+                    return $matchFull;
+                }, $markdown);
+            }
+            return $markdown;
+        });
+    }
+
+    /**
+     * Filter: Make all headlines one level deeper.
+     *
+     * This is neede as the page will get a <h1> based on the page title.
+     */
+    private function registerFilterIndentHeadlines(): void
+    {
+        $this->registerFilter('markup', 'markdownIndentHeadlines', function (string $markdown, string $fsPath): string {
+            return preg_replace('/^#/m', '##', $markdown);
+        });
+    }
+
+    // -------------------------------------------------------------------------
+    // --- file handling  ------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     /**
      * Read a file's content.
@@ -594,7 +707,7 @@ class Wiki
      * @param $filename Path to file to read.
      * @return Content, nor null if file could not be read.
      */
-    private function fileReadContent(
+    private function readContentFS(
         string $filename
     ): string {
         $contents = null;
@@ -620,16 +733,16 @@ class Wiki
      * @param $content Data to write into file.
      * @return Content, nor null if file could not be read.
      */
-    private function fileWriteContent(
+    private function writeContentFS(
         string $filename,
         string $content
     ): bool {
         return file_put_contents($filename, $content, LOCK_EX) !== false;
     }
 
-    // ----------------------------------------------------------------------
-    // --- page management --------------------------------------------------
-    // ----------------------------------------------------------------------
+    // -------------------------------------------------------------------------
+    // --- page management -----------------------------------------------------
+    // -------------------------------------------------------------------------
 
     /**
      * Determine if the file has been changed on disk.
@@ -679,9 +792,9 @@ class Wiki
      */
     public function editPage(): bool
     {
-        if ($this->user->mayRead($this->wikiPath) && $this->user->mayUpdate($this->wikiPath)) {
-            if (is_file($this->contentFileFS)) {
-                $this->loadFS();
+        if ($this->mayReadPath() && $this->mayUpdatePath()) {
+            if ($this->exists()) {
+                $this->load();
                 if (!array_key_exists('edit', $this->metadata)) {
                     $this->metadata['edit'] = date(\DateTimeInterface::ATOM); // mark wip
                     $this->metadata['editBy'] = $this->user->getSessionToken();
@@ -732,7 +845,7 @@ class Wiki
         string $newContent,
         bool $updateMetadata = true
     ) {
-        $diff = \at\nerdreich\UDiff::diff($this->content, $newContent);
+        $diff = \at\nerdreich\wiki\UDiff::diff($this->content, $newContent);
         $this->content = $newContent;
 
         if ($updateMetadata) {
@@ -765,7 +878,7 @@ class Wiki
      */
     private function fixDirtyPage()
     {
-        if (is_file($this->contentFileFS)) { // 2nd+ save
+        if ($this->exists()) { // 2nd+ save
             if ($this->metadata['history'] === null) { // no history = legacy .md file
                 // start a new history
                 $this->metadata['history'] = [];
@@ -781,7 +894,7 @@ class Wiki
             $this->metadata['title'] = '';
             $this->metadata['hash'] = hash('sha1', $this->content);
             $this->persist();
-            $this->loadFS();
+            $this->load();
         }
     }
 
@@ -798,8 +911,8 @@ class Wiki
         string $title,
         string $author
     ): bool {
-        if ($this->user->mayUpdate($this->wikiPath)) {
-            $this->loadFS();
+        if ($this->mayUpdatePath($this->wikiPath)) {
+            $this->load();
 
             // did someone edited the .md file directly in the filesystem?
             if ($this->isDirty()) {
@@ -816,8 +929,7 @@ class Wiki
 
             // update other metadata
             $this->metadata['date'] = date(\DateTimeInterface::ATOM);
-            $this->metadata['title'] = $this->cleanupSingeLineText($title);
-            $author = $this->cleanupSingeLineText($author);
+            $this->metadata['title'] = $title;
             $this->metadata['author'] = $author !== '' ? $author : '???';
             unset($this->metadata['edit']);
             unset($this->metadata['editBy']);
@@ -844,12 +956,20 @@ class Wiki
         }
 
         // write out new content
-        $mtime = $keepmtime && is_file($this->contentFileFS) ? filemtime($this->contentFileFS) : time();
-        $this->fileWriteContent(
+        $mtime = $keepmtime && $this->exists() ? filemtime($this->contentFileFS) : time();
+        $this->writeContentFS(
             $this->contentFileFS,
             \Spyc::YAMLDump($this->metadata) . "---\n" . trim($this->content) . "\n"
         );
         touch($this->contentFileFS, $mtime);
+    }
+
+    /**
+     * Load the content for this page from the filesystem.
+     */
+    private function load(): void
+    {
+        list($this->metadata, $this->content) = $this->loadFile($this->contentFileFS, true);
     }
 
     /**
@@ -860,14 +980,14 @@ class Wiki
      *
      * @return True if page was created. False if user is not allowed.
      */
-    public function createPage(): bool
+    public function create(): bool
     {
-        if ($this->user->mayCreate($this->wikiPath)) {
+        if ($this->mayCreatePath($this->wikiPath)) {
             // reset internal data to empty page
             $this->metadata = [];
             $this->metadata['date'] = date(\DateTimeInterface::ATOM);
             $this->content = '';
-            $this->contentFileFS = $this->contentDirFS . '/' . $this->wikiPath . '.md';
+            $this->contentFileFS = $this->wikiPathToContentFileFS($this->wikiPath);
 
             // prefill title
             $this->metadata['title'] = str_replace('_', ' ', basename($this->wikiPath)); // underscore to spaces
@@ -894,8 +1014,8 @@ class Wiki
      */
     public function deletePage(bool $dryRun = false): bool
     {
-        if ($this->user->mayDelete($this->wikiPath)) {
-            $this->loadFS();
+        if ($this->mayDeletePath($this->wikiPath)) {
+            $this->load();
             if ($this->exists()) {
                 if (!$dryRun) {
                     rename(
@@ -928,17 +1048,17 @@ class Wiki
      */
     public function readPage(): bool
     {
-        if ($this->user->mayRead($this->wikiPath)) {
-            $this->loadFS();
+        if ($this->mayReadPath()) {
+            $this->load();
             return true;
         }
 
         return false;
     }
 
-    // ----------------------------------------------------------------------
-    // --- Content: Markdown & Meta -----------------------------------------
-    // ----------------------------------------------------------------------
+    // -------------------------------------------------------------------------
+    // --- Content: Markdown & Meta --------------------------------------------
+    // -------------------------------------------------------------------------
 
     /**
      * Extract the YAML front matter from a file's content.
@@ -976,27 +1096,27 @@ class Wiki
     }
 
     /**
-     * Render Raw Markdown content to HTML.
+     * Render raw Markdown content to HTML.
      *
-     * @param string $markdown Markdown content.
+     * @param string $markup Markdown content.
      * @return string HTML.
      */
     private function markdown2Html(
-        string $markdown
+        string $markup
     ): string {
         $parser = new \ParsedownExtra();
-        return $parser->text($markdown);
+        return $parser->text($markup);
     }
 
     /**
-     * Extract the Markdown part from a file's content.
+     * Extract the markup part from a file's content.
      *
      * This just skips an (optional) YAML front matter part.
      *
      * @param string $content A file's raw content.
-     * @return string Markdown part of this content.
+     * @return string Markup part of this content.
      */
-    private function extractMarkdown(
+    private function extractMarkup(
         string $content
     ): string {
         $skip = 0;
@@ -1005,59 +1125,6 @@ class Wiki
             $skip = $skip < 0 ? 0 : $skip + 4;
         }
         return trim(substr($content, $skip));
-    }
-
-    /**
-     * Convert relative to absolute links in Markdown content.
-     *
-     * Particularly usefull to fix snippets, which contain links relative to
-     * the snippet location, not to the page location that includes them.
-     *
-     * @param string $markdown The Markdown content to fix.
-     * @param string $fsPath The absolute folder this content is actually in.
-     * @return string Fixed Markdown.
-     */
-    private function fixLinks(
-        string $markdown,
-        string $fsPath
-    ): string {
-        $folder = dirname($this->findURLPathForContentFile($fsPath));
-        $folder = $folder === '/' ? '' : $folder;
-        // add absolute path to all relative links
-        //$markdown = preg_replace('/\]\(([^\/?])/', '](' . $folder . '/$1', $markdown);
-        preg_match_all('/\[([^]]*)\]\(([^)]*)\)/', $markdown, $matches);
-        list($matchFull, $matchText, $matchLink) = $matches;
-        for ($index = 0; $index < count($matchLink); $index++) {
-            if ($matchLink[$index][0] === '/') { // skip absolute urls and //-urls
-                continue;
-            }
-            if (preg_match('/^https?:/', $matchLink[$index])) { // skip http[s]: links
-                continue;
-            }
-            $markdown = str_replace($matchFull[$index], '[' . $matchText[$index] . ']('
-                . $this->wikiRoot . $folder . '/' . $matchLink[$index] . ')', $markdown);
-        }
-        return $markdown;
-    }
-
-    /**
-     * Improve markdown for rendering.
-     *
-     * Will resolve relative links, fix headline depth, resolve macros ...
-     *
-     * @param string $markdown The Markdown content to fix.
-     * @param string $fsPath The absolute fs-path to the content.
-     * @return string Preprocessed Markdown.
-     */
-    private function preprocessMarkdown(
-        string $markdown,
-        string $fsPath
-    ): string {
-        // Make all Headlines one level deeper (# -> ##).
-        $markdown = preg_replace('/^#/m', '##', $markdown);
-        $markdown = $this->fixLinks($markdown, $fsPath);
-        $markdown = $this->resolveMacros($markdown, $fsPath);
-        return $markdown;
     }
 
     /**
@@ -1074,7 +1141,7 @@ class Wiki
     ): array {
         // load data
         if ($filename !== false && is_file($filename)) {
-            $content = $this->fileReadContent($filename);
+            $content = $this->readContentFS($filename);
         } else {
             $content = '';
         }
@@ -1086,7 +1153,7 @@ class Wiki
         }
 
         // load page content
-        $markdown = $this->extractMarkdown($content);
+        $markdown = $this->extractMarkup($content);
 
         // done
         return array($yaml, $markdown);
@@ -1114,60 +1181,6 @@ class Wiki
     }
 
     /**
-     * Map URL path to markdown file.
-     *
-     * - /path/to/folder/ -> /path/to/folder/README.md
-     * - /path/to/item > /path/to/item.md
-     *
-     * @param string $wikiPath Path to lookup.
-     * @return mixed Path (string) to file or FALSE if not found.
-     */
-    private function wikiPathToContentFile(
-        string $wikiPath
-    ): string {
-        if (preg_match($this->pregMedia, $wikiPath)) { // image etc.
-            return $this->contentDirFS . dirname($wikiPath) . '/_media/' . basename($wikiPath);
-        } else { // Markdown file
-            if (preg_match('/\/$/', $wikiPath)) { // folder
-                $postfix = 'README.md';
-            } else { // page
-                $postfix = '.md';
-            }
-            return $this->contentDirFS . $wikiPath . $postfix;
-        }
-    }
-
-    /**
-     * Find the wiki-path of a content filename. E.g.
-     *
-     * /var/www/content/path/to/page.md -> /path/to/page
-     * /var/www/content/path/to -> /path/to
-     * /var/www/content/page.md -> /
-     *
-     * @param string $filename Filename to lookup.
-     * @return string Wiki path.
-     */
-    public function findURLPathForContentFile(
-        string $filename
-    ): string {
-        $path = substr($filename, strlen($this->contentDirFS));
-        $path = preg_replace('/.md$/', '', $path);
-        return $path;
-    }
-
-    /**
-     * Remove bad stuff from single-line inputs.
-     *
-     * @param string $text Value of an <input>.
-     * @return string Trimmed value with extra whitspace removed.
-     */
-    private function cleanupSingeLineText(
-        string $text
-    ): string {
-        return preg_replace('/\s+/', ' ', trim($text));
-    }
-
-    /**
      * Log a file change.
      */
     private function addToChangelog(): void
@@ -1175,11 +1188,29 @@ class Wiki
         $changelog = $this->contentDirFS . '/CHANGELOG.md';
         touch($changelog); // make sure file exists
 
-        $log = '* [' . $this->getTitle() . '](' . $this->getWikiPath() . ')'
+        $log = '* [' . $this->getTitle() . '](' . $this->wikiPath . ')'
             . ' ' . $this->getAuthor()
             . ' ' . $this->metadata['date']
             . PHP_EOL;
 
-        $this->fileWriteContent($changelog, $log . $this->fileReadContent($changelog), LOCK_EX);
+        $this->writeContentFS($changelog, $log . $this->readContentFS($changelog), LOCK_EX);
     }
+}
+
+abstract class WikiPlugin // phpcs:ignore PSR1.Classes.ClassDeclaration.MultipleClasses
+{
+    protected $wiki;
+    protected $config;
+    protected $core;
+    public $user;
+
+    public function __construct($wiki, $core, $user, $config)
+    {
+        $this->wiki = $wiki;
+        $this->core = $core;
+        $this->user = $user;
+        $this->config = $config;
+    }
+
+    abstract public function setup();
 }

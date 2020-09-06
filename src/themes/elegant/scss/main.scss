@@ -14,9 +14,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
 
-@import '../../../node_modules/bootstrap/scss/bootstrap-reboot';
-@import '../../../node_modules/bootstrap/scss/bootstrap-grid';
-@import '../../../node_modules/bootstrap/scss/mixins/breakpoints';
+@import '../../../../node_modules/bootstrap/scss/bootstrap-reboot';
+@import '../../../../node_modules/bootstrap/scss/mixins/breakpoints';
 
 // --- our stuff ----------------------------------------------------------
 
@@ -26,7 +25,7 @@
 @import 'themes/colors';
 @import 'themes/elegant';
 
-@import 'layout/layout';
+@import 'layout/grid';
 @import 'layout/sections';
 
 @import 'base/typography';

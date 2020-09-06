@@ -18,7 +18,7 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace at\nerdreich;
+namespace at\nerdreich\wiki;
 
 /**
  * A simple PHP unified diff implementation.
@@ -98,26 +98,28 @@ class UDiff
 
         // find and apply chunks (starting with @@)
         foreach (explode("\n", str_replace("\r", '', $diff)) as $diffLine) {
-            if (preg_match('/^@@/', $diffLine)) {
-                list($fromA, $lengthA, $fromB, $lengthB) = UDiff::parsePatch($diffLine);
+            if (strlen($diffLine) > 0) { // skip empty lines
+                if (preg_match('/^@@/', $diffLine)) {
+                    list($fromA, $lengthA, $fromB, $lengthB) = UDiff::parsePatch($diffLine);
 
-                if (!$reverse) {
-                    while ($lineIn < $fromA) { // copy unaffected lines
-                        $arrayOut[] = $arrayIn[$lineIn - 1];
-                        $lineIn++;
+                    if (!$reverse) {
+                        while ($lineIn < $fromA) { // copy unaffected lines
+                            $arrayOut[] = $arrayIn[$lineIn - 1];
+                            $lineIn++;
+                        }
+                        $lineIn += $lengthA; // skip replaced lines from A
+                    } else {
+                        while ($lineIn < $fromB) { // copy unaffected lines
+                            $arrayOut[] = $arrayIn[$lineIn - 1];
+                            $lineIn++;
+                        }
+                        $lineIn += $lengthB; // skip replaced lines from A
                     }
-                    $lineIn += $lengthA; // skip replaced lines from A
-                } else {
-                    while ($lineIn < $fromB) { // copy unaffected lines
-                        $arrayOut[] = $arrayIn[$lineIn - 1];
-                        $lineIn++;
-                    }
-                    $lineIn += $lengthB; // skip replaced lines from A
+                } elseif (!$reverse && $diffLine[0] === '+') {
+                    $arrayOut[] = substr($diffLine, 1);
+                } elseif ($reverse && $diffLine[0] === '-') {
+                    $arrayOut[] = substr($diffLine, 1);
                 }
-            } elseif (!$reverse && preg_match('/^\+/', $diffLine)) {
-                $arrayOut[] = substr($diffLine, 1);
-            } elseif ($reverse && preg_match('/^\-/', $diffLine)) {
-                $arrayOut[] = substr($diffLine, 1);
             }
         }
 

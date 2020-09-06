@@ -104,9 +104,8 @@ $typography-body-font-size: px(18);
   text-decoration: none;
 
   &:hover {
-    @include set-property-if-not(color, $color, $color-hover);
-
     background-image: $gradient-transparent, $gradient-transparent, linear-gradient(to right, $underline-color-hover, $underline-color-hover);
+    color: $color-hover;
     text-decoration: none;
   }
 }
@@ -127,19 +126,19 @@ body {
   color: $color-text;
 
   a {
-    @include typography-links($color-primary, $color-primary, 1px, transparent, $color-primary);
+    @include typography-links($color-primary, $color-text, 1px, transparent, $color-primary);
+
+    &.broken {
+      @include typography-links($color-negative, $color-text, 1px, $color-negative, $color-negative);
+    }
   }
 }
 
 pre,
 kbd,
+code,
 samp {
   @include typography-font($typography-font-list-courier, 400, px(16), 1.4em);
-  padding: .1em .25em;
-}
-
-code {
-  @include typography-font($typography-font-list-courier, 400, 1em, 1.4em);
   padding: .1em .25em;
 }
 

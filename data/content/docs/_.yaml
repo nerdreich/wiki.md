@@ -1,4 +1,5 @@
 ---
-userCreate: docs
-userUpdate: docs
-userDelete: docs
+pageCreate: docs
+pageUpdate: docs
+pageDelete: docs
+mediaAdmin: docs

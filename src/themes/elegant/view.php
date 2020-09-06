@@ -18,34 +18,20 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
-outputHeader($config, $wiki->getWikiPath(), ___('Delete page') . ': ' . $wiki->getTitle(), 'page editor');
-outputNavbar($wiki, $user);
+outputHeader($wiki, $wiki->core->getTitle(), $wiki->core->getDescription());
+outputNavbar($wiki);
 outputBanner($wiki);
 
 ?>
-<section class="section-meta">
-  <div class="container">
-    <div class="row">
-      <div class="col-12">
-        <p><?php __('Do you really want to delete this page?'); ?></p>
-        <?php if ($user->mayDelete($wiki->getWikiPath())) { ?>
-          <form action="?action=deleteOK" method="post">
-            <input type="submit" class="error" value="<?php __('Delete page'); ?>"><a class="btn" href="<?php echo $wiki->getWikiPath(); ?>"><?php __('Cancel'); ?></a>
-          </form>
-        <?php } ?>
-      </div>
-    </div>
-  </div>
-</section>
 <section class="section-main container">
   <div class="row">
     <div class="col-12 col-md-8 col-lg-9">
-      <?php echo $wiki->getTitle() !== '' ? '<h1>' . htmlspecialchars($wiki->getTitle()) . '</h1>' : ''; ?>
-      <?php echo $wiki->getContentHTML(); ?>
+      <?php $wiki->echoIf('<h1>', $wiki->core->getTitle(), '</h1>'); ?>
+      <?php echo $wiki->core->getContentHTML(); ?>
     </div>
     <nav class="col-12 col-md-4 col-lg-3 sidenav">
-      <?php echo $wiki->getSnippetHTML('nav'); ?>
+      <?php echo $wiki->core->getSnippetHTML('nav'); ?>
     </nav>
   </div>
 </section>
-<?php outputFooter($wiki, $config); ?>
+<?php outputFooter($wiki); ?>

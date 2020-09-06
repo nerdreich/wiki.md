@@ -18,20 +18,25 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
-outputHeader($config, $wiki->getWikiPath(), $wiki->getTitle(), $wiki->getDescription());
-outputNavbar($wiki, $user);
+outputHeader($wiki, ___('Login'));
+outputNavbar($wiki);
 outputBanner($wiki);
 
 ?>
 <section class="section-main container">
   <div class="row">
-    <div class="col-12 col-md-8 col-lg-9">
-      <?php echo $wiki->getTitle() !== '' ? '<h1>' . htmlspecialchars($wiki->getTitle()) . '</h1>' : ''; ?>
-      <?php echo $wiki->getContentHTML(); ?>
+    <div class="col-12">
+      <h2><?php __('Login required'); ?></h2>
+      <form action="?<?php echo $wiki->getActions(); ?>&amp;auth=login" method="post">
+        <?php if (!$wiki->user->isLoginSimple()) { ?>
+        <label for="username" class="in-border"><?php __('Username'); ?></label>
+        <input id="username" type="text" name="username" required autofocus>
+        <?php } ?>
+        <label for="password" class="in-border"><?php __('Password'); ?></label>
+        <input id="password" type="password" name="password" required<?php echo $wiki->user->isLoginSimple() ? ' autofocus' : ''; ?>>
+        <input type="submit" class="primary" value="<?php __('Login'); ?>">
+      </form>
     </div>
-    <nav class="col-12 col-md-4 col-lg-3 sidenav">
-      <?php echo $wiki->getSnippetHTML('nav'); ?>
-    </nav>
   </div>
 </section>
-<?php outputFooter($wiki, $config); ?>
+<?php outputFooter($wiki); ?>

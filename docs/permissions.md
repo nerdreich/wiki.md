@@ -1,16 +1,19 @@
 # Page permissions
 
-wiki.md can restrict access to page actions (create, view, edit, delete) for certain users on a (sub)folder level. This is done by setting page passwords. Site default is to let anyone view/read all pages, but only admin-users may create, edit or delete them. wiki.md knows the following permissions:
+wiki.md can restrict access to page actions (create, view, edit, delete) for certain users on a (sub)folder level. This is done by setting page permissions. Site default is to let anyone view/read all pages, but only admin-users may create, edit or delete them. wiki.md knows the following permissions:
 
-* `userCreate` - create pages
-* `userRead` - view/read pages
-* `userUpdate` - edit/update pages
-* `userDelete` - delete pages
+* `pageCreate` - create pages
+* `pageRead` - view/read pages
+* `pageUpdate` - edit/update pages
+* `pageDelete` - delete pages
+* `mediaAdmin` - manage uploads (e.g. images)
 * `userAdmin` - administrate folders (passwords)
+
+Plugins and themes might add more permissions - check their documentation.
 
 ## Folder Editor
 
-To define permissions for a folder, navigate to any page and choose **Permissions** from the menu.
+To define permissions for a folder, navigate to any page and choose _Permissions_ from the menu.
 
 <img src="permissions.png" alt="[Folder Editor]" width="512"/>
 
@@ -26,13 +29,13 @@ The UI will create a file called `_.yaml` in a folder you define permission for.
 
 ```
 ---
-userCreate: docs
-userRead: *
-userUpdate: docs
-userDelete: docs
+pageCreate: docs
+pageRead: *
+pageUpdate: docs
+pageDelete: docs
 ```
 
-This defines that, everyone (`*`) can read pages, but only `docs` might create (`userCreate`), update (`userUpdate`) or delete (`userDelete`) pages. As there is no reference to `userAdmin`, the admin roles are inherited from the parent folder.
+This example defines that everyone (`*`) can read pages, but only `docs` might create (`pageCreate`), update (`pageUpdate`) or delete (`pageDelete`) pages. As there is no reference to `userAdmin` or `mediaAdmin`, these roles are inherited from the parent folder.
 
 If no `_.yaml` file exists in a directory, it inherits all permissions from the parent folder.
 

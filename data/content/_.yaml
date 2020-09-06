@@ -1,6 +1,7 @@
 ---
-userCreate: admin
-userRead: *
-userUpdate: admin
-userDelete: admin
+pageCreate: admin
+pageRead: *
+pageUpdate: admin
+pageDelete: admin
 userAdmin: admin
+mediaAdmin: admin

@@ -36,7 +36,7 @@ Paragraph
 
 ## Links & new pages
 
-Use `[an absolute link](/path/to/file)` to create [an absolute link](/path/to/file) and `[a relative link](another/pat/to/file)` to create [a relative link](another/pat/to/file). No new page will be created by linking to a non-existing page - but as soon as you follow the link, you will have the opportunity to do so.
+Use `[an absolute link]​(/path/to/file)` to create [an absolute link](/path/to/file) and `[a relative link]​(another/path/to/file)` to create [a relative link](another/path/to/file). No new page will be created by linking to a non-existing page - but as soon as you follow the link, you will have the opportunity to do so.
 
 If you use `[external link](https://example.org/)` to place an [external link](https://example.org/), it will automatically be marked with a small arrow.
 

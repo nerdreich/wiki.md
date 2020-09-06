@@ -18,23 +18,17 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
-outputHeader($config, $wiki->getWikiPath(), ___('Login'), 'wiki.md login page');
-outputNavbar($wiki, $user);
+outputHeader($wiki);
+outputNavbar($wiki);
 outputBanner($wiki);
 
 ?>
 <section class="section-main container">
   <div class="row">
     <div class="col-12">
-      <h2><?php __('Password required'); ?></h2>
-      <form action="?<?php
-        echo array_key_exists('action', $_GET) ? 'action=' . urlencode($_GET['action']) . '&' : '';
-        ?>auth=login" method="post">
-        <label for="password" class="in-border"><?php __('Password'); ?></label>
-        <input id="password" type="password" name="password" required autofocus>
-        <input type="submit" class="primary" value="<?php __('Login'); ?>">
-      </form>
+        <?php require $pluginFileFS; ?>
     </div>
   </div>
 </section>
-<?php outputFooter($wiki, $config); ?>
+
+<?php outputFooter($wiki); ?>

@@ -21,33 +21,12 @@
 // Note: All tests operate on `dist/*` to QA the release version. You need to
 //       build the project using `gulp dist` first.
 
-namespace at\nerdreich;
+namespace at\nerdreich\wiki;
 
-require_once('dist/wiki.md/core/Wiki.php');
-require_once('dist/wiki.md/core/UserSession.php');
+require_once('test/php/WikiTestCase.php');
 
-final class WikiTest extends \PHPUnit\Framework\TestCase
+final class WikiTest extends WikiTestCase
 {
-    // --- helper methods ------------------------------------------------------
-
-    private function getNewWiki(): Wiki
-    {
-        $config = parse_ini_file('dist/wiki.md/data/config.ini');
-        $user = new UserSession($config);
-        return new Wiki($config, $user);
-    }
-
-    private function getAsPublicMethod(string $methodName): \ReflectionMethod
-    {
-        // make private method public for testing
-        $reflector = new \ReflectionClass('\at\nerdreich\Wiki');
-        $method = $reflector->getMethod($methodName);
-        $method->setAccessible(true);
-        return $method;
-    }
-
-    // --- test methods --------------------------------------------------------
-
     public function testDefaultValues(): void
     {
         $wiki = $this->getNewWiki();
@@ -56,7 +35,23 @@ final class WikiTest extends \PHPUnit\Framework\TestCase
             '/^[0-9]+\.[0-9]+\.[0-9]+/',
             $wiki->getVersion()
         );
-        $this->assertStringStartsWith('https://github', $wiki->getRepo());
+    }
+
+    public function testExists(): void
+    {
+        $wiki = $this->getNewWiki();
+        $this->assertTrue($wiki->exists('/'));
+        $this->assertTrue($wiki->exists('/README'));
+        $this->assertFalse($wiki->exists('/README.md'));
+        $this->assertFalse($wiki->exists('/docs'));
+        $this->assertTrue($wiki->exists('/docs/'));
+        $this->assertTrue($wiki->exists('/docs/README'));
+        $this->assertFalse($wiki->exists('/docs/README.md'));
+        $this->assertTrue($wiki->exists('/docs/install'));
+        $this->assertFalse($wiki->exists('/docs/install.md'));
+        $this->assertTrue($wiki->exists('/docs/./install'));
+        $this->assertTrue($wiki->exists('/docs/../docs/more/../install'));
+        $this->assertFalse($wiki->exists('/docs/../../README'));
     }
 
     public function testHomepage(): void
@@ -77,59 +72,129 @@ final class WikiTest extends \PHPUnit\Framework\TestCase
         $this->assertIsString($wiki->getContentMarkup());
     }
 
-    public function testWikiPathToContentFile(): void
+    public function testAnonymoususer(): void
+    {
+        // anonymous users should only be able to read stuff
+        $wiki = $this->getNewWiki();
+
+        $this->assertFalse($wiki->mayReadPath(''));
+        $this->assertFalse($wiki->mayCreatePath(''));
+        $this->assertFalse($wiki->mayUpdatePath(''));
+        $this->assertFalse($wiki->mayDeletePath(''));
+
+        $this->assertTrue($wiki->mayReadPath('/'));
+        $this->assertTrue($wiki->mayReadPath('/somepage'));
+        $this->assertTrue($wiki->mayReadPath('/somefolder/'));
+        $this->assertTrue($wiki->mayReadPath('/somefolder/somepage'));
+        $this->assertTrue($wiki->mayReadPath('/somefolder/somefolder/somepage'));
+        $this->assertFalse($wiki->mayCreatePath('/'));
+        $this->assertFalse($wiki->mayCreatePath('/somepage'));
+        $this->assertFalse($wiki->mayCreatePath('/somefolder/'));
+        $this->assertFalse($wiki->mayCreatePath('/somefolder/somepage'));
+        $this->assertFalse($wiki->mayCreatePath('/somefolder/somefolder/somepage'));
+        $this->assertFalse($wiki->mayUpdatePath('/'));
+        $this->assertFalse($wiki->mayUpdatePath('/somepage'));
+        $this->assertFalse($wiki->mayUpdatePath('/somefolder/'));
+        $this->assertFalse($wiki->mayUpdatePath('/somefolder/somepage'));
+        $this->assertFalse($wiki->mayUpdatePath('/somefolder/somefolder/somepage'));
+        $this->assertFalse($wiki->mayDeletePath('/'));
+        $this->assertFalse($wiki->mayDeletePath('/somepage'));
+        $this->assertFalse($wiki->mayDeletePath('/somefolder/'));
+        $this->assertFalse($wiki->mayDeletePath('/somefolder/somepage'));
+        $this->assertFalse($wiki->mayDeletePath('/somefolder/somefolder/somepage'));
+
+        $this->assertTrue($wiki->mayReadPath('/docs'));
+        $this->assertTrue($wiki->mayReadPath('/docs/'));
+        $this->assertTrue($wiki->mayReadPath('/docs/install'));
+        $this->assertTrue($wiki->mayReadPath('/docs/install/'));
+        $this->assertFalse($wiki->mayCreatePath('/docs'));
+        $this->assertFalse($wiki->mayCreatePath('/docs/'));
+        $this->assertFalse($wiki->mayCreatePath('/docs/install'));
+        $this->assertFalse($wiki->mayCreatePath('/docs/install/'));
+        $this->assertFalse($wiki->mayUpdatePath('/docs'));
+        $this->assertFalse($wiki->mayUpdatePath('/docs/'));
+        $this->assertFalse($wiki->mayUpdatePath('/docs/install'));
+        $this->assertFalse($wiki->mayUpdatePath('/docs/install/'));
+        $this->assertFalse($wiki->mayDeletePath('/docs'));
+        $this->assertFalse($wiki->mayDeletePath('/docs/'));
+        $this->assertFalse($wiki->mayDeletePath('/docs/install'));
+        $this->assertFalse($wiki->mayDeletePath('/docs/install/'));
+    }
+
+    public function testwikiPathToContentFileFS(): void
     {
         $wiki = $this->getNewWiki();
-        $method = $this->getAsPublicMethod('wikiPathToContentFile');
+        $method = $this->getAsPublicMethod('\at\nerdreich\wiki\WikiCore', 'wikiPathToContentFileFS');
 
         $this->assertEquals(
-            $wiki->getWikiDirFS() . '/data/content/README.md',
+            $wiki->getContentDirFS() . '/README.md',
             $method->invokeArgs($wiki, ['/'])
         );
         $this->assertEquals(
-            $wiki->getWikiDirFS() . '/data/content/about.md',
+            $wiki->getContentDirFS() . '/about.md',
             $method->invokeArgs($wiki, ['/about'])
         );
         $this->assertEquals(
-            $wiki->getWikiDirFS() . '/data/content/animal/README.md',
+            $wiki->getContentDirFS() . '/animal/README.md',
             $method->invokeArgs($wiki, ['/animal/'])
         );
         $this->assertEquals(
-            $wiki->getWikiDirFS() . '/data/content/animal/lion.md',
+            $wiki->getContentDirFS() . '/animal/lion.md',
             $method->invokeArgs($wiki, ['/animal/lion'])
         );
-        $this->assertEquals(
-            $wiki->getWikiDirFS() . '/data/content/animal/_media/lion.png',
-            $method->invokeArgs($wiki, ['/animal/lion.png'])
-        );
-        $this->assertEquals(
-            $wiki->getWikiDirFS() . '/data/content/animal/_media/LION.JPG.PNG',
-            $method->invokeArgs($wiki, ['/animal/LION.JPG.PNG'])
-        );
-        $this->assertEquals(
-            $wiki->getWikiDirFS() . '/data/content/animal/_media/lion.jpg',
-            $method->invokeArgs($wiki, ['/animal/lion.jpg'])
-        );
-        $this->assertEquals(
-            $wiki->getWikiDirFS() . '/data/content/animal/_media/lion.JPEG',
-            $method->invokeArgs($wiki, ['/animal/lion.JPEG'])
-        );
-        $this->assertEquals(
-            $wiki->getWikiDirFS() . '/data/content/animal/_media/lion.gif',
-            $method->invokeArgs($wiki, ['/animal/lion.gif'])
-        );
+    }
+    public function testRealPath(): void
+    {
+        $wiki = $this->getNewWiki();
+        $wiki->init('/animal/lion');
+        $method = $this->getAsPublicMethod('\at\nerdreich\wiki\WikiCore', 'realPath');
+
+        $this->assertEquals('/animal/lion', $method->invokeArgs($wiki, ['/animal/lion']));
+        $this->assertEquals('/animal/lion/', $method->invokeArgs($wiki, ['/animal/lion/']));
+        $this->assertEquals('/animal/lion', $method->invokeArgs($wiki, ['/animal/./lion']));
+        $this->assertEquals('/animal/lion/', $method->invokeArgs($wiki, ['/animal/./lion/']));
+        $this->assertEquals('/animal/lion', $method->invokeArgs($wiki, ['/animal/././lion']));
+        $this->assertEquals('/animal/lion/', $method->invokeArgs($wiki, ['/animal/././lion/']));
+        $this->assertEquals('/lion', $method->invokeArgs($wiki, ['/animal/../lion']));
+        $this->assertEquals('/lion/', $method->invokeArgs($wiki, ['/animal/../lion/']));
+        $this->assertEquals('/animal/', $method->invokeArgs($wiki, ['/animal/lion/../']));
+        $this->assertEquals('/animal/', $method->invokeArgs($wiki, ['/animal/lion/..']));
+
+        $this->assertEquals('animal/lion', $method->invokeArgs($wiki, ['animal/lion']));
+        $this->assertEquals('animal/lion/', $method->invokeArgs($wiki, ['animal/lion/']));
+        $this->assertEquals('animal/lion', $method->invokeArgs($wiki, ['animal/./lion']));
+        $this->assertEquals('animal/lion/', $method->invokeArgs($wiki, ['animal/./lion/']));
+        $this->assertEquals('animal/lion', $method->invokeArgs($wiki, ['animal/././lion']));
+        $this->assertEquals('animal/lion/', $method->invokeArgs($wiki, ['animal/././lion/']));
+        $this->assertEquals('lion', $method->invokeArgs($wiki, ['animal/../lion']));
+        $this->assertEquals('lion/', $method->invokeArgs($wiki, ['animal/../lion/']));
+        $this->assertEquals('animal/', $method->invokeArgs($wiki, ['animal/lion/../']));
+        $this->assertEquals('animal/', $method->invokeArgs($wiki, ['animal/lion/..']));
+
+        // edge cases
+        $this->assertEquals('', $method->invokeArgs($wiki, ['']));
+        $this->assertEquals('', $method->invokeArgs($wiki, ['.']));
+        $this->assertNull($method->invokeArgs($wiki, ['..']));
+        $this->assertNull($method->invokeArgs($wiki, ['../']));
+        $this->assertNull($method->invokeArgs($wiki, ['/..']));
+        $this->assertNull($method->invokeArgs($wiki, ['/../']));
+        $this->assertEquals('/', $method->invokeArgs($wiki, ['/']));
+
+        // latin-extended-a special characters
+        $this->assertEquals('/animal/łīöň/', $method->invokeArgs($wiki, ['/animal/łīöň/']));
     }
 
     public function testCanonicalWikiPath(): void
     {
         $wiki = $this->getNewWiki();
         $wiki->init('/animal/lion');
-        $method = $this->getAsPublicMethod('canonicalWikiPath');
+        $method = $this->getAsPublicMethod('\at\nerdreich\wiki\WikiCore', 'canonicalWikiPath');
 
         // absolute pages
         $this->assertEquals('/animal/lion', $method->invokeArgs($wiki, ['/animal/lion']));
         $this->assertEquals('/animal/ape', $method->invokeArgs($wiki, ['/animal/ape']));
         $this->assertEquals('/plant/rose', $method->invokeArgs($wiki, ['/plant/rose']));
+        $this->assertEquals('/plant/rose/', $method->invokeArgs($wiki, ['/plant/rose/']));
         $this->assertEquals('/plant/', $method->invokeArgs($wiki, ['/plant/']));
         $this->assertEquals('/plant', $method->invokeArgs($wiki, ['/plant']));
         $this->assertEquals('/', $method->invokeArgs($wiki, ['/']));
@@ -141,233 +206,36 @@ final class WikiTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals('/plant', $method->invokeArgs($wiki, ['../plant']));
         $this->assertEquals('/plant/', $method->invokeArgs($wiki, ['../plant/']));
         $this->assertEquals('/plant/rose', $method->invokeArgs($wiki, ['../plant/rose']));
-        $this->assertEquals('/animal', $method->invokeArgs($wiki, ['ape/../ape/../ape/..']));
-        $this->assertEquals('/animal', $method->invokeArgs($wiki, ['ape/ape/../../ape/..']));
+        $this->assertEquals('/animal/', $method->invokeArgs($wiki, ['ape/../ape/../ape/..']));
+        $this->assertEquals('/animal/', $method->invokeArgs($wiki, ['ape/ape/../../ape/..']));
         $this->assertEquals('/plant', $method->invokeArgs($wiki, ['../animal/ape/../../plant']));
         $this->assertEquals('/plant/', $method->invokeArgs($wiki, ['../animal/ape/../../plant/']));
         $this->assertEquals(null, $method->invokeArgs($wiki, ['../../../../../../../../etc/passwd']));
+        $this->assertEquals('/animal/lion', $method->invokeArgs($wiki, ['/./animal/lion']));
+        $this->assertEquals('/animal/lion', $method->invokeArgs($wiki, ['/././animal/lion']));
+        $this->assertEquals('/animal/lion', $method->invokeArgs($wiki, ['/animal/./lion']));
+        $this->assertEquals('/animal/lion/', $method->invokeArgs($wiki, ['/./animal/lion/']));
+        $this->assertEquals('/animal/lion/', $method->invokeArgs($wiki, ['/././animal/lion/']));
+        $this->assertEquals('/animal/lion/', $method->invokeArgs($wiki, ['/animal/./lion/']));
+        $this->assertEquals('/animal/lion/', $method->invokeArgs($wiki, ['/animal/lion/./']));
+        $this->assertEquals('/animal/lion/', $method->invokeArgs($wiki, ['/animal/lion/.']));
 
         // folders
         $this->assertEquals('/animal/', $method->invokeArgs($wiki, ['/animal/']));
     }
 
-    public function testSplitMacro(): void
-    {
-        // invalid empty macro
-        list($command, $primary, $secondary) = Wiki::splitMacro('');
-        $this->assertNull($command);
-        $this->assertNull($primary);
-        $this->assertNull($secondary);
-
-        // another invalid empty macro
-        list($command, $primary, $secondary) = Wiki::splitMacro('{}');
-        $this->assertNull($command);
-        $this->assertNull($primary);
-        $this->assertNull($secondary);
-
-        // another invalid empty macro
-        list($command, $primary, $secondary) = Wiki::splitMacro('{{}}');
-        $this->assertNull($command);
-        $this->assertNull($primary);
-        $this->assertNull($secondary);
-
-        // no-argument macro
-        list($command, $primary, $secondary) = Wiki::splitMacro('{{name}}');
-        $this->assertEquals('name', $command);
-        $this->assertNull($primary);
-        $this->assertNull($secondary);
-
-        // no-argument macro II
-        list($command, $primary, $secondary) = Wiki::splitMacro("{{\n name\n\n}}");
-        $this->assertEquals('name', $command);
-        $this->assertNull($primary);
-        $this->assertNull($secondary);
-
-        // no-argument macro III
-        list($command, $primary, $secondary) = Wiki::splitMacro('{{n}}');
-        $this->assertEquals('n', $command);
-        $this->assertNull($primary);
-        $this->assertNull($secondary);
-
-        // single-argument macro
-        list($command, $primary, $secondary) = Wiki::splitMacro('{{name param}}');
-        $this->assertEquals('name', $command);
-        $this->assertEquals('param', $primary);
-        $this->assertNull($secondary);
-
-        // single-argument macro II
-        list($command, $primary, $secondary) = Wiki::splitMacro("{{ \n name \n\nparam\n  \n}}");
-        $this->assertEquals('name', $command);
-        $this->assertEquals('param', $primary);
-        $this->assertNull($secondary);
-
-        // single-argument macro III
-        list($command, $primary, $secondary) = Wiki::splitMacro('{{n p}}');
-        $this->assertEquals('n', $command);
-        $this->assertEquals('p', $primary);
-        $this->assertNull($secondary);
-
-        // full macro
-        list($command, $primary, $secondary) = Wiki::splitMacro(
-            '{{name param|key=value}}'
-        );
-        $this->assertEquals('name', $command);
-        $this->assertEquals('param', $primary);
-        $this->assertEqualsCanonicalizing(['key' => 'value'], $secondary);
-
-        // full macro II
-        list($command, $primary, $secondary) = Wiki::splitMacro(
-            '{{name param|key=value|some=other}}'
-        );
-        $this->assertEquals('name', $command);
-        $this->assertEquals('param', $primary);
-        $this->assertEqualsCanonicalizing(
-            ['key' => 'value', 'some' => 'other'],
-            $secondary
-        );
-
-        // full macro III
-        list($command, $primary, $secondary) = Wiki::splitMacro(
-            "{{\n name\n  \n param \n \n\n| \n key = value\n |some\n=other\n }}"
-        );
-        $this->assertEquals('name', $command);
-        $this->assertEquals('param', $primary);
-        $this->assertEqualsCanonicalizing(
-            ['key' => 'value', 'some' => 'other'],
-            $secondary
-        );
-
-        // full macro IV
-        list($command, $primary, $secondary) = Wiki::splitMacro(
-            '{{n p|k=v|s=o}}'
-        );
-        $this->assertEquals('n', $command);
-        $this->assertEquals('p', $primary);
-        $this->assertEqualsCanonicalizing(
-            ['k' => 'v', 's' => 'o'],
-            $secondary
-        );
-    }
-
-    public function testMacroInclude(): void
+    public function testFilterBrokenLinks(): void
     {
         $wiki = $this->getNewWiki();
-        $method = $this->getAsPublicMethod('resolveMacros');
+        $method = $this->getAsPublicMethod('\at\nerdreich\wiki\WikiCore', 'runFilters');
 
-        $contentDirFS = $wiki->getWikiDirFS() . '/data/content';
-
-        // no macro
-        $this->assertEquals('body', $method->invokeArgs($wiki, ['body', '/path']));
-
-        // invalid macro
-        $this->assertEquals('{{include README}', $method->invokeArgs($wiki, ['{{include README}', '/path']));
-        $this->assertEquals('{include README}', $method->invokeArgs($wiki, ['{include README}', '/path']));
-        $this->assertEquals('include README', $method->invokeArgs($wiki, ['include README', '/path']));
-
-        // missing filename
-        $this->assertEquals('{{error include-invalid}}', $method->invokeArgs($wiki, ['{{include}}', $contentDirFS . '/']));
-        $this->assertEquals('{{error include-invalid}}', $method->invokeArgs($wiki, ['{{ include }}', $contentDirFS . '/']));
-
-        // include same-level
-        $this->assertMatchesRegularExpression(
-            '/This is the homepage/',
-            $method->invokeArgs($wiki, ['{{include README}}', $contentDirFS . '/README.md'])
-        );
-        $this->assertMatchesRegularExpression(
-            '/This is the homepage/',
-            $method->invokeArgs($wiki, ['{{include /README}}', $contentDirFS . '/README.md'])
-        );
-        $this->assertMatchesRegularExpression(
-            '/{{error include-not-found}}/',
-            $method->invokeArgs($wiki, ['{{include meow}}', $contentDirFS . '/README.md'])
-        );
-        $this->assertMatchesRegularExpression(
-            '/{{error include-not-found}}/',
-            $method->invokeArgs($wiki, ['{{include /meow}}', $contentDirFS . '/README.md'])
-        );
-        $this->assertMatchesRegularExpression(
-            '/A wiki.md primer/',
-            $method->invokeArgs($wiki, ['{{include primer}}', $contentDirFS . '/docs/README.md'])
-        );
-        $this->assertMatchesRegularExpression(// /docs/macros/install -> /docs/macros/install
-            '/A wiki.md primer/',
-            $method->invokeArgs($wiki, ['{{include primer}}', $contentDirFS . '/docs/macros'])
-        );
-        $this->assertMatchesRegularExpression(
-            '/A wiki.md primer/',
-            $method->invokeArgs($wiki, ['{{include primer}}', $contentDirFS . '/docs/README.md'])
-        );
-        $this->assertMatchesRegularExpression(
-            '/A wiki.md primer/',
-            $method->invokeArgs($wiki, ['{{include primer}}', $contentDirFS . '/docs/README.md'])
+        // nothing changes while not logged-in
+        $this->assertEquals('[link](/)', $method->invokeArgs($wiki, ['markup', '[link](/)', $wiki->getContentDirFS() . '/path/file.md']));
+        $this->assertNotEquals(
+            '[link](/nope){.broken}',
+            $method->invokeArgs($wiki, ['markup', '[link](/nope)', $wiki->getContentDirFS() . '/path/file.md'])
         );
 
-        // include higher-level
-        $this->assertMatchesRegularExpression(
-            '/This is the homepage/',
-            $method->invokeArgs($wiki, ['{{include ../README}}', $contentDirFS . '/docs/README.md'])
-        );
-        $this->assertMatchesRegularExpression(
-            '/This is the homepage/',
-            $method->invokeArgs($wiki, ['{{include /README}}', $contentDirFS . '/docs/README.md'])
-        );
-        $this->assertMatchesRegularExpression(
-            '/{{error include-not-found}}/',
-            $method->invokeArgs($wiki, ['{{include ../moo}}', $contentDirFS . '/docs/README.md'])
-        );
-        $this->assertMatchesRegularExpression(
-            '/{{error include-not-found}}/',
-            $method->invokeArgs($wiki, ['{{include /moo}}', $contentDirFS . '/docs/README.md'])
-        );
-        $this->assertMatchesRegularExpression(
-            '/{{error include-permission-denied}}/',
-            $method->invokeArgs($wiki, ['{{include ../../README}}', $contentDirFS . '/docs/README.md'])
-        );
-
-        // include deeper-level
-        $this->assertMatchesRegularExpression(
-            '/wiki.md Documentation/',
-            $method->invokeArgs($wiki, ['{{include docs/README}}', $contentDirFS . '/README.md'])
-        );
-        $this->assertMatchesRegularExpression(
-            '/wiki.md Documentation/',
-            $method->invokeArgs($wiki, ['{{include /docs/README}}', $contentDirFS . '/README.md'])
-        );
-        $this->assertMatchesRegularExpression(
-            '/{{error include-not-found}}/',
-            $method->invokeArgs($wiki, ['{{include docs/moo}}', $contentDirFS . '/README.md'])
-        );
-        $this->assertMatchesRegularExpression(
-            '/{{error include-not-found}}/',
-            $method->invokeArgs($wiki, ['{{include /docs/moo}}', $contentDirFS . '/README.md'])
-        );
-
-        // include protected file
-        $this->assertMatchesRegularExpression(
-            '/{{error include-permission-denied}}/',
-            $method->invokeArgs($wiki, ['{{include docs/protected/README}}', $contentDirFS . '/README.md'])
-        );
-        $this->assertMatchesRegularExpression(
-            '/{{error include-permission-denied}}/',
-            $method->invokeArgs($wiki, ['{{include /docs/protected/README}}', $contentDirFS . '/README.md'])
-        );
-        $this->assertMatchesRegularExpression(
-            '/{{error include-permission-denied}}/',
-            $method->invokeArgs($wiki, ['{{include protected/README}}', $contentDirFS . '/docs/README.md'])
-        );
-        $this->assertMatchesRegularExpression(
-            '/{{error include-permission-denied}}/',
-            $method->invokeArgs($wiki, ['{{include README}}', $contentDirFS . '/docs/protected/README.md'])
-        );
-        $this->assertMatchesRegularExpression(
-            '/{{error include-permission-denied}}/',
-            $method->invokeArgs($wiki, ['{{include ../README}}', $contentDirFS . '/docs/protected/too/README.md'])
-        );
-
-        // ignore secondary params
-        $this->assertMatchesRegularExpression(
-            '/This is the homepage/',
-            $method->invokeArgs($wiki, ['{{include README | a=b | c=d }}', $contentDirFS . '/README.md'])
-        );
+        // we can't test logged-in version without sessions/header errors :(
     }
 }

@@ -1,19 +1,34 @@
+# v2.0.0
+
+* added filter/plugin mechanism
+* added basic media manager
+* added broken-links detection
+* added simple/regular logins
+* added flexible request router
+* changed namespace to at/nerdreich/wiki
+* changed macros into plugin
+* changed media manager into plugin
+* fixed multiple search/replace in filters
+* fixed theme navbar colors
+* improved string comparison performance
+* removed datadir config entry, updated docs
+
 # v1.0.0
 
 * added folder permission screen
-* improved dirty/hash warnings in editor
 * added history entries for non-wiki.md saves of pages
 * fixed include macro not finding the files
+* improved dirty/hash warnings in editor
 
 # v0.5.0
 
 * added default value for empty history
-* changed history page layout to a timeline view
 * added CONTRIBUTING.md and cleaned up src dir
 * added detection of empty diffs in page history
-* use PHPUnit for integration tests
 * added warning if someone else is editing a page
+* changed history page layout to a timeline view
 * removed PHP 7.4 dependencies
+* use PHPUnit for integration tests
 
 # v0.4.0
 
