@@ -203,24 +203,13 @@ class WikiCore
     public function canonicalWikiPath(string $wikiPath): ?string
     {
         $absPath = preg_replace('/\/$/', '/.', $wikiPath); // treat folder as dot-file
-        if (strpos($absPath, '/') === 0) {
+        if ($absPath[0] === '/') {
             // absolute path
-            $absPath = $this->realpath($absPath);
+            return $this->realpath($absPath);
         } else {
             // (probably) relative path
-            $absPath = $this->realpath(dirname($this->wikiPath) . '/' . $absPath);
+            return $this->realpath(dirname($this->wikiPath) . '/' . $absPath);
         }
-
-        if ($absPath === null) { // relative path went out of wiki dir
-            return null;
-        }
-
-        // keep a trailing slash but avoid doubles for the root
-        if (preg_match('/\/$/', $wikiPath)) {
-            $absPath = $absPath === '/' ? '/' : $absPath . '/';
-        }
-
-        return strlen($absPath) > 0 ? $absPath : '/';
     }
 
     /**
@@ -235,7 +224,7 @@ class WikiCore
     public function wikiPathToContentFileFS(
         string $wikiPath
     ): string {
-        if (preg_match('/\/$/', $wikiPath)) { // folder
+        if ($wikiPath[-1] === '/') { // folder
             $postfix = 'README.md';
         } else { // page
             $postfix = '.md';
@@ -272,9 +261,22 @@ class WikiCore
      */
     protected function realpath(string $filename): ?string
     {
-        if (preg_match('/\/$/', $filename)) {
-            // if this is a file, we switch to it's folder
-            $filename = dirname($filename);
+        // $this->assertEquals('/animal/lion/', $method->invokeArgs($wiki, ['/animal/lion/']));
+
+        if ($filename === '') {
+            $filename = '.';
+        }
+        if ($filename[0] === '/') { // do we have to keep a leading slash?
+            $prefix = '/';
+        } else {
+            $prefix = '';
+        }
+        if ($filename[-1] === '/') { // do we have to keep a trailing slash?
+            $postfix = '/';
+        } elseif ($filename[-1] === '.' && strpos($filename, '/') !== false) { // do we have to add a trailing slash?
+            $postfix = '/';
+        } else {
+            $postfix = '';
         }
 
         $path = [];
@@ -289,9 +291,10 @@ class WikiCore
                 return null;
             }
         }
-        $path = '/' . join('/', $path);
-
-        return $path;
+        if (count($path) <= 0 && $prefix === $postfix) {
+            return $prefix; // avoid double slash
+        }
+        return $prefix . join('/', $path) . $postfix;
     }
 
     // -------------------------------------------------------------------------

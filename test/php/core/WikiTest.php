@@ -143,6 +143,43 @@ final class WikiTest extends WikiTestCase
             $method->invokeArgs($wiki, ['/animal/lion'])
         );
     }
+    public function testRealPath(): void
+    {
+        $wiki = $this->getNewWiki();
+        $wiki->init('/animal/lion');
+        $method = $this->getAsPublicMethod('\at\nerdreich\wiki\WikiCore', 'realPath');
+
+        $this->assertEquals('/animal/lion', $method->invokeArgs($wiki, ['/animal/lion']));
+        $this->assertEquals('/animal/lion/', $method->invokeArgs($wiki, ['/animal/lion/']));
+        $this->assertEquals('/animal/lion', $method->invokeArgs($wiki, ['/animal/./lion']));
+        $this->assertEquals('/animal/lion/', $method->invokeArgs($wiki, ['/animal/./lion/']));
+        $this->assertEquals('/animal/lion', $method->invokeArgs($wiki, ['/animal/././lion']));
+        $this->assertEquals('/animal/lion/', $method->invokeArgs($wiki, ['/animal/././lion/']));
+        $this->assertEquals('/lion', $method->invokeArgs($wiki, ['/animal/../lion']));
+        $this->assertEquals('/lion/', $method->invokeArgs($wiki, ['/animal/../lion/']));
+        $this->assertEquals('/animal/', $method->invokeArgs($wiki, ['/animal/lion/../']));
+        $this->assertEquals('/animal/', $method->invokeArgs($wiki, ['/animal/lion/..']));
+
+        $this->assertEquals('animal/lion', $method->invokeArgs($wiki, ['animal/lion']));
+        $this->assertEquals('animal/lion/', $method->invokeArgs($wiki, ['animal/lion/']));
+        $this->assertEquals('animal/lion', $method->invokeArgs($wiki, ['animal/./lion']));
+        $this->assertEquals('animal/lion/', $method->invokeArgs($wiki, ['animal/./lion/']));
+        $this->assertEquals('animal/lion', $method->invokeArgs($wiki, ['animal/././lion']));
+        $this->assertEquals('animal/lion/', $method->invokeArgs($wiki, ['animal/././lion/']));
+        $this->assertEquals('lion', $method->invokeArgs($wiki, ['animal/../lion']));
+        $this->assertEquals('lion/', $method->invokeArgs($wiki, ['animal/../lion/']));
+        $this->assertEquals('animal/', $method->invokeArgs($wiki, ['animal/lion/../']));
+        $this->assertEquals('animal/', $method->invokeArgs($wiki, ['animal/lion/..']));
+
+        // edge cases
+        $this->assertEquals('', $method->invokeArgs($wiki, ['']));
+        $this->assertEquals('', $method->invokeArgs($wiki, ['.']));
+        $this->assertNull($method->invokeArgs($wiki, ['..']));
+        $this->assertNull($method->invokeArgs($wiki, ['../']));
+        $this->assertNull($method->invokeArgs($wiki, ['/..']));
+        $this->assertNull($method->invokeArgs($wiki, ['/../']));
+        $this->assertEquals('/', $method->invokeArgs($wiki, ['/']));
+    }
 
     public function testCanonicalWikiPath(): void
     {
@@ -154,6 +191,7 @@ final class WikiTest extends WikiTestCase
         $this->assertEquals('/animal/lion', $method->invokeArgs($wiki, ['/animal/lion']));
         $this->assertEquals('/animal/ape', $method->invokeArgs($wiki, ['/animal/ape']));
         $this->assertEquals('/plant/rose', $method->invokeArgs($wiki, ['/plant/rose']));
+        $this->assertEquals('/plant/rose/', $method->invokeArgs($wiki, ['/plant/rose/']));
         $this->assertEquals('/plant/', $method->invokeArgs($wiki, ['/plant/']));
         $this->assertEquals('/plant', $method->invokeArgs($wiki, ['/plant']));
         $this->assertEquals('/', $method->invokeArgs($wiki, ['/']));
@@ -165,11 +203,19 @@ final class WikiTest extends WikiTestCase
         $this->assertEquals('/plant', $method->invokeArgs($wiki, ['../plant']));
         $this->assertEquals('/plant/', $method->invokeArgs($wiki, ['../plant/']));
         $this->assertEquals('/plant/rose', $method->invokeArgs($wiki, ['../plant/rose']));
-        $this->assertEquals('/animal', $method->invokeArgs($wiki, ['ape/../ape/../ape/..']));
-        $this->assertEquals('/animal', $method->invokeArgs($wiki, ['ape/ape/../../ape/..']));
+        $this->assertEquals('/animal/', $method->invokeArgs($wiki, ['ape/../ape/../ape/..']));
+        $this->assertEquals('/animal/', $method->invokeArgs($wiki, ['ape/ape/../../ape/..']));
         $this->assertEquals('/plant', $method->invokeArgs($wiki, ['../animal/ape/../../plant']));
         $this->assertEquals('/plant/', $method->invokeArgs($wiki, ['../animal/ape/../../plant/']));
         $this->assertEquals(null, $method->invokeArgs($wiki, ['../../../../../../../../etc/passwd']));
+        $this->assertEquals('/animal/lion', $method->invokeArgs($wiki, ['/./animal/lion']));
+        $this->assertEquals('/animal/lion', $method->invokeArgs($wiki, ['/././animal/lion']));
+        $this->assertEquals('/animal/lion', $method->invokeArgs($wiki, ['/animal/./lion']));
+        $this->assertEquals('/animal/lion/', $method->invokeArgs($wiki, ['/./animal/lion/']));
+        $this->assertEquals('/animal/lion/', $method->invokeArgs($wiki, ['/././animal/lion/']));
+        $this->assertEquals('/animal/lion/', $method->invokeArgs($wiki, ['/animal/./lion/']));
+        $this->assertEquals('/animal/lion/', $method->invokeArgs($wiki, ['/animal/lion/./']));
+        $this->assertEquals('/animal/lion/', $method->invokeArgs($wiki, ['/animal/lion/.']));
 
         // folders
         $this->assertEquals('/animal/', $method->invokeArgs($wiki, ['/animal/']));
