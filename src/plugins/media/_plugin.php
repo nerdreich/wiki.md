@@ -18,9 +18,9 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace at\nerdreich;
+namespace at\nerdreich\wiki;
 
-if (!class_exists('\at\nerdreich\MediaPlugin')) {
+if (!class_exists('\at\nerdreich\wiki\MediaPlugin')) {
 
     /**
      * Media manager plugin for wiki.md.
@@ -265,5 +265,5 @@ if (!class_exists('\at\nerdreich\MediaPlugin')) {
         }
     }
 
-    $GLOBALS['wiki.md-plugins']['media'] = '\at\nerdreich\MediaPlugin';
+    $GLOBALS['wiki.md-plugins']['media'] = '\at\nerdreich\wiki\MediaPlugin';
 }

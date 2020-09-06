@@ -21,7 +21,7 @@
 // Note: All tests operate on `dist/*` to QA the release version. You need to
 //       build the project using `gulp dist` first.
 
-namespace at\nerdreich;
+namespace at\nerdreich\wiki;
 
 require_once('dist/wiki.md/core/UDiff.php');
 

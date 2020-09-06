@@ -18,7 +18,7 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace at\nerdreich;
+namespace at\nerdreich\wiki;
 
 require_once('lib/spyc.php'); // yaml parser
 

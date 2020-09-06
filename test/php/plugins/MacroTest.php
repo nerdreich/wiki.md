@@ -21,7 +21,7 @@
 // Note: All tests operate on `dist/*` to QA the release version. You need to
 //       build the project using `gulp dist` first.
 
-namespace at\nerdreich;
+namespace at\nerdreich\wiki;
 
 require_once('test/php/WikiTestCase.php');
 
@@ -30,61 +30,61 @@ final class MacroTest extends WikiTestCase
     public function testSplitMacro(): void
     {
         // invalid empty macro
-        list($command, $primary, $secondary) = \at\nerdreich\MacroPlugin::splitMacro('');
+        list($command, $primary, $secondary) = \at\nerdreich\wiki\MacroPlugin::splitMacro('');
         $this->assertNull($command);
         $this->assertNull($primary);
         $this->assertNull($secondary);
 
         // another invalid empty macro
-        list($command, $primary, $secondary) = \at\nerdreich\MacroPlugin::splitMacro('{}');
+        list($command, $primary, $secondary) = \at\nerdreich\wiki\MacroPlugin::splitMacro('{}');
         $this->assertNull($command);
         $this->assertNull($primary);
         $this->assertNull($secondary);
 
         // another invalid empty macro
-        list($command, $primary, $secondary) = \at\nerdreich\MacroPlugin::splitMacro('{{}}');
+        list($command, $primary, $secondary) = \at\nerdreich\wiki\MacroPlugin::splitMacro('{{}}');
         $this->assertNull($command);
         $this->assertNull($primary);
         $this->assertNull($secondary);
 
         // no-argument macro
-        list($command, $primary, $secondary) = \at\nerdreich\MacroPlugin::splitMacro('{{name}}');
+        list($command, $primary, $secondary) = \at\nerdreich\wiki\MacroPlugin::splitMacro('{{name}}');
         $this->assertEquals('name', $command);
         $this->assertNull($primary);
         $this->assertNull($secondary);
 
         // no-argument macro II
-        list($command, $primary, $secondary) = \at\nerdreich\MacroPlugin::splitMacro("{{\n name\n\n}}");
+        list($command, $primary, $secondary) = \at\nerdreich\wiki\MacroPlugin::splitMacro("{{\n name\n\n}}");
         $this->assertEquals('name', $command);
         $this->assertNull($primary);
         $this->assertNull($secondary);
 
         // no-argument macro III
-        list($command, $primary, $secondary) = \at\nerdreich\MacroPlugin::splitMacro('{{n}}');
+        list($command, $primary, $secondary) = \at\nerdreich\wiki\MacroPlugin::splitMacro('{{n}}');
         $this->assertEquals('n', $command);
         $this->assertNull($primary);
         $this->assertNull($secondary);
 
         // single-argument macro
-        list($command, $primary, $secondary) = \at\nerdreich\MacroPlugin::splitMacro('{{name param}}');
+        list($command, $primary, $secondary) = \at\nerdreich\wiki\MacroPlugin::splitMacro('{{name param}}');
         $this->assertEquals('name', $command);
         $this->assertEquals('param', $primary);
         $this->assertNull($secondary);
 
         // single-argument macro II
-        list($command, $primary, $secondary) = \at\nerdreich\MacroPlugin::splitMacro("{{ \n name \n\nparam\n  \n}}");
+        list($command, $primary, $secondary) = \at\nerdreich\wiki\MacroPlugin::splitMacro("{{ \n name \n\nparam\n  \n}}");
         $this->assertEquals('name', $command);
         $this->assertEquals('param', $primary);
         $this->assertNull($secondary);
 
         // single-argument macro III
-        list($command, $primary, $secondary) = \at\nerdreich\MacroPlugin::splitMacro('{{n p}}');
+        list($command, $primary, $secondary) = \at\nerdreich\wiki\MacroPlugin::splitMacro('{{n p}}');
         $this->assertEquals('n', $command);
         $this->assertEquals('p', $primary);
         $this->assertNull($secondary);
 
         // full macro
-        list($command, $primary, $secondary) = \at\nerdreich\MacroPlugin::splitMacro(
+        list($command, $primary, $secondary) = \at\nerdreich\wiki\MacroPlugin::splitMacro(
             '{{name param|key=value}}'
         );
         $this->assertEquals('name', $command);
@@ -92,7 +92,7 @@ final class MacroTest extends WikiTestCase
         $this->assertEqualsCanonicalizing(['key' => 'value'], $secondary);
 
         // full macro II
-        list($command, $primary, $secondary) = \at\nerdreich\MacroPlugin::splitMacro(
+        list($command, $primary, $secondary) = \at\nerdreich\wiki\MacroPlugin::splitMacro(
             '{{name param|key=value|some=other}}'
         );
         $this->assertEquals('name', $command);
@@ -103,7 +103,7 @@ final class MacroTest extends WikiTestCase
         );
 
         // full macro III
-        list($command, $primary, $secondary) = \at\nerdreich\MacroPlugin::splitMacro(
+        list($command, $primary, $secondary) = \at\nerdreich\wiki\MacroPlugin::splitMacro(
             "{{\n name\n  \n param \n \n\n| \n key = value\n |some\n=other\n }}"
         );
         $this->assertEquals('name', $command);
@@ -114,7 +114,7 @@ final class MacroTest extends WikiTestCase
         );
 
         // full macro IV
-        list($command, $primary, $secondary) = \at\nerdreich\MacroPlugin::splitMacro(
+        list($command, $primary, $secondary) = \at\nerdreich\wiki\MacroPlugin::splitMacro(
             '{{n p|k=v|s=o}}'
         );
         $this->assertEquals('n', $command);
@@ -128,7 +128,7 @@ final class MacroTest extends WikiTestCase
     public function testMacroInclude(): void
     {
         $core = $this->getNewWikiUI('/test')->core;
-        $method = $this->getAsPublicMethod('\at\nerdreich\WikiCore', 'runFilters');
+        $method = $this->getAsPublicMethod('\at\nerdreich\wiki\WikiCore', 'runFilters');
 
         $contentDirFS = $core->getContentDirFS() . '';
 

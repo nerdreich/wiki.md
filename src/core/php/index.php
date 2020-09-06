@@ -19,7 +19,7 @@
  */
 
 require_once 'core/WikiUI.php';
-$wiki = new \at\nerdreich\WikiUI();
+$wiki = new \at\nerdreich\wiki\WikiUI();
 require_once $wiki->getThemeSetupFile();
 
 // --- register authentication routes ------------------------------------------

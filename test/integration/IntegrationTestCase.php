@@ -18,7 +18,7 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace at\nerdreich;
+namespace at\nerdreich\wiki;
 
 /**
  * Integration tests for PHP, tailored for wiki.md.

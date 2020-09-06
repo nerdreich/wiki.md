@@ -21,7 +21,7 @@
 // Note: All tests operate on `dist/*` to QA the release version. You need to
 //       build the project using `gulp dist` first.
 
-namespace at\nerdreich;
+namespace at\nerdreich\wiki;
 
 require_once('test/php/WikiTestCase.php');
 
@@ -124,7 +124,7 @@ final class WikiTest extends WikiTestCase
     public function testwikiPathToContentFileFS(): void
     {
         $wiki = $this->getNewWiki();
-        $method = $this->getAsPublicMethod('\at\nerdreich\WikiCore', 'wikiPathToContentFileFS');
+        $method = $this->getAsPublicMethod('\at\nerdreich\wiki\WikiCore', 'wikiPathToContentFileFS');
 
         $this->assertEquals(
             $wiki->getContentDirFS() . '/README.md',
@@ -148,7 +148,7 @@ final class WikiTest extends WikiTestCase
     {
         $wiki = $this->getNewWiki();
         $wiki->init('/animal/lion');
-        $method = $this->getAsPublicMethod('\at\nerdreich\WikiCore', 'canonicalWikiPath');
+        $method = $this->getAsPublicMethod('\at\nerdreich\wiki\WikiCore', 'canonicalWikiPath');
 
         // absolute pages
         $this->assertEquals('/animal/lion', $method->invokeArgs($wiki, ['/animal/lion']));
@@ -178,7 +178,7 @@ final class WikiTest extends WikiTestCase
     public function testFilterBrokenLinks(): void
     {
         $wiki = $this->getNewWiki();
-        $method = $this->getAsPublicMethod('\at\nerdreich\WikiCore', 'runFilters');
+        $method = $this->getAsPublicMethod('\at\nerdreich\wiki\WikiCore', 'runFilters');
 
         // nothing changes while not logged-in
         $this->assertEquals('[link](/)', $method->invokeArgs($wiki, ['markup', '[link](/)', '/path']));

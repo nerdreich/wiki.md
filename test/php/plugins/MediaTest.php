@@ -21,7 +21,7 @@
 // Note: All tests operate on `dist/*` to QA the release version. You need to
 //       build the project using `gulp dist` first.
 
-namespace at\nerdreich;
+namespace at\nerdreich\wiki;
 
 require_once('test/php/WikiTestCase.php');
 
@@ -31,7 +31,7 @@ final class MediaTest extends WikiTestCase
     {
         $wiki = $this->getNewWikiUI('/test');
         $plugin = $wiki->core->getPlugin('media');
-        $method = $this->getAsPublicMethod('\at\nerdreich\MediaPlugin', 'getMediaFileFS');
+        $method = $this->getAsPublicMethod('\at\nerdreich\wiki\MediaPlugin', 'getMediaFileFS');
 
         $this->assertEquals(
             $wiki->core->getContentDirFS() . '/animal/_media/lion.png',
@@ -76,7 +76,7 @@ final class MediaTest extends WikiTestCase
         // the 'docs' user is allowed to do everything one subdir, but not in others
         $config = parse_ini_file('dist/wiki.md/data/config.ini');
         $user = new UserSession($config['datafolder'], $config['login_simple']);
-        $this->getPrivateProperty('\at\nerdreich\UserSession', 'username')->setValue($user, 'docs'); // pseudo-login
+        $this->getPrivateProperty('\at\nerdreich\wiki\UserSession', 'username')->setValue($user, 'docs'); // pseudo-login
 
         $this->assertFalse($user->hasPermission('mediaAdmin', '/docs'));
         $this->assertTrue($user->hasPermission('mediaAdmin', '/docs/'));

@@ -22,7 +22,7 @@ Your `_plugin.php` should at the bare minimum contain the following:
 
 namespace org\example;
 
-class MyPlugin extends \at\nerdreich\WikiPlugin
+class MyPlugin extends \at\nerdreich\wiki\WikiPlugin
 {
   public function setup();
   {

@@ -18,9 +18,9 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace at\nerdreich;
+namespace at\nerdreich\wiki;
 
-if (!class_exists('\at\nerdreich\MacroPlugin')) {
+if (!class_exists('\at\nerdreich\wiki\MacroPlugin')) {
 
     /**
      * Macro expansion plugin for wiki.md.
@@ -153,5 +153,5 @@ if (!class_exists('\at\nerdreich\MacroPlugin')) {
         }
     }
 
-    $GLOBALS['wiki.md-plugins']['macro'] = '\at\nerdreich\MacroPlugin';
+    $GLOBALS['wiki.md-plugins']['macro'] = '\at\nerdreich\wiki\MacroPlugin';
 }

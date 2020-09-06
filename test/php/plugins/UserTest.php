@@ -21,7 +21,7 @@
 // Note: All tests operate on `dist/*` to QA the release version. You need to
 //       build the project using `gulp dist` first.
 
-namespace at\nerdreich;
+namespace at\nerdreich\wiki;
 
 require_once('test/php/WikiTestCase.php');
 
@@ -72,8 +72,8 @@ final class UserTest extends WikiTestCase
         $plugin = $wiki->core->getPlugin('user');
 
         $hash = hash('sha1', file_get_contents(self::$htpasswd));
-        $this->getPrivateProperty('\at\nerdreich\UserSession', 'username')->setValue($plugin->user, '*');
-        $methodLogin = $this->getAsPublicMethod('\at\nerdreich\UserSession', 'getUserForPassword');
+        $this->getPrivateProperty('\at\nerdreich\wiki\UserSession', 'username')->setValue($plugin->user, '*');
+        $methodLogin = $this->getAsPublicMethod('\at\nerdreich\wiki\UserSession', 'getUserForPassword');
 
         // no permissions -> no data
         $data = $plugin->list('/');
@@ -82,14 +82,14 @@ final class UserTest extends WikiTestCase
         $this->assertFalse($plugin->deleteUser('docs'));
 
         // user docs can't read/update it
-        $this->getPrivateProperty('\at\nerdreich\UserSession', 'username')->setValue($plugin->user, 'docs');
+        $this->getPrivateProperty('\at\nerdreich\wiki\UserSession', 'username')->setValue($plugin->user, 'docs');
         $data = $plugin->list('/');
         $this->assertEquals(null, $data);
         $this->assertFalse($plugin->addSecret('docs', '*****'));
         $this->assertFalse($plugin->deleteUser('docs'));
 
         // user admin can read it
-        $this->getPrivateProperty('\at\nerdreich\UserSession', 'username')->setValue($plugin->user, 'admin');
+        $this->getPrivateProperty('\at\nerdreich\wiki\UserSession', 'username')->setValue($plugin->user, 'admin');
         $data = $plugin->list('/');
         $this->assertCount(2, $data['users']);
         $this->assertContains('admin', $data['users']);
@@ -161,7 +161,7 @@ final class UserTest extends WikiTestCase
         $wiki = $this->getNewWikiUI('/test');
         $plugin = $wiki->core->getPlugin('user');
 
-        $this->getPrivateProperty('\at\nerdreich\UserSession', 'username')->setValue($plugin->user, '*');
+        $this->getPrivateProperty('\at\nerdreich\wiki\UserSession', 'username')->setValue($plugin->user, '*');
 
         // anonymous can't set permissions
         $this->assertFalse(
@@ -179,7 +179,7 @@ final class UserTest extends WikiTestCase
         );
 
         // non-admin user can't set permissions
-        $this->getPrivateProperty('\at\nerdreich\UserSession', 'username')->setValue($plugin->user, 'docs');
+        $this->getPrivateProperty('\at\nerdreich\wiki\UserSession', 'username')->setValue($plugin->user, 'docs');
         $this->assertFalse(
             $plugin->setPermissions(
                 '/some/test/folder/',
@@ -195,7 +195,7 @@ final class UserTest extends WikiTestCase
         );
 
         // admin can set permissions
-        $this->getPrivateProperty('\at\nerdreich\UserSession', 'username')->setValue($plugin->user, 'admin');
+        $this->getPrivateProperty('\at\nerdreich\wiki\UserSession', 'username')->setValue($plugin->user, 'admin');
         $this->assertTrue(
             $plugin->setPermissions(
                 '/some/test/folder/',
@@ -235,7 +235,7 @@ final class UserTest extends WikiTestCase
                 'userAdmin' => ['admin', 'admin']
             ]
         );
-        $permissions = $this->getAsPublicMethod('\at\nerdreich\UserSession', 'loadPermissionFileFS')
+        $permissions = $this->getAsPublicMethod('\at\nerdreich\wiki\UserSession', 'loadPermissionFileFS')
             ->invokeArgs($plugin->user, ['/some/test/folder/']);
         $this->assertEquals('admin,docs', $permissions['pageCreate']);
         $this->assertEquals('*', $permissions['pageRead']);

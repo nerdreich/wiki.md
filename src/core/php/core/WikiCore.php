@@ -18,7 +18,7 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace at\nerdreich;
+namespace at\nerdreich\wiki;
 
 require_once('UDiff.php');              // simple file-diff implementation
 require_once('lib/spyc.php');           // yaml parser
@@ -537,7 +537,7 @@ class WikiCore
     {
         if ($encodedDiff !== null) {
             $diff = gzuncompress(base64_decode($encodedDiff));
-            $this->content = \at\nerdreich\UDiff::patch($this->content, $diff, true);
+            $this->content = \at\nerdreich\wiki\UDiff::patch($this->content, $diff, true);
         }
     }
 
@@ -842,7 +842,7 @@ class WikiCore
         string $newContent,
         bool $updateMetadata = true
     ) {
-        $diff = \at\nerdreich\UDiff::diff($this->content, $newContent);
+        $diff = \at\nerdreich\wiki\UDiff::diff($this->content, $newContent);
         $this->content = $newContent;
 
         if ($updateMetadata) {

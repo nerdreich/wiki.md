@@ -21,7 +21,7 @@
 // Note: All tests operate on `dist/*` to QA the release version. You need to
 //       build the project using `gulp dist` first.
 
-namespace at\nerdreich;
+namespace at\nerdreich\wiki;
 
 require_once('test/php/WikiTestCase.php');
 
@@ -50,7 +50,7 @@ final class UserSessionTest extends WikiTestCase
         // the 'docs' user is allowed to do everything one subdir, but not in others
         $config = parse_ini_file('dist/wiki.md/data/config.ini');
         $user = new UserSession($config['datafolder'], $config['login_simple']);
-        $this->getPrivateProperty('\at\nerdreich\UserSession', 'username')->setValue($user, 'docs'); // pseudo-login
+        $this->getPrivateProperty('\at\nerdreich\wiki\UserSession', 'username')->setValue($user, 'docs'); // pseudo-login
 
         $this->assertFalse($user->hasPermission('pageCreate', '/docs')); // a page in the root folder!
         $this->assertTrue($user->hasPermission('pageCreate', '/docs/'));

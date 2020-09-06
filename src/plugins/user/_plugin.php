@@ -18,9 +18,9 @@
  * along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace at\nerdreich;
+namespace at\nerdreich\wiki;
 
-if (!class_exists('\at\nerdreich\UserPlugin')) {
+if (!class_exists('\at\nerdreich\wiki\UserPlugin')) {
 
     /**
      * User/Permission manager plugin for wiki.md.
@@ -291,5 +291,5 @@ if (!class_exists('\at\nerdreich\UserPlugin')) {
         }
     }
 
-    $GLOBALS['wiki.md-plugins']['user'] = '\at\nerdreich\UserPlugin';
+    $GLOBALS['wiki.md-plugins']['user'] = '\at\nerdreich\wiki\UserPlugin';
 }

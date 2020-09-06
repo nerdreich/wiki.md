@@ -21,7 +21,7 @@
 // --- setup I18N --------------------------------------------------------------
 
 require_once(dirname(__FILE__) . '/../../core/Translate.php');
-at\nerdreich\Translate::loadLanguage(dirname(__FILE__) . '/I18N/' . $wiki->getLanguage() . '.yaml');
+at\nerdreich\wiki\Translate::loadLanguage(dirname(__FILE__) . '/I18N/' . $wiki->getLanguage() . '.yaml');
 
 // --- register theme macros ---------------------------------------------------
 
@@ -146,9 +146,9 @@ function localDateString(
 /**
  * Assemble the navigation menu.
  *
- * @param\at\nerdreich\WikiUI $wiki Current UI object.
+ * @param\at\nerdreich\wiki\WikiUI $wiki Current UI object.
  */
-function getPageLinksHTML(at\nerdreich\WikiUI $wiki): string
+function getPageLinksHTML(at\nerdreich\wiki\WikiUI $wiki): string
 {
     $html = '';
     foreach ($wiki->getMenuItems() as $action => $label) {
@@ -160,9 +160,9 @@ function getPageLinksHTML(at\nerdreich\WikiUI $wiki): string
 /**
  * Generate the HTML header and open the <body>.
  *
- * @param\at\nerdreich\WikiUI $wiki Current UI object.
+ * @param\at\nerdreich\wiki\WikiUI $wiki Current UI object.
  */
-function outputHeader(at\nerdreich\WikiUI $wiki, ?string $title = null, ?string $description = null): void
+function outputHeader(at\nerdreich\wiki\WikiUI $wiki, ?string $title = null, ?string $description = null): void
 {
     ?><!doctype html>
 <html class="no-js" lang="">
@@ -185,9 +185,9 @@ function outputHeader(at\nerdreich\WikiUI $wiki, ?string $title = null, ?string 
 /**
  * Generate the (top) navbar.
  *
- * @param\at\nerdreich\WikiUI $wiki Current UI object.
+ * @param\at\nerdreich\wiki\WikiUI $wiki Current UI object.
  */
-function outputNavbar(at\nerdreich\WikiUI $wiki): void
+function outputNavbar(at\nerdreich\wiki\WikiUI $wiki): void
 {
     ?>
 <section class="navbar">
@@ -212,9 +212,9 @@ function outputNavbar(at\nerdreich\WikiUI $wiki): void
 /**
  * Generate the banner area.
  *
- * @param\at\nerdreich\WikiUI $wiki Current UI object.
+ * @param\at\nerdreich\wiki\WikiUI $wiki Current UI object.
  */
-function outputBanner(at\nerdreich\WikiUI $wiki): void
+function outputBanner(at\nerdreich\wiki\WikiUI $wiki): void
 {
     ?>
 <section class="banner">
@@ -232,9 +232,9 @@ function outputBanner(at\nerdreich\WikiUI $wiki): void
 /**
  * Generate the footer and close <body> & <html>.
  *
- * @param\at\nerdreich\WikiUI $wiki Current UI object.
+ * @param\at\nerdreich\wiki\WikiUI $wiki Current UI object.
  */
-function outputFooter(at\nerdreich\WikiUI $wiki): void
+function outputFooter(at\nerdreich\wiki\WikiUI $wiki): void
 {
     ?>
 <footer class="container">

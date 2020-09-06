@@ -21,7 +21,7 @@
 // Note: All tests operate on `dist/*` to QA the release version. You need to
 //       build the project using `gulp dist` first.
 
-namespace at\nerdreich;
+namespace at\nerdreich\wiki;
 
 require_once('dist/wiki.md/core/WikiCore.php');
 require_once('dist/wiki.md/core/WikiUI.php');
@@ -38,7 +38,7 @@ class WikiTestCase extends \PHPUnit\Framework\TestCase
 
     protected function getNewWikiUI(string $wikiPath): WikiUI
     {
-        $wiki = new \at\nerdreich\WikiUI($wikiPath);
+        $wiki = new \at\nerdreich\wiki\WikiUI($wikiPath);
         require_once $wiki->getThemeSetupFile();
         return $wiki;
     }
