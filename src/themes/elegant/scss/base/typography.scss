@@ -136,13 +136,9 @@ body {
 
 pre,
 kbd,
+code,
 samp {
   @include typography-font($typography-font-list-courier, 400, px(16), 1.4em);
-  padding: .1em .25em;
-}
-
-code {
-  @include typography-font($typography-font-list-courier, 400, 1em, 1.4em);
   padding: .1em .25em;
 }
 

@@ -29,31 +29,32 @@ All project files use UTF-8 encoding and Unix-style line endings. We use `gulp` 
 
 ```
 /
-/data    # default/template wiki content
-/dist    # generated release files (not in git)
-/docs    # documenation for admins and users
+/data      # default/template wiki content
+/dist      # generated release files (not in git)
+/docs      # documenation for admins and users
 /src
-  /core  # source code of wiki.md's core
-  /theme # source code of Elegant, the default theme
-/test    # (unit) testing code for src
-/tools   # misc. helper code and tools
+  /core    # source code of wiki.md's core
+  /plugins # source code of wiki.md's default plugins
+  /themes  # source code of Elegant, the default theme
+/test      # (unit) testing code for src
+/tools     # misc. helper code and tools
 ```
 
 ### PHP
 
 * All PHP code must adhere the [PSR12 coding standard](https://www.php-fig.org/psr/psr-12/). Gulp will check & enforce that by using a linter.
-* The terms path, directory and file can become very confusing very fast. We use the following nomenclature for them:
+* The terms _path_, _directory_ and _file_ can become very confusing very fast. We use the following nomenclature for them:
   * Variables about the file-system ...
-    * ... never contain 'path' in their name and end in `DirFS` or `FileFS`, depending on their content.
+    * ... have names ending in `DirFS` or `FileFS`, depending on their content. They never use `path` in their name.
     * ... always contain absolute information, e.g. `/var/www/www.mysite.com/mywiki`.
     * ... must not contain a trailing slash if they contain a directory.
   * Variables about the URL ...
-    * ... always use the term `path`.
-    * ... must contain a trailing slash if they contain a directory.
+    * ... always use the term `path` in their name.
+    * ... must contain a trailing slash if they represent a directory.
   * A `wikiPath` is the path of a resource (folder or file) within the wiki. If wiki.md is installed in a sub-folder, that sub-folder name is not part of the `wikiPath`.
 
 ### (S)CSS
 
 * All styles are written in [SCSS](https://sass-lang.com/).
-* We follow the [7-1 pattern](https://sass-guidelin.es/#the-7-1-pattern) for naming sass files.
+* We follow the [7-1 pattern](https://sass-guidelin.es/#the-7-1-pattern) for naming files.
 * We use the `sass-lint` coding standard, with a few exception defined in `.sass-lint.yml`. Gulp will check & enforce that via a plugin.

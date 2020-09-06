@@ -62,8 +62,11 @@ Feel free to report any [issues](https://github.com/nerdreich/wiki.md/issues) yo
 
 ### Planned for v2.0.0
 
-* rename-page feature
 * fix hardcoded `/data/` when loading config
+
+### Planned for v2.1.0
+
+* rename-page feature
 
 ### Unscheduled ideas
 

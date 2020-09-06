@@ -61,7 +61,7 @@ class WikiCore
 
         // wiki path + files
         $wikiDirFS = dirname(dirname(__FILE__)); // WikiCore.php is in the ../core folder
-        $this->contentDirFS = $wikiDirFS . '/' . ($this->config['datafolder'] ?? 'data') . '/content';
+        $this->contentDirFS = $wikiDirFS . '/data/content';
         $this->wikiRoot = substr($wikiDirFS, strlen($_SERVER['DOCUMENT_ROOT']));
 
         // register core filters

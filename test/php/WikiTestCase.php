@@ -32,7 +32,7 @@ class WikiTestCase extends \PHPUnit\Framework\TestCase
     protected function getNewWiki(): WikiCore
     {
         $config = parse_ini_file('dist/wiki.md/data/config.ini');
-        $user = new UserSession($config['datafolder'], $config['login_simple']);
+        $user = new UserSession('data', $config['login_simple']);
         return new WikiCore($config, $user);
     }
 
