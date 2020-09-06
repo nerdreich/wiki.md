@@ -94,18 +94,16 @@ The default installation only knows a single `admin` user. See [Permissions](per
 
 ## History auto-squashing
 
-When users save pages very often in short intervals, they can fill up the page history quickly with minor versions. History squashing will detect repeated saves within a defined time intervall and combine those minor saves into one history entry. Per default, saves of the same page from the same author within 120 seconds will be auto-squashed. You can change this interval by editing `data/config.ini`:
+When users save pages very often in short intervals, they can fill up the page history quickly with minor versions. History squashing will detect repeated saves by the same user/session within a defined time intervall and combine those minor saves into one history entry. Per default, saves of the same page from the same author within 2 minutes will be auto-squashed. You can change this interval by editing `data/config.ini`:
 
 ```
-autosquash_interval = 120 ; seconds
+autosquash_interval = 120   ; in seconds, -1 to disable
 ```
-
-A value of `-1` disables auto-squashing.
 
 ## Editor warnings
 
-When users open a page editor that another user/session has opened and have not saved yet, wiki.md will show a warning. Since users occasionally just don't save, you can set the interval this warning keeps showing up in your `config.ini` file:
+When users open a page editor that another user/session has opened but not saved yet, wiki.md will show a warning. Since users occasionally just don't save, you can set the interval this warning keeps showing up in your `config.ini` file:
 
 ```
-edit_warning_interval = 900 ; seconds
+edit_warning_interval = 900 ; in seconds, -1 to disable
 ```

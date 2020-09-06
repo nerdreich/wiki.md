@@ -179,6 +179,9 @@ final class WikiTest extends WikiTestCase
         $this->assertNull($method->invokeArgs($wiki, ['/..']));
         $this->assertNull($method->invokeArgs($wiki, ['/../']));
         $this->assertEquals('/', $method->invokeArgs($wiki, ['/']));
+
+        // latin-extended-a special characters
+        $this->assertEquals('/animal/łīöň/', $method->invokeArgs($wiki, ['/animal/łīöň/']));
     }
 
     public function testCanonicalWikiPath(): void

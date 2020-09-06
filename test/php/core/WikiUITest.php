@@ -33,4 +33,18 @@ final class WikiUITest extends WikiTestCase
 
         $this->assertStringStartsWith('https://github', $wikiUI->getRepo());
     }
+
+    public function testSanitizePath(): void
+    {
+        $wikiUI = $this->getNewWikiUi('/test');
+
+        $this->assertEquals('/animal', $wikiUI->sanitizePath('/animal'));
+        $this->assertEquals('/animal/Lion', $wikiUI->sanitizePath('///animal//Lion'));
+        $this->assertEquals('/animal/li on/', $wikiUI->sanitizePath('/animal/li on/'));
+        $this->assertEquals('/animal/łīöň/', $wikiUI->sanitizePath('/animal/łīöň/'));
+        $this->assertEquals('/animal[lion]', $wikiUI->sanitizePath('/animal[lion]'));
+        $this->assertEquals('/animal/lion.jpg', $wikiUI->sanitizePath('/animal/lion.jpg'));
+        $this->assertEquals('/./lion.jpg', $wikiUI->sanitizePath('/../lion.*.jpg'));
+        $this->assertEquals('/animal/././lion', $wikiUI->sanitizePath('/animal/.///./lion'));
+    }
 }

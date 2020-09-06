@@ -126,9 +126,9 @@ class WikiUI
         string $path
     ): string {
         $path = urldecode($path);
-        $path = preg_replace('/[^\w\s\d\-_~,;\/\[\]\(\)\.]/', '', $path); // only whitelisted chars
-        $path = preg_replace('/\.\.+/', '', $path); // no '..'
-        $path = preg_replace('/^\/*/', '/', $path); // make sure there is only one leading slash
+        $path = preg_replace('/[^\w\s\d\-_~,;\/\[\]\(\)\.]/u', '', $path); // only whitelisted chars
+        $path = preg_replace('/\.\.+/', '.', $path); // no '..'
+        $path = preg_replace('/\/+/', '/', $path);   // reduce multiple slashes to one
         return $path;
     }
 
