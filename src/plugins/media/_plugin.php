@@ -65,12 +65,12 @@ if (!class_exists('\at\nerdreich\wiki\MediaPlugin')) {
             });
 
             $this->wiki->registerActionRoute('media', 'delete', function ($wiki) {
-                if ($this->delete($wiki->core->getWikiPath()) !== null) {
+                if ($this->delete() !== null) {
                     $wiki->redirect(dirname($wiki->core->getLocation()) . '/', 'media=list');
                 }
             });
 
-            if ($this->mayMedia($this->core->getWikiPath())) {
+            if ($this->mayMedia()) {
                 $this->wiki->addMenuItem('media=list', 'Media');
             }
         }
@@ -93,13 +93,14 @@ if (!class_exists('\at\nerdreich\wiki\MediaPlugin')) {
         /**
          * Check if the current user may administrate media & uploads.
          *
-         * @param string $path The path to check the permission for.
+         * @param string $wikiPath The path to check the permission for.
          * @return boolean True, if permissions are sufficient. False otherwise.
          */
         public function mayMedia(
-            string $path
+            ?string $wikiPath = null
         ): bool {
-            return $this->user->hasPermission('mediaAdmin', $path);
+            $wikiPath = $wikiPath ?? $this->core->getWikiPath();
+            return $this->user->hasPermission('mediaAdmin', $wikiPath);
         }
 
         /**
@@ -140,9 +141,9 @@ if (!class_exists('\at\nerdreich\wiki\MediaPlugin')) {
             string $wikiPath
         ): string {
             if ($wikiPath[-1] === '/') {
-                return $this->core->getContentDirFS() . $wikiPath . '_media';
+                return $this->core->getContentDirFS() . $wikiPath . '_media/';
             } else {
-                return $this->core->getContentDirFS() . dirname($wikiPath) . '/_media';
+                return $this->core->getContentDirFS() . dirname($wikiPath) . '/_media/';
             }
         }
 
@@ -210,10 +211,11 @@ if (!class_exists('\at\nerdreich\wiki\MediaPlugin')) {
          * @return bool True if file could be deleted.
          */
         public function delete(
-            string $wikiPath
+            ?string $wikiPath = null
         ): bool {
+            $wikiPath = $this->core->getWikiPath();
             if ($this->mayMedia($wikiPath)) {
-                $file = $this->core->wikiPathToContentFileFS($wikiPath);
+                $file = $this->getMediaDirFS($wikiPath) . basename($wikiPath);
                 if (is_file($file)) {
                     unlink($file);
                     return true;

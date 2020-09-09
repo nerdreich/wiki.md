@@ -2,8 +2,6 @@
 
 Yet another Wiki/CMS written in PHP.
 
-![https://img.shields.io/github/v/release/nerdreich/wiki.md](https://github.com/nerdreich/wiki.md/releases)
-
 ![wiki.md](preview.png)
 
 ## Key features

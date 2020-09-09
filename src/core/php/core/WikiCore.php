@@ -233,6 +233,21 @@ class WikiCore
     }
 
     /**
+     * Map URL path to directory of a page.
+     *
+     * - /path/to/folder/ -> /path/to/
+     * - /path/to/item > /path/to/
+     *
+     * @param string $wikiPath Path to lookup.
+     * @return mixed Path (string) to directory or FALSE if not found.
+     */
+    public function wikiPathToContentDirFS(
+        string $wikiPath
+    ): string {
+        return dirname($this->wikiPathToContentFileFS($wikiPath)) . '/';
+    }
+
+    /**
      * Find the wiki-path of a content filename. E.g.
      *
      * /var/www/content/path/to/page.md -> /path/to/page
@@ -673,7 +688,10 @@ class WikiCore
                     if (preg_match('/^https?:/', $matchLink)) { // skip http[s]: links
                         return $matchFull;
                     }
-                    if (!$this->exists($matchLink)) {
+
+                    // fixLinks filter added wikiroot - need to remove it again for check
+                    $wikiRootLength = strlen($this->wikiRoot);
+                    if (!$this->exists(substr($matchLink, $wikiRootLength))) {
                         return $matchFull . '{.broken}';
                     }
                     return $matchFull;
