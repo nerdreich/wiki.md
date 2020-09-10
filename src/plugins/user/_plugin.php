@@ -83,9 +83,10 @@ if (!class_exists('\at\nerdreich\wiki\UserPlugin')) {
          * @return boolean True, if permissions are sufficient. False otherwise.
          */
         public function mayUserAdmin(
-            string $path
+            ?string $wikiPath = null
         ): bool {
-            return $this->user->hasPermission('userAdmin', $path);
+            $wikiPath = $wikiPath ?? $this->core->getWikiPath();
+            return $this->user->hasPermission('userAdmin', $wikiPath);
         }
 
         /**
@@ -95,17 +96,17 @@ if (!class_exists('\at\nerdreich\wiki\UserPlugin')) {
          * @param array Array containing 'permissions' and 'users'.
          */
         public function list(
-            string $path = null
+            string $wikiPath = null
         ): ?array {
-            $path = $path ?? $this->core->getWikiPath();
-            if ($path[-1] !== '/') {
-                $path = dirname($path); // folder of files
-                $path = $path === '/' ? '/' : $path . '/';
+            $wikiPath = $wikiPath ?? $this->core->getWikiPath();
+            if ($wikiPath[-1] !== '/') {
+                $wikiPath = dirname($wikiPath); // folder of files
+                $wikiPath = $wikiPath === '/' ? '/' : $wikiPath . '/';
             }
-            if ($this->mayUserAdmin($path)) {
-                $infos['folder'] = $path;
+            if ($this->mayUserAdmin($wikiPath)) {
+                $infos['folder'] = $wikiPath;
 
-                if ($yaml = $this->user->loadPermissionFileFS($path)) {
+                if ($yaml = $this->user->loadPermissionFileFS($wikiPath)) {
                     // TODO: remove hardcoded values from plugins
                     foreach (['pageCreate', 'pageRead', 'pageUpdate', 'pageDelete', 'userAdmin', 'mediaAdmin'] as $permission) {
                         if (array_key_exists($permission, $yaml)) {

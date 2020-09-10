@@ -48,7 +48,7 @@ $userPattern = '(' . implode(',|', $infos['users']) . ',)*(' . implode('|', $inf
   <input type="submit" class="primary" value="<?php __('Save'); ?>">
 </form>
 <hr>
-<form action="?admin=secret" method="post">
+<form action="?user=secret" method="post">
   <h2><?php __('Users (global)'); ?></h2>
   <label class="in-border"><?php __('Username'); ?></label>
   <input type="text" name="username" pattern="[a-zA-Z]{2,32}">

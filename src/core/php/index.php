@@ -48,7 +48,11 @@ $wiki->registerActionRoute('page', 'save', function ($wiki) {
         )
     ) {
         $wiki->user->setAlias($alias);
-        $wiki->redirect($wiki->core->getLocation());
+        if (array_key_exists('edit', $_POST)) { // user clicked save+edit
+            $wiki->redirect($wiki->core->getLocation(), 'page=edit');
+        } else { // user clicked save
+            $wiki->redirect($wiki->core->getLocation());
+        }
     };
 });
 

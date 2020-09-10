@@ -1,3 +1,7 @@
+# v2.0.1
+
+* fixed url handling in subdirectory installations
+
 # v2.0.0
 
 * added filter/plugin mechanism

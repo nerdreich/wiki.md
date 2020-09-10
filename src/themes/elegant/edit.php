@@ -36,8 +36,8 @@ outputBanner($wiki);
       <textarea id="content" name="content" required autofocus><?php echo $wiki->core->getContentMarkup(); ?></textarea>
       <label for="author" class="in-border"><?php __('Author'); ?></label>
       <input id="author" type="text" name="author" value="<?php echo $wiki->user->getAlias(); ?>" required>
-      <input type="submit" class="primary" value="<?php __('Save'); ?>"><input type="submit"
-      value="<?php __('Save & Edit'); ?>"><a class="btn" href="<?php echo $wiki->core->getWikiPath(); ?>"><?php __('Cancel'); ?></a>
+      <input type="submit" class="primary" name="save" value="<?php __('Save'); ?>"><input type="submit" name="edit"
+      value="<?php __('Save & Edit'); ?>"><a class="btn" href="<?php echo $wiki->core->getLocation(); ?>"><?php __('Cancel'); ?></a>
     </form>
     <div class="col-12">
       <hr>
