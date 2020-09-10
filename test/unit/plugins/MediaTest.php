@@ -23,7 +23,7 @@
 
 namespace at\nerdreich\wiki;
 
-require_once('test/php/WikiTestCase.php');
+require_once('test/unit/WikiTestCase.php');
 
 final class MediaTest extends WikiTestCase
 {

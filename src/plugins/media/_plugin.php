@@ -128,7 +128,7 @@ if (!class_exists('\at\nerdreich\wiki\MediaPlugin')) {
         private function getMediaFileFS(
             string $wikiPath
         ): string {
-            return $this->getMediaDirFS($wikiPath) . '/' . basename($wikiPath);
+            return $this->getMediaDirFS($wikiPath) . basename($wikiPath);
         }
 
         /**
