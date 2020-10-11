@@ -746,4 +746,36 @@ class IntegrationTest extends IntegrationTestCase
         $this->assertPayloadContainsPreg('/<li>docs/');
         $this->assertPayloadContainsNotPreg('/<li>nr/');
     }
+
+    public function testChangelog(): void
+    {
+        // login & create a page
+        $this->post('/?auth=login', ['username' => 'docs', 'password' => 'doc']);
+        $this->assertRedirect('/');
+        $this->post('/docs/changelog?page=save', [
+            'title' => 'changelog title',
+            'content' => 'changelog content',
+            'author' => 'changelog author'
+        ]);
+        $this->assertRedirect('/docs/changelog');
+
+        // query changelog
+        $this->get('/CHANGELOG');
+        $this->assertPage();
+        $this->assertPayloadContainsPreg('/<li><a href="\/docs\/changelog">changelog title<\/a> changelog author/');
+        $this->assertPayloadContainsNotPreg('/<li><a href="\/docs\/changelog">changelog<\/a> changelog update author/');
+
+        // update the page
+        $this->post('/docs/changelog?page=save', [
+            'title' => '',
+            'content' => 'changelog2 content',
+            'author' => 'changelog2 author'
+        ]);
+
+        // check changelog again
+        $this->get('/CHANGELOG');
+        $this->assertPage();
+        $this->assertPayloadContainsPreg('/<li><a href="\/docs\/changelog">changelog title<\/a> changelog author/');
+        $this->assertPayloadContainsPreg('/<li><a href="\/docs\/changelog">changelog<\/a> changelog2 author/');
+    }
 }

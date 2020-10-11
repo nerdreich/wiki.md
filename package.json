@@ -1,6 +1,6 @@
 {
   "name": "wiki.md",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "A file-based, responsive Markdown wiki, written in PHP.",
   "keywords": [
     "wiki",
@@ -23,7 +23,7 @@
   },
   "license": "AGPL-3.0-or-later",
   "devDependencies": {
-    "del": "5",
+    "del": "6",
     "gulp": "4",
     "gulp-autoprefixer": "7",
     "gulp-concat": "2",
@@ -37,7 +37,7 @@
     "gulp-sort": "2",
     "gulp-tar": "3",
     "gulp-zip": "5",
-    "imagemin-pngquant": "9"
+    "imagemin-pngquant": "^9.0.1"
   },
   "dependencies": {
     "bootstrap": "4.5"

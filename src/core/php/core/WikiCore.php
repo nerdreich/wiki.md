@@ -991,6 +991,18 @@ class WikiCore
     }
 
     /**
+     * Derive a default page title from the page's filename.
+     *
+     * @return string unCamelCased default title.
+     */
+    private function getDefaultTitle(): string
+    {
+        $title = str_replace('_', ' ', basename($this->wikiPath));  // underscore to spaces
+        $title = preg_replace('/([a-z])([A-Z])/', '$1 $2', $title); // unCamelCase
+        return $title;
+    }
+
+    /**
      * Create a new, empty page.
      *
      * Will only reset internal data to a blank page, to be picked up by the
@@ -1006,15 +1018,7 @@ class WikiCore
             $this->metadata['date'] = date(\DateTimeInterface::ATOM);
             $this->content = '';
             $this->contentFileFS = $this->wikiPathToContentFileFS($this->wikiPath);
-
-            // prefill title
-            $this->metadata['title'] = str_replace('_', ' ', basename($this->wikiPath)); // underscore to spaces
-            $this->metadata['title'] = preg_replace(
-                '/([a-z])([A-Z])/',
-                '$1 $2',
-                $this->metadata['title']
-            ); // unCamelCase
-
+            $this->metadata['title'] = $this->getDefaultTitle();
             return true;
         }
 
@@ -1206,7 +1210,9 @@ class WikiCore
         $changelog = $this->contentDirFS . '/CHANGELOG.md';
         touch($changelog); // make sure file exists
 
-        $log = '* [' . $this->getTitle() . '](' . $this->wikiPath . ')'
+        $title = $this->getTitle() !== '' ? $this->getTitle() : $this->getDefaultTitle();
+
+        $log = '* [' . $title . '](' . $this->wikiPath . ')'
             . ' ' . $this->getAuthor()
             . ' ' . $this->metadata['date']
             . PHP_EOL;
