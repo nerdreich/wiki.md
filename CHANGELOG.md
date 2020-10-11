@@ -1,3 +1,8 @@
+# v2.0.2
+
+* fixed changelog default page title
+* updated npm dependencies
+
 # v2.0.1
 
 * fixed url handling in subdirectory installations
