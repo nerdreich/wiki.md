@@ -4,9 +4,7 @@ This document contains a backlog of things to (maybe) do next:
 
 ### Planned for v3.0.0
 
-* upgrade to Bootstrap 5
 * fix list-in-list CSS
-
 
 ### Backlog (unscheduled)
 

@@ -25,7 +25,7 @@ input[type='button'],
 input[type='submit'] {
   @include typography-font($typography-font-list-serif, 700, px(18), 1em, 1px);
   @include typography-links(inherit, inherit, 0);
-  @include media-breakpoint-down(xs) {
+  @include media-breakpoint-down(sm) {
     max-width: 100%;
     width: 100%;
   }

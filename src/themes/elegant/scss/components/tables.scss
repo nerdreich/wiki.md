@@ -31,9 +31,9 @@ tbody tr:nth-child(even) {
 th {
   color: $color-text;
   font-weight: 700;
-  padding: $spacing / 8 $spacing / 4;
+  padding: math.div($spacing, 8) math.div($spacing, 4);
 }
 
 td {
-  padding: $spacing / 8 $spacing / 4;
+  padding: math.div($spacing, 8) math.div($spacing, 4);
 }

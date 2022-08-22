@@ -1,6 +1,6 @@
 {
   "name": "wiki.md",
-  "version": "2.0.2",
+  "version": "3.0.0",
   "description": "A file-based, responsive Markdown wiki, written in PHP.",
   "type": "module",
   "keywords": [
@@ -47,7 +47,7 @@
     "sass": "^1.52.3"
   },
   "dependencies": {
-    "bootstrap": "4"
+    "bootstrap": "5"
   },
   "bgColor": "#fefdfa"
 }
