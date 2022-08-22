@@ -65,7 +65,7 @@ $restoreEnabled = true;
             </dt>
         <?php } ?>
         <?php foreach (array_reverse($wiki->core->getHistory() ?? []) as $change) { ?>
-          <dd><?php if ($change['diff'] !== null) {
+          <dd><?php if (($change['diff'] ?? null) !== null) {
                     echo diff2html(gzuncompress(base64_decode($change['diff'])));
               } else {
                     echo ___('No record available.');

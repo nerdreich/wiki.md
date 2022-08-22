@@ -19,7 +19,7 @@
 /// @access public
 ////
 
-$input-padding: $spacing / 2;
+$input-padding: math.div($spacing, 2);
 
 form {
   margin-top: 0;

@@ -104,13 +104,16 @@ class UserSession
             $user = $this->verifyLogin($username, $secret);
         }
         if ($user) {
-            // session_start();
+            // session_start() might be run by constructor
+            if (session_status() !== PHP_SESSION_NONE) {
+                session_destroy();
+                session_unset();
+            }
             session_start();
             session_regenerate_id(false);
-            session_unset();
-            session_start();
             $_SESSION['username'] = $user;
             $_SESSION['alias'] = '';
+
             return true;
         }
         return false;
@@ -167,9 +170,10 @@ class UserSession
     public function logout(): void
     {
         // logout on server
-        session_start();
-        session_unset();
-        session_destroy();
+        // session_start() might be run by constructor
+        if (session_status() !== PHP_SESSION_NONE) {
+            session_destroy();
+        }
 
         // remove PHP session cookie from client to better comply to GDPR
         $params = session_get_cookie_params();
@@ -177,10 +181,10 @@ class UserSession
             session_name(),
             '',
             0,
-            $params['path'],
-            $params['domain'],
-            $params['secure'],
-            isset($params['httponly'])
+            $params['path'] ?? '',
+            $params['domain'] ?? '',
+            $params['secure'] ?? false,
+            $params['httponly'] ?? false
         );
     }
 

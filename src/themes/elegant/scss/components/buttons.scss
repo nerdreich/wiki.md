@@ -36,7 +36,7 @@ input[type='submit'] {
   color: $color-primary;
   display: inline-block;
   margin-right: $spacing;
-  padding: $spacing / 2 $spacing;
+  padding: math.div($spacing, 2) $spacing;
   text-align: center;
   text-transform: uppercase;
 

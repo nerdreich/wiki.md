@@ -62,7 +62,7 @@ class UDiff
             count($arrayA) - 1,
             $arrayB,
             1,
-            count($arrayB) - 1,
+            count($arrayB) - 1
         );
 
         if ($diff !== '') {
@@ -83,7 +83,7 @@ class UDiff
      *                Reverse backwards otherwise.
      * @return string Patched Data.
      */
-    public function patch(
+    public static function patch(
         string $in,
         string $diff,
         bool $reverse = false
@@ -136,7 +136,7 @@ class UDiff
      *
      * @return array Array containing the 4 values of a patch line.
      */
-    private function parsePatch(
+    private static function parsePatch(
         string $diffLine
     ): array {
         preg_match('/@@ -([0-9]+),([0-9]+) \+([0-9]+),([0-9]+) @@/', $diffLine, $matches);

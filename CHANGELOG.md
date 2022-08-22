@@ -1,3 +1,11 @@
+# v3.0.0
+
+* bumped dependencies & updated to npm 8 / eslint 8 / php 8
+
+# v2.1.0
+
+* added PHP8 support
+
 # v2.0.2
 
 * fixed changelog default page title

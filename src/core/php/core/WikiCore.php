@@ -440,7 +440,7 @@ class WikiCore
      */
     public function getHistory(): ?array
     {
-        return $this->metadata['history'];
+        return $this->metadata['history'] ?? null;
     }
 
     /**
@@ -532,7 +532,7 @@ class WikiCore
                 // reverse-apply all diffs up to to the requested version
                 for ($revertTo = $historySize; $revertTo >= $version; $revertTo--) {
                     $diffToApply = $revertTo - 1;
-                    $diff = $this->metadata['history'][$diffToApply]['diff'];
+                    $diff = $this->metadata['history'][$diffToApply]['diff'] ?? null;
                     if ($diff !== null) {
                         $this->applyEncodedDiffToContent($this->metadata['history'][$diffToApply]['diff']);
                     } else {
@@ -638,7 +638,7 @@ class WikiCore
         string $markdown,
         string $fsPath
     ): string {
-        foreach ($this->filters[$hook] ?? [] as $filter) {
+        foreach (($this->filters[$hook] ?? []) as $filter) {
             $markdown = $filter($markdown, $fsPath);
         }
         return $markdown;
@@ -788,11 +788,11 @@ class WikiCore
      */
     public function isWip(): int
     {
-        if ($this->metadata['editBy'] !== $this->user->getSessionToken()) { // we don't care about our own session
+        if (($this->metadata['editBy'] ?? null) !== $this->user->getSessionToken()) { // we don't care about our own session
             if (array_key_exists('edit', $this->metadata)) {
                 $lastEditDate = \DateTime::createFromFormat(\DateTimeInterface::ATOM, $this->metadata['edit']);
                 $deltaSeconds = (new \DateTime())->getTimestamp() - $lastEditDate->getTimestamp();
-                if ($deltaSeconds < $this->config['edit_warning_interval'] ?? -1) {
+                if ($deltaSeconds < ($this->config['edit_warning_interval'] ?? -1)) {
                     return $deltaSeconds;
                 }
             }
@@ -833,11 +833,11 @@ class WikiCore
     private function squashLastHistoryItem(
         string $author
     ): bool {
-        if ($this->metadata['author'] === $author) {
+        if (($this->metadata['author'] ?? null) === $author) {
             if (array_key_exists('date', $this->metadata)) {
                 $lastSaveDate = \DateTime::createFromFormat(\DateTimeInterface::ATOM, $this->metadata['date']);
                 $deltaSeconds = (new \DateTime())->getTimestamp() - $lastSaveDate->getTimestamp();
-                if ($deltaSeconds < $this->config['autosquash_interval'] ?? -1) {
+                if ($deltaSeconds < ($this->config['autosquash_interval'] ?? -1)) {
                     // this is a quick (re)save. undo last history to merge the saves into one.
                     $this->revertToPreviousVersion();
                     if ($this->metadata['history'] === []) {
@@ -897,7 +897,7 @@ class WikiCore
     private function fixDirtyPage()
     {
         if ($this->exists()) { // 2nd+ save
-            if ($this->metadata['history'] === null) { // no history = legacy .md file
+            if (($this->metadata['history'] ?? null) === null) { // no history = legacy .md file
                 // start a new history
                 $this->metadata['history'] = [];
             } else { // regular wiki.md file
@@ -1113,7 +1113,8 @@ class WikiCore
         array $yaml
     ): array {
         // use path name as title fallback
-        $yaml['title'] = $yaml['title'] ?? end(explode('/', $yaml['path']));
+        $tmp = explode('/', $yaml['path'] ?? '');
+        $yaml['title'] = $yaml['title'] ?? end($tmp);
         return $yaml;
     }
 

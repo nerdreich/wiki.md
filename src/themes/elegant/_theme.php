@@ -101,7 +101,7 @@ function diff2html(
     $html = '';
     $chunk = '';
     foreach (explode("\n", $diff) as $line) {
-        switch ($line[0]) {
+        switch ($line[0] ?? '') {
             case '@':
                 $html .= $chunk . "\n<span class=\"info\">" . $line . "</span>\n";
                 $chunk = '';
@@ -112,8 +112,6 @@ function diff2html(
             case '+':
                 $chunk = $chunk . '<span class="added">' . substr($line, 1) . "</span>\n";
                 break;
-                // $chunk = '<code class="added">' . $line . "</code>\n" . $chunk;
-                // break;
         }
     }
     $html .= $chunk;
