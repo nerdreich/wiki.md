@@ -22,7 +22,7 @@
 // We try to use relative units (em) if possible, so that it is easier to scale
 // the font/element on its font-size.
 
-@import '../../fonts/Vollkorn/font';
+@import '../../fonts/NotoSerif/font';
 @import '../../fonts/SourceCodePro/font';
 
 $typography-font-list-serif-fallback:
@@ -47,7 +47,7 @@ Consolas,
 monospace;
 
 $typography-font-list-serif:
-'Vollkorn',
+'Noto Serif',
 $typography-font-list-serif-fallback;
 
 $typography-font-list-courier:
@@ -122,7 +122,7 @@ body {
 }
 
 body {
-  @include typography-font($typography-font-list-serif, 400, $typography-body-font-size, 1.6em, .0125em);
+  @include typography-font($typography-font-list-serif, 400, $typography-body-font-size, 1.6em);
   color: $color-text;
 
   a {
@@ -139,6 +139,7 @@ kbd,
 code,
 samp {
   @include typography-font($typography-font-list-courier, 400, px(16), 1.4em);
+  color: $color-text;
   padding: .1em .25em;
 }
 
@@ -150,26 +151,27 @@ pre {
   }
 }
 
+$typography-letter-spacing-headline: .01em;
+
 .h0,
 %h0, {
-  @include typography-font($typography-font-list-serif, 900, 2.5em, 1em, .025em);
-  color: $color-headline;
+  @include typography-font($typography-font-list-serif, 700, 2.5em, 1.25em, $typography-letter-spacing-headline);
+  color: $color-text-bold;
   text-transform: uppercase;
 }
 
 h1,
 .h1,
 %h1 {
-  @include typography-font($typography-font-list-serif, 900, 2.5em, 1em, .025em);
+  @include typography-font($typography-font-list-serif, 700, 2.5em, 1.25em, $typography-letter-spacing-headline);
   color: $color-headline;
-  font-style: italic;
   margin-top: $spacing * 2.5;
 }
 
 h2,
 .h2,
 %h2 {
-  @include typography-font($typography-font-list-serif, 800, 1.75em, 1em, .025em);
+  @include typography-font($typography-font-list-serif, 700, 2em, 1.25em, $typography-letter-spacing-headline);
   color: $color-headline;
   font-style: italic;
   margin-top: $spacing * 2.5;
@@ -178,8 +180,9 @@ h2,
 h3,
 .h3,
 %h3 {
-  @include typography-font($typography-font-list-serif, 800, 1.25em, 1em, .025em);
+  @include typography-font($typography-font-list-serif, 700, 1.5em, 1.25em, $typography-letter-spacing-headline);
   color: $color-headline;
+  font-style: italic;
   margin-top: $spacing * 2.5;
 }
 
@@ -205,10 +208,16 @@ li {
   margin-top: 0;
 }
 
+b,
 strong {
   color: $color-text-bold;
   font-weight: 700;
 }
+
+// i,
+// em {
+//   letter-spacing: .02em;
+// }
 
 .minor {
   opacity: .5;

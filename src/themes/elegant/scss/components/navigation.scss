@@ -131,6 +131,7 @@ $navbar-text-color: $color-white-100;
   .h6 {
     @include typography-font($typography-font-list-serif, 700, 1.25em);
     border-bottom: 0;
+    color: $color-text-bold;
     font-style: normal;
     text-transform: uppercase;
 

@@ -704,7 +704,7 @@ class WikiCore
     /**
      * Filter: Make all headlines one level deeper.
      *
-     * This is neede as the page will get a <h1> based on the page title.
+     * This is needed as the page will get a <h1> based on the page title.
      */
     private function registerFilterIndentHeadlines(): void
     {
@@ -1128,6 +1128,7 @@ class WikiCore
         string $markup
     ): string {
         $parser = new \ParsedownExtra();
+        $parser->setSafeMode(true);
         return $parser->text($markup);
     }
 
