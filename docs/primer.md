@@ -6,11 +6,11 @@ This primer will give you an overview how to use wiki.md.
 
 In most configurations, viewing wiki.md pages will not require you to login, but editing them will. You can explicitly log-in by opening the menu and choosing _Login_:
 
-<img src="primer_login.png" alt="[Login Menu]" width="256"/>
+![Login Menu](primer_login.png)
 
 The Login-Screen will show up:
 
-<img src="primer_password.png" alt="[Password entry]" width="256"/>
+![Password entry](primer_password.png)
 
 (In case your site admin has turned on simple logins, there is no _username_, just a password.) Enter your credentials and click login.
 
@@ -18,7 +18,7 @@ The Login-Screen will show up:
 
 When viewing a page, choose _Edit_ from the menu to edit it (login might be required). The Edit-Screen consists of three fields:
 
-<img src="primer_edit.png" alt="[Editor]" width="256"/>
+![Editor](primer_edit.png)
 
 The first field is the page title. It defaults to the page name (URL), but you may change it or even leave it empty. It will be convertet to the page headline (`<h1>`) when viewing the page.
 
@@ -37,7 +37,7 @@ To create a new page you have two options:
 
 In both cases, provided you have permissions to create pages in the folder you choose, you will be prompted to create the page:
 
-<img src="primer_create.png" alt="[Create page]" width="256"/>
+![Create page](primer_create.png)
 
 Once you click on it, you will be shown a new, empty editor page. Unless you save this new page there, the page will not be actually created.
 
@@ -45,7 +45,7 @@ Once you click on it, you will be shown a new, empty editor page. Unless you sav
 
 wiki.md will record all changes to each page. You can view a page's history by choosing *History* from its menu:
 
-<img src="primer_history.png" alt="[Page history]" width="256"/>
+![Page history](primer_history.png)
 
 The page history will display the author, time of each change and what changed.
 
@@ -55,6 +55,6 @@ To revert to a previous version, click on the corresponding *restore* link. This
 
 wiki.md will keep you logged in until you clear your browser's cache. To manually logout, open the menu and choose _Logout_. You will be immediately logged out.
 
-<img src="primer_logout.png" alt="[Logout Menu]" width="256"/>
+![Logout Menu](primer_logout.png)
 
 Depending on your permissions and the page you are at, you might see more items in that menu.

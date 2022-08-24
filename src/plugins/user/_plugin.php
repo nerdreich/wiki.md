@@ -106,6 +106,7 @@ if (!class_exists('\at\nerdreich\wiki\UserPlugin')) {
             if ($this->mayUserAdmin($wikiPath)) {
                 $infos['folder'] = $wikiPath;
 
+                $permissions = [];
                 if ($yaml = $this->user->loadPermissionFileFS($wikiPath)) {
                     // TODO: remove hardcoded values from plugins
                     foreach (['pageCreate', 'pageRead', 'pageUpdate', 'pageDelete', 'userAdmin', 'mediaAdmin'] as $permission) {
