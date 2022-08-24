@@ -216,7 +216,7 @@ ol {
 
   li,
   li:first-child {
-    margin-top: $spacing !important; // sass-lint:disable-line no-important
+    margin-top: $spacing-small !important; // sass-lint:disable-line no-important
   }
 }
 
