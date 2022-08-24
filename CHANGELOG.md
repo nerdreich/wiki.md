@@ -1,12 +1,15 @@
 # v3.0.0
 
 * added PHP8 support
+* improved Elegant theme
+  * changed font to Noto Serif
+  * added blockquote styling
+  * added definition list styling
+  * tweaked headline styling
+  * fixed list-in-list styling
+* fixed missing value in macros
 * upgraded to Bootstrap 5
 * bumped dependencies & updated to npm 8 / eslint 8
-* changed elegant theme font to Noto Serif
-* fixed list-in-list styling
-* added blockquote styling
-* added definition list styling
 
 # v2.0.2
 

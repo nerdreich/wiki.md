@@ -155,7 +155,7 @@ $typography-letter-spacing-headline: .01em;
 
 .h0,
 %h0, {
-  @include typography-font($typography-font-list-serif, 700, 2.5em, 1.25em, $typography-letter-spacing-headline);
+  @include typography-font($typography-font-list-serif, 700, 2em, 1.25em, $typography-letter-spacing-headline);
   color: $color-text-bold;
   text-transform: uppercase;
 }
@@ -188,15 +188,24 @@ h3,
 
 h4,
 .h4,
-%h4,
+%h4 {
+  @include typography-font($typography-font-list-serif, 700, 1.25em, 1.15em);
+  color: $color-headline;
+  margin-top: $spacing-huge;
+}
+
 h5,
 .h5,
-%h5,
+%h5 {
+  @include typography-font($typography-font-list-serif, 700, $typography-body-font-size, 1.6em);
+  color: $color-headline;
+  margin-top: $spacing-huge;
+}
+
 h6,
 .h6,
 %h6 {
-  @include typography-font($typography-font-list-serif, 800, 1.25em, 1.15em);
-  color: $color-headline;
+  @include typography-font($typography-font-list-serif, 700, $typography-body-font-size, 1.6em);
   margin-top: $spacing-huge;
 }
 
