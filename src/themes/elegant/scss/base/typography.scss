@@ -227,6 +227,18 @@ blockquote {
   padding-left: calc($spacing-large - px(4));
 }
 
+dl {
+  dt {
+    color: $color-headline;
+  }
+
+  dd {
+    margin-left: $spacing-large;
+    margin-top: $spacing-small;
+  }
+}
+
+
 .minor {
   opacity: .5;
 }

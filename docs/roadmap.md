@@ -5,7 +5,7 @@ This document contains a backlog of things to (maybe) do next:
 ### Planned for v3.0.0
 
 * improve elegant theme styling
-    * add definition lists
+    * h0/h1 styling
 * setting for html markup
 * update docs / screenshots
 

@@ -6,6 +6,7 @@
 * changed elegant theme font to Noto Serif
 * fixed list-in-list styling
 * added blockquote styling
+* added definition list styling
 
 # v2.0.2
 
