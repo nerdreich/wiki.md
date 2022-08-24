@@ -14,10 +14,28 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
 
-const p = require('./package.json')
+import { readFileSync } from 'fs'
 
-const gulp = require('gulp')
-const replace = require('gulp-replace')
+import autoprefixer from 'gulp-autoprefixer'
+import concat from 'gulp-concat'
+import del from 'del'
+import gulp from 'gulp'
+import gzip from 'gulp-gzip'
+import imagemin from 'gulp-imagemin'
+import imageminPngquant from 'imagemin-pngquant'
+import phpcs from 'gulp-phpcs'
+import phplint from 'gulp-phplint'
+import replace from 'gulp-replace'
+import sassLint from 'gulp-sass-lint'
+import sort from 'gulp-sort'
+import tar from 'gulp-tar'
+import zip from 'gulp-zip'
+
+import dartSass from 'sass'
+import gulpSass from 'gulp-sass'
+const sass = gulpSass(dartSass)
+
+const p = JSON.parse(readFileSync('./package.json'))
 
 const subdir = ''
 // const subdir = '/mywiki'
@@ -33,7 +51,6 @@ const dirs = {
 // --- testing targets ---------------------------------------------------
 
 gulp.task('test-theme-elegant-sass', function () {
-  const sassLint = require('gulp-sass-lint')
   return gulp.src(['src/themes/**/*.s+(a|c)ss'])
     .pipe(sassLint({ configFile: '.sass-lint.yml' }))
     .pipe(sassLint.format())
@@ -41,9 +58,6 @@ gulp.task('test-theme-elegant-sass', function () {
 })
 
 gulp.task('test-core-php', function () {
-  const phpcs = require('gulp-phpcs')
-  const phplint = require('gulp-phplint')
-
   return gulp.src([
     'src/core/php/*.php',
     'src/core/php/core/*php'
@@ -60,9 +74,6 @@ gulp.task('test-core-php', function () {
 })
 
 gulp.task('test-theme-elegant-php', function () {
-  const phpcs = require('gulp-phpcs')
-  const phplint = require('gulp-phplint')
-
   return gulp.src([
     'src/themes/**/*php'
   ])
@@ -78,9 +89,6 @@ gulp.task('test-theme-elegant-php', function () {
 })
 
 gulp.task('test-plugin-media-php', function () {
-  const phpcs = require('gulp-phpcs')
-  const phplint = require('gulp-phplint')
-
   return gulp.src([
     'src/plugins/media/**/*php'
   ])
@@ -96,9 +104,6 @@ gulp.task('test-plugin-media-php', function () {
 })
 
 gulp.task('test-plugin-macro-php', function () {
-  const phpcs = require('gulp-phpcs')
-  const phplint = require('gulp-phplint')
-
   return gulp.src([
     'src/plugins/macro/**/*php'
   ])
@@ -114,9 +119,6 @@ gulp.task('test-plugin-macro-php', function () {
 })
 
 gulp.task('test-plugin-user-php', function () {
-  const phpcs = require('gulp-phpcs')
-  const phplint = require('gulp-phplint')
-
   return gulp.src([
     'src/plugins/user/**/*php'
   ])
@@ -136,7 +138,6 @@ gulp.task('tests-sass', gulp.parallel('test-theme-elegant-sass'))
 gulp.task('test', gulp.parallel('tests-sass', 'tests-php'))
 
 gulp.task('clean', function () {
-  const del = require('del')
   return del([
     dirs.site + '/**/*',
     dirs.site + '/**/.*',
@@ -156,10 +157,6 @@ gulp.task('theme-elegant-fonts', function () {
 })
 
 gulp.task('theme-elegant-scss', function () {
-  const sass = require('gulp-sass')
-  const concat = require('gulp-concat')
-  const autoprefixer = require('gulp-autoprefixer')
-
   return gulp.src([
     'src/themes/elegant/scss/main.scss'
     // include additional vendor-css from /node_modules here
@@ -188,9 +185,6 @@ gulp.task('theme-elegant-I18N', function () {
 })
 
 gulp.task('theme-elegant-favicon', function () {
-  const imagemin = require('gulp-imagemin')
-  const imageminPngquant = require('imagemin-pngquant')
-
   return gulp.src([
     'src/themes/elegant/favicon/**/*'
   ])
@@ -287,10 +281,6 @@ gulp.task('docs', gulp.series(function () {
 gulp.task('dist', gulp.series('test', gulp.parallel('core-php', 'core-meta', 'theme-elegant', 'plugin-media', 'plugin-macro', 'plugin-user', 'data'), 'docs'))
 
 gulp.task('package-tgz', function () {
-  const tar = require('gulp-tar')
-  const gzip = require('gulp-gzip')
-  const sort = require('gulp-sort')
-
   return gulp.src([
     dirs.build + '/wiki.md/**/*'
   ], { base: dirs.build, dot: true })
@@ -301,9 +291,6 @@ gulp.task('package-tgz', function () {
 })
 
 gulp.task('package-zip', function () {
-  const zip = require('gulp-zip')
-  const sort = require('gulp-sort')
-
   return gulp.src([
     dirs.build + '/wiki.md/**/*'
   ], { base: dirs.build, dot: true })

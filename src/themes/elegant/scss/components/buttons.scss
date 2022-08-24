@@ -25,7 +25,7 @@ input[type='button'],
 input[type='submit'] {
   @include typography-font($typography-font-list-serif, 700, px(18), 1em, 1px);
   @include typography-links(inherit, inherit, 0);
-  @include media-breakpoint-down(xs) {
+  @include media-breakpoint-down(sm) {
     max-width: 100%;
     width: 100%;
   }
@@ -36,7 +36,7 @@ input[type='submit'] {
   color: $color-primary;
   display: inline-block;
   margin-right: $spacing;
-  padding: $spacing / 2 $spacing;
+  padding: math.div($spacing, 2) $spacing;
   text-align: center;
   text-transform: uppercase;
 

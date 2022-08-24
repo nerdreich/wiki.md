@@ -26,11 +26,13 @@ outputBanner($wiki);
 <section class="section-main container">
   <div class="row">
     <div class="col-12">
-      <p><?php __('Page %s does not exist.', $wiki->core->getLocation()); ?></p>
       <?php if ($wiki->core->mayCreatePath()) { ?>
         <form action="?page=create" method="post">
+          <p><?php __('Page %s does not exist.', $wiki->core->getLocation()); ?></p>
           <input type="submit" class="primary" value="<?php __('Create page'); ?>">
         </form>
+      <?php } else { ?>
+        <p><?php __('Page %s does not exist.', $wiki->core->getLocation()); ?></p>
       <?php } ?>
     </div>
   </div>

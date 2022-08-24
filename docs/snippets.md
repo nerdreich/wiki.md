@@ -8,7 +8,7 @@ A snippet is Markdown file to be included in other pages. **Elegant**, wiki.md's
 * `_banner.md` - the headline area below the navigation bar
 * `_nav.md` - the site navigation (to the right at desktop resolutions, to the bottom on mobile)
 
-<img src="snippets.png" alt="[Default Snippets]" width="512"/>
+![Default snippets](snippets.png)
 
 To differentiate snippets from regular pages, they start with an underscore (`_`). However, they are still Markdown files and can be edited using the page editor.
 

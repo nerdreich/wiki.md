@@ -1,7 +1,8 @@
 {
   "name": "wiki.md",
-  "version": "2.0.2",
+  "version": "2.1.0",
   "description": "A file-based, responsive Markdown wiki, written in PHP.",
+  "type": "module",
   "keywords": [
     "wiki",
     "wiki.md",
@@ -10,7 +11,7 @@
     "responsive"
   ],
   "engines": {
-    "npm": ">=6.5.0"
+    "npm": ">=8.0.0"
   },
   "author": "Markus Leupold-Löwenthal",
   "homepage": "https://github.com/nerdreich/wiki.md",
@@ -22,25 +23,31 @@
     "url": "https://github.com/nerdreich/wiki.md/issues"
   },
   "license": "AGPL-3.0-or-later",
+  "scripts": {
+    "gulp": "gulp"
+  },
   "devDependencies": {
     "del": "6",
-    "gulp": "4",
-    "gulp-autoprefixer": "7",
+    "eslint": "^8.20.0",
+    "eslint-config-standard": "^17.0.0",
+    "gulp": "*",
+    "gulp-autoprefixer": "8",
     "gulp-concat": "2",
     "gulp-gzip": "1",
-    "gulp-imagemin": "7",
+    "gulp-imagemin": "8",
     "gulp-phpcs": "3",
     "gulp-phplint": "^0.9.0",
     "gulp-replace": "1",
-    "gulp-sass": "4",
+    "gulp-sass": "5",
     "gulp-sass-lint": "1",
     "gulp-sort": "2",
     "gulp-tar": "3",
     "gulp-zip": "5",
-    "imagemin-pngquant": "^9.0.1"
+    "imagemin-pngquant": "^9.0.1",
+    "sass": "^1.52.3"
   },
   "dependencies": {
-    "bootstrap": "4.5"
+    "bootstrap": "5"
   },
   "bgColor": "#fefdfa"
 }

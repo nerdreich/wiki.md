@@ -20,5 +20,8 @@
 ////
 
 $spacing: px(16); // should be dividable by 2
+$spacing-small: math.div($spacing, 2);
+$spacing-large: $spacing * 1.5;
+$spacing-huge: $spacing * 2;
 
 $var-border-radius: px(2);

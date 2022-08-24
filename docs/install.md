@@ -92,6 +92,14 @@ Be aware that `.htaccess-full` might or might not work out-of-the-box depending 
 
 The default installation only knows a single `admin` user. See [Permissions](permissions.md) how to add more.
 
+## HTML-in-Markdown
+
+Markdown allows HTML to be embedded and rendered. However, this can be a security risk if malicious users embed scripts. Therefore HTML-in-Markdown is disabled in wiki.md per default. You can enable it by editing `data/config.ini`:
+
+```
+allow_html = false          ; true = html in .md files will not be escaped
+```
+
 ## History auto-squashing
 
 When users save pages very often in short intervals, they can fill up the page history quickly with minor versions. History squashing will detect repeated saves by the same user/session within a defined time intervall and combine those minor saves into one history entry. Per default, saves of the same page from the same author within 2 minutes will be auto-squashed. You can change this interval by editing `data/config.ini`:

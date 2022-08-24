@@ -15,7 +15,7 @@ Plugins and themes might add more permissions - check their documentation.
 
 To define permissions for a folder, navigate to any page and choose _Permissions_ from the menu.
 
-<img src="permissions.png" alt="[Folder Editor]" width="512"/>
+![Folder Editor](permissions.png)
 
 The restrictions you define for a folder will be valid for that folder, as well as all its sub-folders.
 

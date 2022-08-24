@@ -96,8 +96,8 @@ if (!class_exists('\at\nerdreich\wiki\MacroPlugin')) {
                 $secondary = [];
                 $secondaryPairs = explode('|', trim($matches[3][0]));
                 foreach ($secondaryPairs as $secondaryPair) {
-                    list($key, $value) = explode('=', $secondaryPair);
-                    $secondary[trim($key)] = trim($value);
+                    list($key, $value) = explode('=', "$secondaryPair=");
+                    $secondary[trim($key)] = trim($value ?? '');
                 }
                 return [$command, $primary, $secondary];
             }

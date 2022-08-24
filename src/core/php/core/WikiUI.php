@@ -168,10 +168,10 @@ class WikiUI
         sort($routes);
         foreach ($routes as $category) {
             if (array_key_exists($category, $_POST)) { // prefer POST over GET
-                $action = $this->actionRoutes[$category][$_POST[$category]];
+                $action = $this->actionRoutes[$category][$_POST[$category]] ?? null;
                 break;
             } elseif (array_key_exists($category, $_GET)) {
-                $action = $this->actionRoutes[$category][$_GET[$category]];
+                $action = $this->actionRoutes[$category][$_GET[$category]] ?? null;
                 break;
             }
         }

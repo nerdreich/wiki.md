@@ -27,7 +27,7 @@ namespace at\nerdreich\wiki;
  */
 class IntegrationTestCase extends \PHPUnit\Framework\TestCase
 {
-    private $server = 'https://wiki.local'; // no trailing slash
+    private $server = '';
     private $url = '';
     private $code = 0;
     private $payload = '';
@@ -36,7 +36,7 @@ class IntegrationTestCase extends \PHPUnit\Framework\TestCase
 
     protected function reset(): void
     {
-        $this->server = 'https://wiki.local'; // no trailing slash
+        $this->server = 'http://wiki.local'; // no trailing slash
         $this->url = '';
         $this->code = 0;
         $this->payload = '';
@@ -156,9 +156,11 @@ class IntegrationTestCase extends \PHPUnit\Framework\TestCase
      */
     public function assertPage(int $statusCode = 200): void
     {
-        $this->assertEquals($statusCode, $this->code);
         $this->assertStringNotContainsString('Stack trace', $this->payload);
+        $this->assertMatchesRegularExpression('/^<!doctype/', $this->payload);
         $this->assertMatchesRegularExpression('/<\/html>\s+$/', $this->payload);
+        $this->assertDoesNotMatchRegularExpression('/>(Warning|Notice)</', $this->payload);
+        $this->assertEquals($statusCode, $this->code);
     }
 
     /**
@@ -168,11 +170,11 @@ class IntegrationTestCase extends \PHPUnit\Framework\TestCase
      */
     public function assertRedirect(string $path): void
     {
-        $this->assertEquals(302, $this->code);
         $this->assertStringNotContainsString('Stack trace', $this->payload);
         $this->assertMatchesRegularExpression('/^\s*$/', $this->payload);
+        $this->assertEquals(302, $this->code);
         $this->assertMatchesRegularExpression(
-            '/^location: ' . str_replace('?', '\?', str_replace('/', '\/', $path)) . '\s+$/m',
+            '/^[Ll]ocation: ' . str_replace('?', '\?', str_replace('/', '\/', $path)) . '\s*$/m',
             $this->headers
         );
     }

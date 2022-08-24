@@ -29,7 +29,7 @@ $section-spacing: $spacing * 2;
 
 section,
 footer {
-  padding: $section-spacing / 2 0;
+  padding: math.div($section-spacing, 2) 0;
 }
 
 .col-12,
@@ -44,8 +44,8 @@ footer {
 .col-3,
 .col-2,
 .col-1 {
-  padding-bottom: $section-spacing / 2;
-  padding-top: $section-spacing / 2;
+  padding-bottom: math.div($section-spacing, 2);
+  padding-top: math.div($section-spacing, 2);
 
   *:first-child {
     margin-top: 0;    // do not apply top spacing to first element in a cel

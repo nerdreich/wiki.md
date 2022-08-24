@@ -24,8 +24,8 @@ $navbar-text-color: $color-white-100;
 .navbar {
   background-color: $color-primary;
   color: $navbar-text-color;
-  padding-bottom: $spacing / 4;
-  padding-top: $spacing / 4;
+  padding-bottom: math.div($spacing, 4);
+  padding-top: math.div($spacing, 4);
 
   a {
     @include typography-links($navbar-text-color, $navbar-text-color, 1px, transparent, $navbar-text-color);
@@ -41,6 +41,10 @@ $navbar-text-color: $color-white-100;
     justify-content: space-between;
     padding-bottom: 0;
     padding-top: 0;
+  }
+
+  .wiki-menu-container {
+    position: relative;
   }
 
   .wiki-menu {
@@ -75,7 +79,7 @@ $navbar-text-color: $color-white-100;
         display: none;
         padding: .2em .5em;
         position: absolute;
-        right: 15px; // bs padding
+        right: 0;
 
         a {
           @include typography-links($navbar-text-color, $color-text, 0);
@@ -127,6 +131,7 @@ $navbar-text-color: $color-white-100;
   .h6 {
     @include typography-font($typography-font-list-serif, 700, 1.25em);
     border-bottom: 0;
+    color: $color-text-bold;
     font-style: normal;
     text-transform: uppercase;
 

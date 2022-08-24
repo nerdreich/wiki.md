@@ -30,9 +30,9 @@ require 'IntegrationTestCase.php';
  * via a local httpd and its URL in $SERVER (default https://wiki.local).
  *
  * Steps to run it:
- * * `gulp dist`
- * * launch webserver
- * * `tools/phpunit-9.phar test/integration`
+ * - `gulp dist`
+ * - launch webserver
+ * - `tools/phpunit-9.phar test/integration`
  *
  * Warning: This makes destructive calls to wiki pages and erases passwords.
  * Do only run it against test instances.

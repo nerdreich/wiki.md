@@ -28,22 +28,22 @@ $userPattern = '(' . implode(',|', $infos['users']) . ',)*(' . implode('|', $inf
   <h2><?php __('Folder permissions'); ?></h2>
   <p class="minor"><?php __('valid for %s and below', $infos['folder']); ?></p>
   <label class="in-border"><?php __('Create'); ?></label>
-  <input type="text" name="pageCreate" value="<?php echo $infos['permissions']['pageCreate']; ?>"
+  <input type="text" name="pageCreate" value="<?php echo $infos['permissions']['pageCreate'] ?? ''; ?>"
     placeholder="<?php __('like parent'); ?>" pattern="<?php echo $userPattern; ?>">
   <label class="in-border"><?php __('Read'); ?></label>
-  <input type="text" name="pageRead" value="<?php echo $infos['permissions']['pageRead']; ?>"
+  <input type="text" name="pageRead" value="<?php echo $infos['permissions']['pageRead'] ?? ''; ?>"
     placeholder="<?php __('like parent'); ?>" pattern="<?php echo $userPattern; ?>">
   <label class="in-border"><?php __('Update'); ?></label>
-  <input type="text" name="pageUpdate" value="<?php echo $infos['permissions']['pageUpdate']; ?>"
+  <input type="text" name="pageUpdate" value="<?php echo $infos['permissions']['pageUpdate'] ?? ''; ?>"
     placeholder="<?php __('like parent'); ?>" pattern="<?php echo $userPattern; ?>">
   <label class="in-border"><?php __('Delete'); ?></label>
-  <input type="text" name="pageDelete" value="<?php echo $infos['permissions']['pageDelete']; ?>"
+  <input type="text" name="pageDelete" value="<?php echo $infos['permissions']['pageDelete'] ?? ''; ?>"
     placeholder="<?php __('like parent'); ?>" pattern="<?php echo $userPattern; ?>">
   <label class="in-border"><?php __('Upload'); ?></label>
-  <input type="text" name="mediaAdmin" value="<?php echo $infos['permissions']['mediaAdmin']; ?>"
+  <input type="text" name="mediaAdmin" value="<?php echo $infos['permissions']['mediaAdmin'] ?? ''; ?>"
     placeholder="<?php __('like parent'); ?>" pattern="<?php echo $userPattern; ?>">
   <label class="in-border"><?php __('Admin'); ?></label>
-  <input type="text" name="userAdmin" value="<?php echo $infos['permissions']['userAdmin']; ?>"
+  <input type="text" name="userAdmin" value="<?php echo $infos['permissions']['userAdmin'] ?? ''; ?>"
     placeholder="<?php __('like parent'); ?>" pattern="<?php echo $userPattern; ?>">
   <input type="submit" class="primary" value="<?php __('Save'); ?>">
 </form>

@@ -1,3 +1,17 @@
+# v2.1.0
+
+* added PHP8 support
+* added server setting to enable/disable embedded HTML in Markdown
+* improved Elegant theme
+  * changed font to Noto Serif
+  * added blockquote styling
+  * added definition list styling
+  * tweaked headline styling
+  * fixed list-in-list styling
+  * upgraded to Bootstrap 5
+* fixed missing value in macros
+* bumped dependencies & updated to npm 8 / eslint 8
+
 # v2.0.2
 
 * fixed changelog default page title

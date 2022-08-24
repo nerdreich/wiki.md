@@ -23,7 +23,7 @@ Your theme files can assume the following global variables to be present when ca
 
 `_theme.php` is called first by the core to bootstrap your theme. It might define helper methods and setup other global stuff your theme might need. `_theme.php` should not output any HTML markup and is _not_ in charge to load the other theme files - wiki.md's core will do that.
 
-### Template files
+## Template files
 
 Each of the `*.php` files mentioned above has to output a complete HTML page, starting with `<!doctype html>` and ending with `</html>`. Like **Elegant** you might want to use additional includes to output common elements like headers or navigation elements.
 
