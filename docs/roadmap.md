@@ -2,10 +2,10 @@
 
 This document contains a backlog of things to (maybe) do next:
 
-### Planned for v3.0.0
+### Planned for v2.1.0
 
-* setting for html markup
 * update docs / screenshots
+* upgrade instructions
 
 ### Backlog (unscheduled)
 

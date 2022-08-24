@@ -1128,7 +1128,9 @@ class WikiCore
         string $markup
     ): string {
         $parser = new \ParsedownExtra();
-        $parser->setSafeMode(true);
+        if (!($this->config['allow_html'] ?? false)) {
+            $parser->setSafeMode(true);
+        }
         return $parser->text($markup);
     }
 
