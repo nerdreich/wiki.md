@@ -201,11 +201,14 @@ h6,
 }
 
 ul {
-  padding-left: 1.25em;
-}
-
-li {
+  list-style-type: disc;
   margin-top: 0;
+  padding-left: 1.25em;
+
+  li,
+  li:first-child {
+    margin-top: $spacing !important; // sass-lint:disable-line no-important
+  }
 }
 
 b,

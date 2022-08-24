@@ -3,6 +3,8 @@
 * added PHP8 support
 * upgraded to Bootstrap 5
 * bumped dependencies & updated to npm 8 / eslint 8
+* changed elegant theme font to Noto Serif
+* fixed list-in-list styling
 
 # v2.0.2
 
