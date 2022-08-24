@@ -5,10 +5,9 @@ This document contains a backlog of things to (maybe) do next:
 ### Planned for v3.0.0
 
 * improve elegant theme styling
-    * add blockquotes
     * add definition lists
 * setting for html markup
-* update docs
+* update docs / screenshots
 
 ### Backlog (unscheduled)
 

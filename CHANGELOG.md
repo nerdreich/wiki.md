@@ -5,6 +5,7 @@
 * bumped dependencies & updated to npm 8 / eslint 8
 * changed elegant theme font to Noto Serif
 * fixed list-in-list styling
+* added blockquote styling
 
 # v2.0.2
 
