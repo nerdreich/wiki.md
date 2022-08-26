@@ -1,6 +1,6 @@
 {
   "name": "wiki.md",
-  "version": "2.1.0",
+  "version": "2.1.1-dev1",
   "description": "A file-based, responsive Markdown wiki, written in PHP.",
   "type": "module",
   "keywords": [
@@ -27,7 +27,7 @@
     "gulp": "gulp"
   },
   "devDependencies": {
-    "del": "6",
+    "del": "7",
     "eslint": "^8.20.0",
     "eslint-config-standard": "^17.0.0",
     "gulp": "*",
