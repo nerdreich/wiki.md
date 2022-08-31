@@ -85,6 +85,47 @@ final class UDiffTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($diff, UDiff::diff($before, $after, 'file1.md', 'file2.txt'));
     }
 
+    public function testDiff3(): void
+    {
+        $before = "first\n"
+            . "\n"
+            . "second\n"
+            . "\n"
+            . "third\n";
+        $after = "first - update\n"
+            . "\n"
+            . "second\n"
+            . "\n"
+            . "third\n";
+        $diff = "--- file1.md\n"
+            . "+++ file2.txt\n"
+            . "@@ -1,1 +1,1 @@\n"
+            . "-first\n"
+            . "+first - update\n";
+        $this->assertEquals($diff, UDiff::diff($before, $after, 'file1.md', 'file2.txt'));
+    }
+
+    public function testDiff4(): void
+    {
+        $before = "first\n"
+            . "\n"
+            . "second\n";
+        $after = "first - update\n"
+            . "\n"
+            . "second\n"
+            . "\n"
+            . "third\n";
+        $diff = "--- file1.md\n"
+            . "+++ file2.txt\n"
+            . "@@ -1,1 +1,1 @@\n"
+            . "-first\n"
+            . "+first - update\n"
+            . "@@ -4,0 +4,2 @@\n"
+            . "+\n"
+            . "+third\n";
+        $this->assertEquals($diff, UDiff::diff($before, $after, 'file1.md', 'file2.txt'));
+    }
+
     public function testPatchWithFilenames(): void
     {
         $before = "aaa\nbbb\nccc\n";

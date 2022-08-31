@@ -477,6 +477,56 @@ class IntegrationTest extends IntegrationTestCase
         $this->post('/docs/meow_history?page=deleteOK');
     }
 
+    public function testHistory2(): void
+    {
+        // login
+        $this->post('/?auth=login', ['username' => 'docs', 'password' => 'doc']);
+        $this->assertRedirect('/');
+
+        // create page
+        $this->post('/docs/meow_diff?page=save', [
+            'title' => 'first title',
+            'content' => 'first save',
+            'author' => 'first'
+        ]);
+        $this->assertRedirect('/docs/meow_diff');
+
+        // save again - different user
+        $this->post('/docs/meow_diff?page=save', [
+            'title' => 'third title',
+            'content' => "first save\n\nsecond save",
+            'author' => 'second'
+        ]);
+        $this->assertRedirect('/docs/meow_diff');
+
+        // save again - first user
+        $this->post('/docs/meow_diff?page=save', [
+            'title' => 'third title',
+            'content' => "first save\n\nsecond save\n\nthird save",
+            'author' => 'first'
+        ]);
+        $this->assertRedirect('/docs/meow_diff');
+
+        // save again - first user
+        $this->post('/docs/meow_diff?page=save', [
+            'title' => 'third title',
+            'content' => "first save update\n\nsecond save\n\nthird save",
+            'author' => 'first'
+        ]);
+        $this->assertRedirect('/docs/meow_diff');
+
+        // still two history entries - no-diff change did not get saved
+        $this->get('/docs/meow_diff?page=history');
+        $this->assertPage();
+        $this->assertPayloadContainsPreg('/id="history-1"/');
+        $this->assertPayloadContainsPreg('/id="history-2"/');
+        $this->assertPayloadContainsPreg('/id="history-3"/');
+        $this->assertPayloadContainsNotPreg('/id="history-4"/');
+
+        // cleaup
+        $this->post('/docs/meow_diff?page=deleteOK');
+    }
+
     public function testHistoryFilesystemChanges(): void
     {
         // test what happens to the history if direct changes in the filesystem

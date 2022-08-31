@@ -1,6 +1,6 @@
 # v2.1.1
 
-* fixed PHP8 warning in unauthorized mode
+* fixed history squashing sometimes not working
 * tweaked Elegant theme
 
 # v2.1.0
