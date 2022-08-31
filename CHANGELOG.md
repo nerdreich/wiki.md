@@ -1,3 +1,8 @@
+# v2.1.1
+
+* fixed PHP8 warning in unauthorized mode
+* tweaked Elegant theme
+
 # v2.1.0
 
 * added PHP8 support

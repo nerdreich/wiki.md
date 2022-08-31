@@ -235,7 +235,7 @@ class UserSession
      */
     public function getSessionToken(): string
     {
-        return md5($_COOKIE['PHPSESSID']);
+        return md5($_COOKIE['PHPSESSID'] ?? 'none');
     }
 
     /**
