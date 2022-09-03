@@ -1,4 +1,4 @@
-// Copyright 2020 Markus Leupold-Löwenthal
+// Copyright 2020-2022 Markus Leupold-Löwenthal
 //
 // This file is part of wiki.md.
 //
@@ -15,10 +15,10 @@
 // along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
 
 import { readFileSync } from 'fs'
+import { deleteAsync } from 'del'
 
 import autoprefixer from 'gulp-autoprefixer'
 import concat from 'gulp-concat'
-import del from 'del'
 import gulp from 'gulp'
 import gzip from 'gulp-gzip'
 import imagemin from 'gulp-imagemin'
@@ -137,8 +137,8 @@ gulp.task('tests-php', gulp.parallel('test-core-php', 'test-plugin-media-php', '
 gulp.task('tests-sass', gulp.parallel('test-theme-elegant-sass'))
 gulp.task('test', gulp.parallel('tests-sass', 'tests-php'))
 
-gulp.task('clean', function () {
-  return del([
+gulp.task('clean', async function () {
+  return await deleteAsync([
     dirs.site + '/**/*',
     dirs.site + '/**/.*',
     dirs.build + '/*.gz',

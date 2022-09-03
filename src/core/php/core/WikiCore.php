@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2020 Markus Leupold-Löwenthal
+ * Copyright 2020-2022 Markus Leupold-Löwenthal
  *
  * This file is part of wiki.md.
  *
@@ -562,17 +562,13 @@ class WikiCore
     /**
      * Undo one / the last version of this page.
      *
-     * Will update class data to reflect this version. Will silently fail if
-     * the given version number does not exist.
+     * Will update class data to reflect the previous version.
      */
     private function revertToPreviousVersion(): void
     {
-        $this->content = ''; // without history the previous version was empty
-        if (array_key_exists('history', $this->metadata)) {
-            $count = count($this->metadata['history']);
-            if ($count > 0) {
-                $this->applyEncodedDiffToContent($this->metadata['history'][$count - 1]['diff']);
-            }
+        $count = count($this->metadata['history'] ?? []);
+        if ($count > 0) {
+            $this->applyEncodedDiffToContent($this->metadata['history'][$count - 1]['diff']);
         }
     }
 

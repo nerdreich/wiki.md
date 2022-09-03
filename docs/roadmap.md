@@ -1,9 +1,11 @@
 # Roadmap
 
-This document contains a backlog of things to (maybe) do next:
+This document contains a backlog of things to (maybe) do next.
+
 
 ### Backlog (unscheduled)
 
+* refactor: convert array_key_exists() to `??`
 * make include-macro include the markdown, not the html
 * rename-page feature
 * RSS/feed for changes

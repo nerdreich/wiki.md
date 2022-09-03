@@ -42,7 +42,7 @@ Extract the `*.tar.gz`/`*.zip` into a folder on your web-server and you are (alm
 
 This is only recommended for advanced use-cases. For most users the pre-packaged `*.tar.gz`/`*.zip` should be fine.
 
-To build wiki.md yourself, you'll need `git`, `php` v7.2+, `npm` v8.0+ and `gulp` v5. Assuming all requirements are met, just:
+To build wiki.md yourself, you'll need `git`, `php` v7.2+ and `npm` v8.0+. Assuming all requirements are met, just:
 
 ```
 git clone --depth 1 https://github.com/nerdreich/wiki.md
