@@ -3,7 +3,7 @@
 Before installing, make sure the following requirements are met:
 
 * Apache httpd (`.htaccess` and `mod_rewrite` enabled)
-* PHP 7.2+
+* PHP 7.2 - 8.1
 
 # Basic installation
 
@@ -44,6 +44,11 @@ wiki.md adds its documentation as /docs to your installation. You can safely del
 # Upgrading
 
 This section lists breaking changes.
+
+## From v2.x.x to 2.y.y
+
+* Copy all files from the archive into `core/`, `plugins/` and `themes/` with the new ones. In case you have additional plugins or themes installed, check if they need updates, too.
+* Check the configuration docs below if you have to add new or update rules in your `data/config.ini`.
 
 ## From v1.x.x to v2.x.x
 
