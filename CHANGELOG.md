@@ -1,8 +1,9 @@
-# v2.1.2
+# v2.2.0
 
 * moved to bootstrap 5.3
 * moved from sass-lint to stylelint + prettier
 * moved phpcs from gulp to npm
+* moved to variable fonts (Noto Serif, Noto Sans Mono)
 
 # v2.1.1
 
