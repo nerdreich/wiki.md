@@ -21,17 +21,12 @@ import autoprefixer from 'gulp-autoprefixer'
 import concat from 'gulp-concat'
 import gulp from 'gulp'
 import gzip from 'gulp-gzip'
-import imagemin from 'gulp-imagemin'
-import imageminPngquant from 'imagemin-pngquant'
-import phpcs from 'gulp-phpcs'
-import phplint from 'gulp-phplint'
 import replace from 'gulp-replace'
-import sassLint from 'gulp-sass-lint'
 import sort from 'gulp-sort'
 import tar from 'gulp-tar'
 import zip from 'gulp-zip'
 
-import dartSass from 'sass'
+import * as dartSass from 'sass'
 import gulpSass from 'gulp-sass'
 const sass = gulpSass(dartSass)
 
@@ -50,94 +45,7 @@ const dirs = {
 
 // --- testing targets ---------------------------------------------------
 
-gulp.task('test-theme-elegant-sass', function () {
-  return gulp.src(['src/themes/**/*.s+(a|c)ss'])
-    .pipe(sassLint({ configFile: '.sass-lint.yml' }))
-    .pipe(sassLint.format())
-    .pipe(sassLint.failOnError())
-})
-
-gulp.task('test-core-php', function () {
-  return gulp.src([
-    'src/core/php/*.php',
-    'src/core/php/core/*php'
-  ])
-    .pipe(phplint('', { skipPassedFiles: true }))
-    .pipe(phpcs({
-      bin: 'tools/phpcs.phar',
-      standard: 'PSR12',
-      colors: 1,
-      warningSeverity: 0
-    }))
-    .pipe(phpcs.reporter('log'))
-    .pipe(phpcs.reporter('fail'))
-})
-
-gulp.task('test-theme-elegant-php', function () {
-  return gulp.src([
-    'src/themes/**/*php'
-  ])
-    .pipe(phplint('', { skipPassedFiles: true }))
-    .pipe(phpcs({
-      bin: 'tools/phpcs.phar',
-      standard: 'PSR12',
-      colors: 1,
-      warningSeverity: 0
-    }))
-    .pipe(phpcs.reporter('log'))
-    .pipe(phpcs.reporter('fail'))
-})
-
-gulp.task('test-plugin-media-php', function () {
-  return gulp.src([
-    'src/plugins/media/**/*php'
-  ])
-    .pipe(phplint('', { skipPassedFiles: true }))
-    .pipe(phpcs({
-      bin: 'tools/phpcs.phar',
-      standard: 'PSR12',
-      colors: 1,
-      warningSeverity: 0
-    }))
-    .pipe(phpcs.reporter('log'))
-    .pipe(phpcs.reporter('fail'))
-})
-
-gulp.task('test-plugin-macro-php', function () {
-  return gulp.src([
-    'src/plugins/macro/**/*php'
-  ])
-    .pipe(phplint('', { skipPassedFiles: true }))
-    .pipe(phpcs({
-      bin: 'tools/phpcs.phar',
-      standard: 'PSR12',
-      colors: 1,
-      warningSeverity: 0
-    }))
-    .pipe(phpcs.reporter('log'))
-    .pipe(phpcs.reporter('fail'))
-})
-
-gulp.task('test-plugin-user-php', function () {
-  return gulp.src([
-    'src/plugins/user/**/*php'
-  ])
-    .pipe(phplint('', { skipPassedFiles: true }))
-    .pipe(phpcs({
-      bin: 'tools/phpcs.phar',
-      standard: 'PSR12',
-      colors: 1,
-      warningSeverity: 0
-    }))
-    .pipe(phpcs.reporter('log'))
-    .pipe(phpcs.reporter('fail'))
-})
-
-gulp.task('tests-php', gulp.parallel('test-core-php', 'test-plugin-media-php', 'test-plugin-macro-php', 'test-plugin-user-php', 'test-theme-elegant-php'))
-gulp.task('tests-sass', gulp.parallel('test-theme-elegant-sass'))
-gulp.task('test', gulp.parallel('tests-sass', 'tests-php'))
-
-gulp.task('clean', async function () {
+gulp.task('clean', async () => {
   return await deleteAsync([
     dirs.site + '/**/*',
     dirs.site + '/**/.*',
@@ -148,7 +56,7 @@ gulp.task('clean', async function () {
 
 // --- theme: elegant ----------------------------------------------------------
 
-gulp.task('theme-elegant-fonts', function () {
+gulp.task('theme-elegant-fonts', () => {
   return gulp.src([
     'src/themes/elegant/fonts/*/*woff',
     'src/themes/elegant/fonts/*/*woff2'
@@ -156,7 +64,7 @@ gulp.task('theme-elegant-fonts', function () {
     .pipe(gulp.dest(dirs.theme + '/fonts/'))
 })
 
-gulp.task('theme-elegant-scss', function () {
+gulp.task('theme-elegant-scss', () => {
   return gulp.src([
     'src/themes/elegant/scss/main.scss'
     // include additional vendor-css from /node_modules here
@@ -168,29 +76,26 @@ gulp.task('theme-elegant-scss', function () {
     .pipe(gulp.dest(dirs.theme))
 })
 
-gulp.task('theme-elegant-php', gulp.series('test-theme-elegant-php', function () {
+gulp.task('theme-elegant-php', () => {
   return gulp.src([
     'src/themes/elegant/**/*.php'
   ])
     .pipe(replace('$VERSION$', p.version, { skipBinary: true }))
     .pipe(replace('$URL$', p.homepage, { skipBinary: true }))
     .pipe(gulp.dest(dirs.theme))
-}))
+})
 
-gulp.task('theme-elegant-I18N', function () {
+gulp.task('theme-elegant-I18N', () => {
   return gulp.src([
     'src/themes/elegant/I18N/**/*'
   ])
     .pipe(gulp.dest(dirs.theme + '/I18N'))
 })
 
-gulp.task('theme-elegant-favicon', function () {
+gulp.task('theme-elegant-favicon', () => {
   return gulp.src([
     'src/themes/elegant/favicon/**/*'
   ])
-    .pipe(imagemin([
-      imageminPngquant({ quality: [0.8, 0.9], strip: true })
-    ], { verbose: true }))
     .pipe(replace('$NAME$', p.name, { skipBinary: true }))
     .pipe(replace('$BGCOLOR$', p.bgColor, { skipBinary: true }))
     .pipe(gulp.dest(dirs.theme))
@@ -200,7 +105,7 @@ gulp.task('theme-elegant', gulp.parallel('theme-elegant-fonts', 'theme-elegant-s
 
 // --- plugin: media -----------------------------------------------------------
 
-gulp.task('plugin-media-php', function () {
+gulp.task('plugin-media-php', () => {
   return gulp.src([
     'src/plugins/media/**/*php'
   ])
@@ -213,7 +118,7 @@ gulp.task('plugin-media', gulp.parallel('plugin-media-php'))
 
 // --- plugin: macro -----------------------------------------------------------
 
-gulp.task('plugin-macro-php', function () {
+gulp.task('plugin-macro-php', () => {
   return gulp.src([
     'src/plugins/macro/**/*php'
   ])
@@ -226,7 +131,7 @@ gulp.task('plugin-macro', gulp.parallel('plugin-macro-php'))
 
 // --- plugin: user ------------------------------------------------------------
 
-gulp.task('plugin-user-php', function () {
+gulp.task('plugin-user-php', () => {
   return gulp.src([
     'src/plugins/user/**/*php'
   ])
@@ -239,7 +144,7 @@ gulp.task('plugin-user', gulp.parallel('plugin-user-php'))
 
 // --- core --------------------------------------------------------------------
 
-gulp.task('core-meta', function () {
+gulp.task('core-meta', () => {
   return gulp.src([
     'src/core/robots.txt',
     'src/core/.htaccess',
@@ -248,7 +153,7 @@ gulp.task('core-meta', function () {
     .pipe(gulp.dest(dirs.site))
 })
 
-gulp.task('core-php', function () {
+gulp.task('core-php', () => {
   return gulp.src([
     'src/core/php/**/*.php'
   ])
@@ -257,7 +162,7 @@ gulp.task('core-php', function () {
     .pipe(gulp.dest(dirs.site))
 })
 
-gulp.task('data', function () {
+gulp.task('data', () => {
   return gulp.src([
     'data/**/*',
     'data/**/*'
@@ -265,22 +170,22 @@ gulp.task('data', function () {
     .pipe(gulp.dest(dirs.data))
 })
 
-gulp.task('docs', gulp.series(function () {
+gulp.task('docs', gulp.series(() => {
   return gulp.src([
     'docs/**/*.md'
   ])
     .pipe(replace('.md)', ')', { skipBinary: true })) // wiki.md does not use extensions
     .pipe(gulp.dest(dirs.data + '/content/docs'))
-}, function () {
+}, () => {
   return gulp.src([
     'docs/**/*.png'
   ])
     .pipe(gulp.dest(dirs.data + '/content/docs/_media'))
 }))
 
-gulp.task('dist', gulp.series('test', gulp.parallel('core-php', 'core-meta', 'theme-elegant', 'plugin-media', 'plugin-macro', 'plugin-user', 'data'), 'docs'))
+gulp.task('dist', gulp.parallel('core-php', 'core-meta', 'theme-elegant', 'plugin-media', 'plugin-macro', 'plugin-user', 'data'), 'docs')
 
-gulp.task('package-tgz', function () {
+gulp.task('package-tgz', () => {
   return gulp.src([
     dirs.build + '/wiki.md/**/*'
   ], { base: dirs.build, dot: true })
@@ -290,7 +195,7 @@ gulp.task('package-tgz', function () {
     .pipe(gulp.dest(dirs.build))
 })
 
-gulp.task('package-zip', function () {
+gulp.task('package-zip', () => {
   return gulp.src([
     dirs.build + '/wiki.md/**/*'
   ], { base: dirs.build, dot: true })
@@ -299,4 +204,4 @@ gulp.task('package-zip', function () {
     .pipe(gulp.dest(dirs.build))
 })
 
-gulp.task('release', gulp.series('clean', 'dist', 'package-tgz', 'package-zip'))
+gulp.task('package', gulp.series('clean', 'dist', 'package-tgz', 'package-zip'))

@@ -21,9 +21,8 @@
 
 .page-history {
   .diff {
-    opacity: .33;
+    opacity: 0.33;
   }
-
 
   .timeline {
     border-left: px(2) solid $color-panel-bg;
@@ -46,7 +45,7 @@
         height: 2em;
         left: -2.6em;
         position: absolute;
-        top: -.4em;
+        top: -0.4em;
         width: 2em;
       }
 
@@ -66,15 +65,15 @@
 
   @include media-breakpoint-down(md) {
     .timeline {
-      margin-left: .5em;
+      margin-left: 0.5em;
       padding-left: 1em;
 
       dt {
         &::before {
-          background-size: .75em;
+          background-size: 0.75em;
           height: 1.5em;
           left: -1.85em;
-          top: -.2em;
+          top: -0.2em;
           width: 1.5em;
         }
       }
@@ -83,7 +82,7 @@
 
   pre {
     background-color: transparent;
-    font-size: .8em;
+    font-size: 0.8em;
     padding: 1em 0;
     white-space: pre-wrap;
 
@@ -101,8 +100,7 @@
     }
 
     .info {
-      opacity: .5;
+      opacity: 0.5;
     }
   }
-
 }

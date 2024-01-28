@@ -1,3 +1,6 @@
+# this project uses stylelint for linting, but some editors/tools still need a
+# sass-lint configuration, so here is a similar ruleset
+
 rules:
   force-attribute-nesting: 0
   force-element-nesting: 0
@@ -9,3 +12,6 @@ rules:
     - max-depth: 4
   indentation: 2
   no-important: 2
+  leading-zero:
+    - 2
+    - include: true

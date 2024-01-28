@@ -69,7 +69,7 @@ input[type='submit'] {
   &:active,
   &:hover {
     color: $color-primary;
-    opacity: .8;
+    opacity: 0.8;
   }
 }
 
@@ -82,7 +82,7 @@ input[type='submit'] {
   background-color: transparent;
   border: 1px solid $color-white-100;
   color: $color-white-100;
-  font-size: .75em;
+  font-size: 0.75em;
   font-weight: 700;
-  padding: .1em .5em;
+  padding: 0.1em 0.5em;
 }

@@ -1,8 +1,0 @@
-@font-face {
-	font-family: 'Source Code Pro';
-	font-style: normal;
-	font-weight: 400;
-	src:
-		url('fonts/SourceCodePro/Source_Code_Pro_400.woff2') format('woff2'),
-		url('fonts/SourceCodePro/Source_Code_Pro_400.woff') format('woff');
-}

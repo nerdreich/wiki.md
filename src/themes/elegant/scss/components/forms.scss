@@ -29,7 +29,7 @@ input[type='text'],
 input[type='password'],
 input[type='file'],
 textarea {
-  @include typography-font($typography-font-list-courier, 400, px(18), 1.4em);
+  @include typography-font($typography-font-list-monospace, 400, px(18), 1.4em, 0, 75%);
 
   background-color: $color-bg;
   border: 2px solid $color-line;
@@ -91,23 +91,22 @@ textarea {
 }
 
 label.in-border {
-  @include typography-font($typography-font-list-courier, 400, px(10), 1em);
+  @include typography-font($typography-font-list-monospace, 400, px(10), 1em);
 
   background-color: $color-bg;
   color: $color-gray-50;
   display: block;
-  letter-spacing: .05em;
+  letter-spacing: 0.05em;
   margin-left: 1rem;
-  margin-top: .5rem;
-  padding: .25rem;
+  margin-top: 0.5rem;
+  padding: 0.25rem;
   position: absolute;
   text-transform: uppercase;
 
   &:first-child {
-    margin-top: .5rem; // enforce margin in containers
+    margin-top: 0.5rem; // enforce margin in containers
   }
 }
-
 
 textarea {
   min-height: 20 * 1.5em + 1em; // 20x line height plus a bit padding

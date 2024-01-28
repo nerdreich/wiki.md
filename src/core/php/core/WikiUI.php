@@ -1,4 +1,4 @@
-<?php
+<?php // phpcs:ignore
 
 /**
  * Copyright 2020-2022 Markus Leupold-Löwenthal

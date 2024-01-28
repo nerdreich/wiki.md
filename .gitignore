@@ -3,3 +3,4 @@ node_modules
 .~lock*
 .phpunit.result.cache
 dist/
+/.idea

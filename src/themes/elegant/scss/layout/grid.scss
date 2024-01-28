@@ -25,7 +25,7 @@
 // entities. This makes it soo much easier to use the + selector to
 // fine-tune situation specific spacings in other files.
 
-@mixin layout-top-margin ($top-margin) {
+@mixin layout-top-margin($top-margin) {
   margin-bottom: 0;
   margin-top: $top-margin;
 }

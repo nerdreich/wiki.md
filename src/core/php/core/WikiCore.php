@@ -1,4 +1,4 @@
-<?php
+<?php // phpcs:ignore
 
 /**
  * Copyright 2020-2022 Markus Leupold-Löwenthal
@@ -784,7 +784,9 @@ class WikiCore
      */
     public function isWip(): int
     {
-        if (($this->metadata['editBy'] ?? null) !== $this->user->getSessionToken()) { // we don't care about our own session
+        if (
+            ($this->metadata['editBy'] ?? null) !== $this->user->getSessionToken()
+        ) { // we don't care about our own session
             if (array_key_exists('edit', $this->metadata)) {
                 $lastEditDate = \DateTime::createFromFormat(\DateTimeInterface::ATOM, $this->metadata['edit']);
                 $deltaSeconds = (new \DateTime())->getTimestamp() - $lastEditDate->getTimestamp();

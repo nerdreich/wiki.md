@@ -22,15 +22,15 @@
 // Basic/generic color values.
 
 $color-white-100: rgba(255, 255, 255, 1);
-$color-white-90a: rgba(255, 255, 255, .9);
-$color-white-80a: rgba(255, 255, 255, .8);
-$color-white-70a: rgba(255, 255, 255, .7);
-$color-white-60a: rgba(255, 255, 255, .6);
-$color-white-50a: rgba(255, 255, 255, .5);
-$color-white-40a: rgba(255, 255, 255, .4);
-$color-white-30a: rgba(255, 255, 255, .3);
-$color-white-20a: rgba(255, 255, 255, .2);
-$color-white-10a: rgba(255, 255, 255, .1);
+$color-white-90a: rgba(255, 255, 255, 0.9);
+$color-white-80a: rgba(255, 255, 255, 0.8);
+$color-white-70a: rgba(255, 255, 255, 0.7);
+$color-white-60a: rgba(255, 255, 255, 0.6);
+$color-white-50a: rgba(255, 255, 255, 0.5);
+$color-white-40a: rgba(255, 255, 255, 0.4);
+$color-white-30a: rgba(255, 255, 255, 0.3);
+$color-white-20a: rgba(255, 255, 255, 0.2);
+$color-white-10a: rgba(255, 255, 255, 0.1);
 
 $color-gray-90: #e6e6e6;
 $color-gray-80: #ccc;
@@ -43,15 +43,15 @@ $color-gray-20: #333;
 $color-gray-10: #1a1a1a;
 
 $color-black-100: rgba(0, 0, 0, 1);
-$color-black-90a: rgba(0, 0, 0, .9);
-$color-black-80a: rgba(0, 0, 0, .8);
-$color-black-70a: rgba(0, 0, 0, .7);
-$color-black-60a: rgba(0, 0, 0, .6);
-$color-black-50a: rgba(0, 0, 0, .5);
-$color-black-40a: rgba(0, 0, 0, .4);
-$color-black-30a: rgba(0, 0, 0, .3);
-$color-black-20a: rgba(0, 0, 0, .2);
-$color-black-10a: rgba(0, 0, 0, .1);
+$color-black-90a: rgba(0, 0, 0, 0.9);
+$color-black-80a: rgba(0, 0, 0, 0.8);
+$color-black-70a: rgba(0, 0, 0, 0.7);
+$color-black-60a: rgba(0, 0, 0, 0.6);
+$color-black-50a: rgba(0, 0, 0, 0.5);
+$color-black-40a: rgba(0, 0, 0, 0.4);
+$color-black-30a: rgba(0, 0, 0, 0.3);
+$color-black-20a: rgba(0, 0, 0, 0.2);
+$color-black-10a: rgba(0, 0, 0, 0.1);
 
 $color-primary: $color-gray-80;
 $color-secondary: $color-gray-70;

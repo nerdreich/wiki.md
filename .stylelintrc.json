@@ -1,0 +1,29 @@
+{
+  "extends": [
+    "stylelint-config-standard",
+    "stylelint-config-recommended",
+    "stylelint-config-sass-guidelines"
+  ],
+  "plugins": [
+    "stylelint-scss",
+    "stylelint-order"
+  ],
+  "rules": {
+    "order/properties-alphabetical-order": true,
+    "scss/no-global-function-names": null,
+    "scss/percent-placeholder-pattern": "^[a-z][a-z0-9]+$",
+
+    "alpha-value-notation": null,
+    "at-rule-empty-line-before": null,
+    "color-function-notation": null,
+    "font-family-no-missing-generic-family-keyword": null,
+    "function-no-unknown": null,
+    "import-notation": null,
+    "max-nesting-depth": 4,
+    "no-descending-specificity": null,
+    "no-invalid-position-at-import-rule": null,
+    "selector-max-compound-selectors": 10,
+    "selector-no-qualifying-type": null,
+    "value-keyword-case": null
+  }
+}
