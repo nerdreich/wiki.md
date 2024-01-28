@@ -33,7 +33,9 @@ outputBanner($wiki);
         <input id="username" type="text" name="username" required autofocus>
         <?php } ?>
         <label for="password" class="in-border"><?php __('Password'); ?></label>
-        <input id="password" type="password" name="password" required<?php echo $wiki->user->isLoginSimple() ? ' autofocus' : ''; ?>>
+        <input id="password" type="password" name="password" required<?php
+            echo $wiki->user->isLoginSimple() ? ' autofocus' : '';
+        ?>>
         <input type="submit" class="primary" value="<?php __('Login'); ?>">
       </form>
     </div>

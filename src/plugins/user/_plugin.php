@@ -1,4 +1,4 @@
-<?php
+<?php // phpcs:ignore
 
 /**
  * Copyright 2020-2022 Markus Leupold-Löwenthal
@@ -52,12 +52,42 @@ if (!class_exists('\at\nerdreich\wiki\UserPlugin')) {
                     $this->setPermissions(
                         $wiki->core->getWikiPath(),
                         [
-                            'pageCreate' => preg_split('/,/', preg_replace('/\s+/', '', $_POST['pageCreate'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
-                            'pageRead' => preg_split('/,/', preg_replace('/\s+/', '', $_POST['pageRead'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
-                            'pageUpdate' => preg_split('/,/', preg_replace('/\s+/', '', $_POST['pageUpdate'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
-                            'pageDelete' => preg_split('/,/', preg_replace('/\s+/', '', $_POST['pageDelete'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
-                            'mediaAdmin' => preg_split('/,/', preg_replace('/\s+/', '', $_POST['mediaAdmin'] ?? ''), -1, PREG_SPLIT_NO_EMPTY),
-                            'userAdmin' => preg_split('/,/', preg_replace('/\s+/', '', $_POST['userAdmin'] ?? ''), -1, PREG_SPLIT_NO_EMPTY)
+                            'pageCreate' => preg_split(
+                                '/,/',
+                                preg_replace('/\s+/', '', $_POST['pageCreate'] ?? ''),
+                                -1,
+                                PREG_SPLIT_NO_EMPTY
+                            ),
+                            'pageRead' => preg_split(
+                                '/,/',
+                                preg_replace('/\s+/', '', $_POST['pageRead'] ?? ''),
+                                -1,
+                                PREG_SPLIT_NO_EMPTY
+                            ),
+                            'pageUpdate' => preg_split(
+                                '/,/',
+                                preg_replace('/\s+/', '', $_POST['pageUpdate'] ?? ''),
+                                -1,
+                                PREG_SPLIT_NO_EMPTY
+                            ),
+                            'pageDelete' => preg_split(
+                                '/,/',
+                                preg_replace('/\s+/', '', $_POST['pageDelete'] ?? ''),
+                                -1,
+                                PREG_SPLIT_NO_EMPTY
+                            ),
+                            'mediaAdmin' => preg_split(
+                                '/,/',
+                                preg_replace('/\s+/', '', $_POST['mediaAdmin'] ?? ''),
+                                -1,
+                                PREG_SPLIT_NO_EMPTY
+                            ),
+                            'userAdmin' => preg_split(
+                                '/,/',
+                                preg_replace('/\s+/', '', $_POST['userAdmin'] ?? ''),
+                                -1,
+                                PREG_SPLIT_NO_EMPTY
+                            )
                         ]
                     )
                 ) {
@@ -109,7 +139,16 @@ if (!class_exists('\at\nerdreich\wiki\UserPlugin')) {
                 $permissions = [];
                 if ($yaml = $this->user->loadPermissionFileFS($wikiPath)) {
                     // TODO: remove hardcoded values from plugins
-                    foreach (['pageCreate', 'pageRead', 'pageUpdate', 'pageDelete', 'userAdmin', 'mediaAdmin'] as $permission) {
+                    foreach (
+                        [
+                        'pageCreate',
+                        'pageRead',
+                        'pageUpdate',
+                        'pageDelete',
+                        'userAdmin',
+                        'mediaAdmin'
+                        ] as $permission
+                    ) {
                         if (array_key_exists($permission, $yaml)) {
                             $permissions[$permission] = $yaml[$permission];
                         }

@@ -1,3 +1,9 @@
+# v2.1.2
+
+* moved to bootstrap 5.3
+* moved from sass-lint to stylelint + prettier
+* moved phpcs from gulp to npm
+
 # v2.1.1
 
 * fixed history squashing sometimes not working

@@ -96,18 +96,17 @@ label.in-border {
   background-color: $color-bg;
   color: $color-gray-50;
   display: block;
-  letter-spacing: .05em;
+  letter-spacing: 0.05em;
   margin-left: 1rem;
-  margin-top: .5rem;
-  padding: .25rem;
+  margin-top: 0.5rem;
+  padding: 0.25rem;
   position: absolute;
   text-transform: uppercase;
 
   &:first-child {
-    margin-top: .5rem; // enforce margin in containers
+    margin-top: 0.5rem; // enforce margin in containers
   }
 }
-
 
 textarea {
   min-height: 20 * 1.5em + 1em; // 20x line height plus a bit padding

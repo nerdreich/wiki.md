@@ -1,4 +1,4 @@
-<?php
+<?php // phpcs:ignore
 
 /**
  * Copyright 2020-2022 Markus Leupold-Löwenthal
@@ -60,7 +60,9 @@ $restoreEnabled = true;
             <dt id="history-<?php echo $version; ?>">
               <h2 class="h4"><?php __('Version'); ?> <?php echo $version--; ?> (<?php __('current'); ?>)</h2>
               <p>
-                <span class="minor"><?php __('by %s at %s', $wiki->core->getAuthor(), historyDate($wiki->core->getDate())); ?></span>
+                <span class="minor"><?php
+                    __('by %s at %s', $wiki->core->getAuthor(), historyDate($wiki->core->getDate()));
+                ?></span>
               </p>
             </dt>
         <?php } ?>

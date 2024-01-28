@@ -27,7 +27,9 @@ outputBanner($wiki);
   <div class="row">
     <form class="col-12" action="?page=save" method="post">
       <?php if ($wip = $wiki->core->isWip()) { ?>
-        <p class="warning"><?php __('Warning') ?>: <?php __('Someone started editing this file %s minutes ago.', ceil($wip / 60.)) ?></p>
+        <p class="warning"><?php __('Warning') ?>: <?php
+            __('Someone started editing this file %s minutes ago.', ceil($wip / 60.))
+        ?></p>
       <?php } ?>
       <?php $wiki->echoIf('<h1>', $wiki->core->getTitle(), '</h1>'); ?>
       <label for="title" class="in-border"><?php __('Title - may remain empty'); ?></label>
@@ -37,7 +39,9 @@ outputBanner($wiki);
       <label for="author" class="in-border"><?php __('Author'); ?></label>
       <input id="author" type="text" name="author" value="<?php echo $wiki->user->getAlias(); ?>" required>
       <input type="submit" class="primary" name="save" value="<?php __('Save'); ?>"><input type="submit" name="edit"
-      value="<?php __('Save & Edit'); ?>"><a class="btn" href="<?php echo $wiki->core->getLocation(); ?>"><?php __('Cancel'); ?></a>
+      value="<?php __('Save & Edit'); ?>"><a class="btn" href="<?php
+        echo $wiki->core->getLocation();
+        ?>"><?php __('Cancel'); ?></a>
     </form>
     <div class="col-12">
       <hr>
