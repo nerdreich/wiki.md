@@ -183,7 +183,7 @@ gulp.task('docs', gulp.series(() => {
     .pipe(gulp.dest(dirs.data + '/content/docs/_media'))
 }))
 
-gulp.task('dist', gulp.parallel('core-php', 'core-meta', 'theme-elegant', 'plugin-media', 'plugin-macro', 'plugin-user', 'data'), 'docs')
+gulp.task('dist', gulp.parallel('core-php', 'core-meta', 'theme-elegant', 'plugin-media', 'plugin-macro', 'plugin-user', 'data', 'docs'))
 
 gulp.task('package-tgz', () => {
   return gulp.src([

@@ -1,3 +1,7 @@
+# v2.2.1
+
+* fixed missing docs in release zip/tgz
+
 # v2.2.0
 
 * moved to bootstrap 5.3
