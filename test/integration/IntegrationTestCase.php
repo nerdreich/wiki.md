@@ -36,7 +36,7 @@ class IntegrationTestCase extends \PHPUnit\Framework\TestCase
 
     protected function reset(): void
     {
-        $this->server = 'http://wiki.local'; // no trailing slash
+        $this->server = 'http://' . getenv('IT_HOST'); // no trailing slash
         $this->url = '';
         $this->code = 0;
         $this->payload = '';

@@ -1,6 +1,7 @@
 # v2.2.1
 
-* fixed missing docs in release zip/tgz
+* fixed test:unit / missing docs in release zip/tgz
+* added integration tests for all supported PHP versions
 
 # v2.2.0
 

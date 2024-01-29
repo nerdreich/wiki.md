@@ -5,7 +5,7 @@ This document contains a backlog of things to (maybe) do next.
 ### next release
 
 * [X] npm run test:unit
-* [ ] npm run test:integration
+* [X] npm run test:integration
 * [ ] no-name mode
 * [ ] bug: list-in-list gap (elegant)
 

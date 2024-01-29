@@ -35,7 +35,11 @@
     "lint:prettier": "prettier -w 'src/**/*.scss'",
     "lint:stylelint": "stylelint --fix 'src/**/*.scss'",
     "test:unit": "tools/phpunit-9.phar test/unit",
-    "test:integration": "tools/phpunit-9.phar test/integration"
+    "test:integration:74": "IT_HOST=wiki74.localhost tools/phpunit-9.phar test/integration",
+    "test:integration:80": "IT_HOST=wiki80.localhost tools/phpunit-9.phar test/integration",
+    "test:integration:81": "IT_HOST=wiki81.localhost tools/phpunit-9.phar test/integration",
+    "test:integration:82": "IT_HOST=wiki82.localhost tools/phpunit-9.phar test/integration",
+    "test:integration:83": "IT_HOST=wiki83.localhost tools/phpunit-9.phar test/integration"
   },
   "devDependencies": {
     "del": "^7.1.0",
