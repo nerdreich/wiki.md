@@ -2,16 +2,15 @@
 
 This document contains a backlog of things to (maybe) do next.
 
-### next release
+### v2.3.0
 
 * [X] npm run test:unit
 * [X] npm run test:integration
-* [ ] no-name mode
-* [ ] bug: list-in-list gap (elegant)
+* [X] default_author setting
+* [X] PHP 7.4 ... 8.3
 
 ### Backlog (unscheduled)
 
-* PHP 8.2+
 * bug: trailing # in code duplicated
 * update docs screenshot
 * refactor: convert array_key_exists() to `??`

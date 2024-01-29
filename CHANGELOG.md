@@ -1,7 +1,8 @@
-# v2.2.1
+# v2.3.0
 
-* fixed test:unit / missing docs in release zip/tgz
+* added default_author config.ini variable
 * added integration tests for all supported PHP versions
+* fixed test:unit / missing docs in release zip/tgz
 
 # v2.2.0
 

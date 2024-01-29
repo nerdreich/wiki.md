@@ -49,7 +49,7 @@ final class UserSessionTest extends WikiTestCase
     {
         // the 'docs' user is allowed to do everything one subdir, but not in others
         $config = parse_ini_file('dist/wiki.md/data/config.ini');
-        $user = new UserSession('data', $config['login_simple']);
+        $user = new UserSession('data', $config);
         $this->getPrivateProperty('\at\nerdreich\wiki\UserSession', 'username')->setValue($user, 'docs'); // pseudo-login
 
         $this->assertFalse($user->hasPermission('pageCreate', '/docs')); // a page in the root folder!
