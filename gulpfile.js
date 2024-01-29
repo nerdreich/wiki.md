@@ -205,3 +205,11 @@ gulp.task('package-zip', () => {
 })
 
 gulp.task('package', gulp.series('clean', 'dist', 'package-tgz', 'package-zip'))
+
+gulp.task('local', gulp.series('clean', 'dist', () => {
+  return gulp.src([
+     `${dirs.build}/wiki.md/**/*`,
+     `!${dirs.build}/wiki.md/data/**/*`
+  ], { dot: true })
+    .pipe(gulp.dest('.dist-local'))
+}))

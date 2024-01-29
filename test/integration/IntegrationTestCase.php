@@ -241,7 +241,7 @@ class IntegrationTestCase extends \PHPUnit\Framework\TestCase
      */
     public function assertNoCookies(): void
     {
-        if (array_key_exists('PHPSESSID', $this->cookies) && $this->cookies['PHPSESSID'] === 'deleted') {
+        if (($this->cookies['PHPSESSID'] ?? '') === 'deleted') {
             $this->assertCount(1, $this->cookies);
         } else {
             $this->assertCount(0, $this->cookies);

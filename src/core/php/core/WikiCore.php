@@ -392,10 +392,7 @@ class WikiCore
      */
     public function getTitle(): string
     {
-        if (array_key_exists('title', $this->metadata) && strlen($this->metadata['title']) > 0) {
-            return $this->metadata['title'];
-        }
-        return '';
+        return $this->metadata['title'] ?? '';
     }
 
     /**

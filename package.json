@@ -1,6 +1,6 @@
 {
   "name": "wiki.md",
-  "version": "2.3.0-dev1",
+  "version": "2.3.0-dev2",
   "description": "A file-based, responsive Markdown wiki, written in PHP.",
   "type": "module",
   "keywords": [
