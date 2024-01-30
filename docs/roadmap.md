@@ -8,11 +8,11 @@ This document contains a backlog of things to (maybe) do next.
 * [X] npm run test:integration
 * [X] default_author setting
 * [X] PHP 7.4 ... 8.3
+* [X] update docs screenshot
 
 ### Backlog (unscheduled)
 
 * bug: trailing # in code duplicated
-* update docs screenshot
 * make include-macro include the markdown, not the html
 * rename-page feature
 * github action CI
