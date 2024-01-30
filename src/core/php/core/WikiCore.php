@@ -701,8 +701,13 @@ class WikiCore
      */
     private function registerFilterIndentHeadlines(): void
     {
-        $this->registerFilter('markup', 'markdownIndentHeadlines', function (string $markdown, string $fsPath): string {
-            return preg_replace('/^#/m', '##', $markdown);
+        $this->registerFilter('html', 'htmlIndentHeadlines', function (string $html, string $fsPath): string {
+            $indent = preg_replace('/h5>/m', 'h6>', $html);
+            $indent = preg_replace('/h4>/m', 'h5>', $indent);
+            $indent = preg_replace('/h3>/m', 'h4>', $indent);
+            $indent = preg_replace('/h2>/m', 'h3>', $indent);
+            $indent = preg_replace('/h1>/m', 'h2>', $indent);
+            return $indent;
         });
     }
 

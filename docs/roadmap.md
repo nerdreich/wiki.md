@@ -9,10 +9,10 @@ This document contains a backlog of things to (maybe) do next.
 * [X] default_author setting
 * [X] PHP 7.4 ... 8.3
 * [X] update docs screenshot
+* [X] bug: leading # in code gets duplicated
 
 ### Backlog (unscheduled)
 
-* bug: trailing # in code duplicated
 * make include-macro include the markdown, not the html
 * rename-page feature
 * github action CI
