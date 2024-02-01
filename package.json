@@ -29,7 +29,7 @@
     "gulp": "gulp",
     "gulp:package": "gulp package",
     "lint": "npm-run-all lint:prettier lint:stylelint lint:eslint lint:phpcbf lint:phpcs",
-    "lint:eslint": "eslint --ext .js,.mjs .",
+    "lint:eslint": "eslint --fix --ext .js,.mjs .",
     "lint:phpcbf": "tools/phpcbf.phar --standard=PSR12 --extensions=php --ignore=*/core/lib/* src/",
     "lint:phpcs": "tools/phpcs.phar --standard=PSR12 --extensions=php --ignore=*/core/lib/* src/",
     "lint:prettier": "prettier -w 'src/**/*.scss'",
@@ -42,6 +42,10 @@
     "test:integration:83": "IT_HOST=wiki83.localhost tools/phpunit-9.phar test/integration"
   },
   "devDependencies": {
+    "@babel/core": "^7.23.2",
+    "@babel/preset-env": "^7.23.2",
+    "babelify": "^10.0.0",
+    "browserify": "^17.0.0",
     "del": "^7.1.0",
     "eslint": "^8.56.0",
     "eslint-config-standard": "^17.1.0",
@@ -61,7 +65,8 @@
     "stylelint-config-sass-guidelines": "^11.0.0",
     "stylelint-config-standard": "^36.0.0",
     "stylelint-order": "^6.0.4",
-    "stylelint-scss": "^6.1.0"
+    "stylelint-scss": "^6.1.0",
+    "vinyl-source-stream": "^2.0.0"
   },
   "dependencies": {
     "bootstrap": "^5.3.2"

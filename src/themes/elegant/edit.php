@@ -23,7 +23,7 @@ outputNavbar($wiki);
 outputBanner($wiki);
 
 ?>
-<section class="section-main container">
+<section class="section-main container elegant-edit">
   <div class="row">
     <form class="col-12" action="?page=save" method="post">
       <?php if ($wip = $wiki->core->isWip()) { ?>

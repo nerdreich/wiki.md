@@ -175,6 +175,7 @@ function outputHeader(at\nerdreich\wiki\WikiUI $wiki, ?string $title = null, ?st
   <link rel="apple-touch-icon" href="<?php echo htmlspecialchars($wiki->getThemePath()); ?>icon.png">
   <link rel="icon" href="<?php echo htmlspecialchars($wiki->getThemePath()); ?>favicon.ico"  type="image/x-icon">
   <link rel="stylesheet" href="<?php echo htmlspecialchars($wiki->getThemePath()); ?>style.css?v=$VERSION$">
+  <script src="<?php echo htmlspecialchars($wiki->getThemePath()); ?>main.js?v=$VERSION$" async></script>
 </head>
 <body class="<?php echo htmlspecialchars(pathToClasses($wiki->core->getWikiPath())); ?>">
     <?php
