@@ -253,6 +253,7 @@ function outputFooter(at\nerdreich\wiki\WikiUI $wiki): void
     </div>
   </div>
 </footer>
+<script src="<?php echo htmlspecialchars($wiki->getThemePath()); ?>main.js?v=$VERSION$" async></script>
 </body>
 </html>
     <?php

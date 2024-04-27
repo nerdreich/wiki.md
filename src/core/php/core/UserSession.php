@@ -51,20 +51,22 @@ class UserSession
     private $superuser = 'admin';
     private $datadir = 'data';
     private $contentdir = 'data/content';
+    private $config;
 
     /**
      * Constructor
      *
-     * @param string $urlPath The path to check permissions for.
-     * @param string $contentdir The (sub)directory where the markdown files are stored.
+     * @param string $datadir Wiki data directory.
+     * @param string $config Wiki configuration array.
      */
     public function __construct(
         ?string $datadir,
-        ?bool $simple
+        ?array $config
     ) {
+        $this->config = $config;
         $this->htpasswd = dirname(dirname(__FILE__)) . '/' . $this->datadir . '/.htpasswd';
         $this->datadir = $datadir ?? 'data';
-        $this->simpleLogins = $simple ?? false;
+        $this->simpleLogins = $config['login_simple'] ?? false;
         $this->contentdir = dirname(dirname(__FILE__)) . '/' . $this->datadir . '/content';
         $this->username = $this->resumeSession();
     }
@@ -245,7 +247,8 @@ class UserSession
      */
     public function getAlias(): string
     {
-        return $_SESSION['alias'] ?? '';
+        $alias = $_SESSION['alias'] ?? '';
+        return $alias === '' ? ($this->config['default_author'] ?? '') : $alias;
     }
 
     /**

@@ -36,7 +36,7 @@ class IntegrationTestCase extends \PHPUnit\Framework\TestCase
 
     protected function reset(): void
     {
-        $this->server = 'http://wiki.local'; // no trailing slash
+        $this->server = 'http://' . getenv('IT_HOST'); // no trailing slash
         $this->url = '';
         $this->code = 0;
         $this->payload = '';
@@ -241,7 +241,7 @@ class IntegrationTestCase extends \PHPUnit\Framework\TestCase
      */
     public function assertNoCookies(): void
     {
-        if (array_key_exists('PHPSESSID', $this->cookies) && $this->cookies['PHPSESSID'] === 'deleted') {
+        if (($this->cookies['PHPSESSID'] ?? '') === 'deleted') {
             $this->assertCount(1, $this->cookies);
         } else {
             $this->assertCount(0, $this->cookies);

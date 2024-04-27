@@ -18,12 +18,14 @@ import { readFileSync } from 'fs'
 import { deleteAsync } from 'del'
 
 import autoprefixer from 'gulp-autoprefixer'
+import browserify from 'browserify'
 import concat from 'gulp-concat'
 import gulp from 'gulp'
 import gzip from 'gulp-gzip'
 import replace from 'gulp-replace'
 import sort from 'gulp-sort'
 import tar from 'gulp-tar'
+import vinylSource from 'vinyl-source-stream'
 import zip from 'gulp-zip'
 
 import * as dartSass from 'sass'
@@ -55,6 +57,20 @@ gulp.task('clean', async () => {
 })
 
 // --- theme: elegant ----------------------------------------------------------
+
+gulp.task('theme-elegant-js', () => {
+  return browserify([
+    'src/themes/elegant/js/main.js'
+  ], {
+    paths: ['src/js']
+  })
+    .transform('babelify', {
+      presets: ['@babel/preset-env']
+    })
+    .bundle()
+    .pipe(vinylSource('main.js'))
+    .pipe(gulp.dest(dirs.theme))
+})
 
 gulp.task('theme-elegant-fonts', () => {
   return gulp.src([
@@ -101,7 +117,7 @@ gulp.task('theme-elegant-favicon', () => {
     .pipe(gulp.dest(dirs.theme))
 })
 
-gulp.task('theme-elegant', gulp.parallel('theme-elegant-fonts', 'theme-elegant-scss', 'theme-elegant-php', 'theme-elegant-I18N', 'theme-elegant-favicon'))
+gulp.task('theme-elegant', gulp.parallel('theme-elegant-fonts', 'theme-elegant-scss', 'theme-elegant-php', 'theme-elegant-I18N', 'theme-elegant-favicon', 'theme-elegant-js'))
 
 // --- plugin: media -----------------------------------------------------------
 
@@ -183,7 +199,7 @@ gulp.task('docs', gulp.series(() => {
     .pipe(gulp.dest(dirs.data + '/content/docs/_media'))
 }))
 
-gulp.task('dist', gulp.parallel('core-php', 'core-meta', 'theme-elegant', 'plugin-media', 'plugin-macro', 'plugin-user', 'data'), 'docs')
+gulp.task('dist', gulp.parallel('core-php', 'core-meta', 'theme-elegant', 'plugin-media', 'plugin-macro', 'plugin-user', 'data', 'docs'))
 
 gulp.task('package-tgz', () => {
   return gulp.src([
@@ -205,3 +221,11 @@ gulp.task('package-zip', () => {
 })
 
 gulp.task('package', gulp.series('clean', 'dist', 'package-tgz', 'package-zip'))
+
+gulp.task('local', gulp.series('clean', 'dist', () => {
+  return gulp.src([
+     `${dirs.build}/wiki.md/**/*`,
+     `!${dirs.build}/wiki.md/data/**/*`
+  ], { dot: true })
+    .pipe(gulp.dest('.dist-local'))
+}))

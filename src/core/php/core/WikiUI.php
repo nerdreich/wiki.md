@@ -49,7 +49,7 @@ class WikiUI
 
         // load wiki
         $this->config = parse_ini_file($root . '/data/config.ini');
-        $this->user = new UserSession('data', $this->config['login_simple']);
+        $this->user = new UserSession('data', $this->config);
         $this->core = new WikiCore($this->config, $this->user);
 
         // determine content path. will trim folder if wiki.md is installed in a sub-folder.

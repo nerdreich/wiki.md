@@ -1,3 +1,12 @@
+# v2.3.0
+
+* added remember-author feature across logouts (requires js)
+* added default_author config.ini variable
+* added integration tests for all supported PHP versions
+* fixed test:unit / missing docs in release zip/tgz
+* fixed leading # in code gets duplicated
+* updated screenshot
+
 # v2.2.0
 
 * moved to bootstrap 5.3
