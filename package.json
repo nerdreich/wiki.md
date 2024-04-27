@@ -42,8 +42,8 @@
     "test:integration:83": "IT_HOST=wiki83.localhost tools/phpunit-9.phar test/integration"
   },
   "devDependencies": {
-    "@babel/core": "^7.23.2",
-    "@babel/preset-env": "^7.23.2",
+    "@babel/core": "^7.24.4",
+    "@babel/preset-env": "^7.24.4",
     "babelify": "^10.0.0",
     "browserify": "^17.0.0",
     "del": "^7.1.0",
@@ -59,17 +59,17 @@
     "gulp-tar": "^4.0.0",
     "gulp-zip": "^6.0.0",
     "npm-run-all": "^4.1.5",
-    "prettier": "^3.2.4",
-    "sass": "^1.70.0",
+    "prettier": "^3.2.5",
+    "sass": "^1.75.0",
     "stylelint-config-recommended": "^14.0.0",
-    "stylelint-config-sass-guidelines": "^11.0.0",
+    "stylelint-config-sass-guidelines": "^11.1.0",
     "stylelint-config-standard": "^36.0.0",
     "stylelint-order": "^6.0.4",
-    "stylelint-scss": "^6.1.0",
+    "stylelint-scss": "^6.2.1",
     "vinyl-source-stream": "^2.0.0"
   },
   "dependencies": {
-    "bootstrap": "^5.3.2"
+    "bootstrap": "^5.3.3"
   },
   "overrides": {
     "chokidar": "^3.5.3",
