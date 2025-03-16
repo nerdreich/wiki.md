@@ -21,6 +21,7 @@
     "import-notation": null,
     "max-nesting-depth": 4,
     "no-descending-specificity": null,
+    "declaration-property-value-no-unknown": null,
     "no-invalid-position-at-import-rule": null,
     "selector-max-compound-selectors": 10,
     "selector-no-qualifying-type": null,

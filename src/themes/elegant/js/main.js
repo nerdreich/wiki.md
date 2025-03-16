@@ -1,3 +1,5 @@
+/* global localStorage */
+
 function getStoreValue (key) {
   return JSON.parse(localStorage.getItem('wikimd') ?? '{}')[key]
 }

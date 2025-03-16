@@ -75,8 +75,7 @@ $typography-body-font-size: px(18);
 ) {
   $gradient-transparent: linear-gradient(transparent, transparent);
 
-  background-image:
-    $gradient-transparent, $gradient-transparent, linear-gradient(to right, $underline-color, $underline-color);
+  background-image: $gradient-transparent, $gradient-transparent, linear-gradient(to right, $underline-color, $underline-color);
   background-position: left bottom 3px; // depends on underline
   background-repeat: no-repeat;
   background-size: 100% $underline-height;

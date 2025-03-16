@@ -23,7 +23,6 @@ import concat from 'gulp-concat'
 import gulp from 'gulp'
 import replace from 'gulp-replace'
 import sort from 'gulp-sort'
-import tar from 'gulp-tar'
 import vinylSource from 'vinyl-source-stream'
 import zip from 'gulp-zip'
 
@@ -203,13 +202,6 @@ gulp.task(
   )
 )
 
-gulp.task('package-tgz', () => {
-  return gulp
-    .src([dirs.build + '/wiki.md/**/*'], { base: dirs.build, dot: true, encoding: false })
-    .pipe(tar('wiki.md-' + p.version + '.tar'))
-    .pipe(gulp.dest(dirs.build))
-})
-
 gulp.task('package-zip', () => {
   return gulp
     .src([dirs.build + '/wiki.md/**/*'], { base: dirs.build, dot: true, encoding: false })
@@ -218,7 +210,7 @@ gulp.task('package-zip', () => {
     .pipe(gulp.dest(dirs.build))
 })
 
-gulp.task('package', gulp.series('clean', 'dist', 'package-tgz', 'package-zip'))
+gulp.task('package', gulp.series('clean', 'dist', 'package-zip'))
 
 gulp.task(
   'local',
