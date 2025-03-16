@@ -21,7 +21,6 @@ import autoprefixer from 'gulp-autoprefixer'
 import browserify from 'browserify'
 import concat from 'gulp-concat'
 import gulp from 'gulp'
-import gzip from 'gulp-gzip'
 import replace from 'gulp-replace'
 import sort from 'gulp-sort'
 import tar from 'gulp-tar'
@@ -48,20 +47,13 @@ const dirs = {
 // --- testing targets ---------------------------------------------------
 
 gulp.task('clean', async () => {
-  return await deleteAsync([
-    dirs.site + '/**/*',
-    dirs.site + '/**/.*',
-    dirs.build + '/*.gz',
-    dirs.build + '/*.zip'
-  ])
+  return await deleteAsync([dirs.site + '/**/*', dirs.site + '/**/.*', dirs.build + '/*.gz', dirs.build + '/*.zip'])
 })
 
 // --- theme: elegant ----------------------------------------------------------
 
 gulp.task('theme-elegant-js', () => {
-  return browserify([
-    'src/themes/elegant/js/main.js'
-  ], {
+  return browserify(['src/themes/elegant/js/main.js'], {
     paths: ['src/js']
   })
     .transform('babelify', {
@@ -73,18 +65,20 @@ gulp.task('theme-elegant-js', () => {
 })
 
 gulp.task('theme-elegant-fonts', () => {
-  return gulp.src([
-    'src/themes/elegant/fonts/*/*woff',
-    'src/themes/elegant/fonts/*/*woff2'
-  ])
+  return gulp
+    .src(['src/themes/elegant/fonts/*/*woff', 'src/themes/elegant/fonts/*/*woff2'], { encoding: false })
     .pipe(gulp.dest(dirs.theme + '/fonts/'))
 })
 
 gulp.task('theme-elegant-scss', () => {
-  return gulp.src([
-    'src/themes/elegant/scss/main.scss'
-    // include additional vendor-css from /node_modules here
-  ])
+  return gulp
+    .src(
+      [
+        'src/themes/elegant/scss/main.scss'
+        // include additional vendor-css from /node_modules here
+      ],
+      { encoding: false }
+    )
     .pipe(concat('style.css'))
     .pipe(replace('$VERSION$', p.version, { skipBinary: true }))
     .pipe(sass({ outputStyle: 'compressed' }))
@@ -93,38 +87,42 @@ gulp.task('theme-elegant-scss', () => {
 })
 
 gulp.task('theme-elegant-php', () => {
-  return gulp.src([
-    'src/themes/elegant/**/*.php'
-  ])
+  return gulp
+    .src(['src/themes/elegant/**/*.php'], { encoding: false })
     .pipe(replace('$VERSION$', p.version, { skipBinary: true }))
     .pipe(replace('$URL$', p.homepage, { skipBinary: true }))
     .pipe(gulp.dest(dirs.theme))
 })
 
 gulp.task('theme-elegant-I18N', () => {
-  return gulp.src([
-    'src/themes/elegant/I18N/**/*'
-  ])
-    .pipe(gulp.dest(dirs.theme + '/I18N'))
+  return gulp.src(['src/themes/elegant/I18N/**/*'], { encoding: false }).pipe(gulp.dest(dirs.theme + '/I18N'))
 })
 
 gulp.task('theme-elegant-favicon', () => {
-  return gulp.src([
-    'src/themes/elegant/favicon/**/*'
-  ])
+  return gulp
+    .src(['src/themes/elegant/favicon/**/*'], { encoding: false })
     .pipe(replace('$NAME$', p.name, { skipBinary: true }))
     .pipe(replace('$BGCOLOR$', p.bgColor, { skipBinary: true }))
     .pipe(gulp.dest(dirs.theme))
 })
 
-gulp.task('theme-elegant', gulp.parallel('theme-elegant-fonts', 'theme-elegant-scss', 'theme-elegant-php', 'theme-elegant-I18N', 'theme-elegant-favicon', 'theme-elegant-js'))
+gulp.task(
+  'theme-elegant',
+  gulp.parallel(
+    'theme-elegant-fonts',
+    'theme-elegant-scss',
+    'theme-elegant-php',
+    'theme-elegant-I18N',
+    'theme-elegant-favicon',
+    'theme-elegant-js'
+  )
+)
 
 // --- plugin: media -----------------------------------------------------------
 
 gulp.task('plugin-media-php', () => {
-  return gulp.src([
-    'src/plugins/media/**/*php'
-  ])
+  return gulp
+    .src(['src/plugins/media/**/*php'], { encoding: false })
     .pipe(replace('$VERSION$', p.version, { skipBinary: true }))
     .pipe(replace('$URL$', p.homepage, { skipBinary: true }))
     .pipe(gulp.dest(dirs.plugins + '/media'))
@@ -135,9 +133,8 @@ gulp.task('plugin-media', gulp.parallel('plugin-media-php'))
 // --- plugin: macro -----------------------------------------------------------
 
 gulp.task('plugin-macro-php', () => {
-  return gulp.src([
-    'src/plugins/macro/**/*php'
-  ])
+  return gulp
+    .src(['src/plugins/macro/**/*php'], { encoding: false })
     .pipe(replace('$VERSION$', p.version, { skipBinary: true }))
     .pipe(replace('$URL$', p.homepage, { skipBinary: true }))
     .pipe(gulp.dest(dirs.plugins + '/macro'))
@@ -148,9 +145,8 @@ gulp.task('plugin-macro', gulp.parallel('plugin-macro-php'))
 // --- plugin: user ------------------------------------------------------------
 
 gulp.task('plugin-user-php', () => {
-  return gulp.src([
-    'src/plugins/user/**/*php'
-  ])
+  return gulp
+    .src(['src/plugins/user/**/*php'], { encoding: false })
     .pipe(replace('$VERSION$', p.version, { skipBinary: true }))
     .pipe(replace('$URL$', p.homepage, { skipBinary: true }))
     .pipe(gulp.dest(dirs.plugins + '/user'))
@@ -161,60 +157,62 @@ gulp.task('plugin-user', gulp.parallel('plugin-user-php'))
 // --- core --------------------------------------------------------------------
 
 gulp.task('core-meta', () => {
-  return gulp.src([
-    'src/core/robots.txt',
-    'src/core/.htaccess',
-    'src/core/.htaccess-full'
-  ])
+  return gulp
+    .src(['src/core/robots.txt', 'src/core/.htaccess', 'src/core/.htaccess-full'], { encoding: false })
     .pipe(gulp.dest(dirs.site))
 })
 
 gulp.task('core-php', () => {
-  return gulp.src([
-    'src/core/php/**/*.php'
-  ])
+  return gulp
+    .src(['src/core/php/**/*.php'], { encoding: false })
     .pipe(replace('$VERSION$', p.version, { skipBinary: true }))
     .pipe(replace('$URL$', p.homepage, { skipBinary: true }))
     .pipe(gulp.dest(dirs.site))
 })
 
 gulp.task('data', () => {
-  return gulp.src([
-    'data/**/*',
-    'data/**/*'
-  ], { dot: true })
-    .pipe(gulp.dest(dirs.data))
+  return gulp.src(['data/**/*', 'data/**/*'], { dot: true, encoding: false }).pipe(gulp.dest(dirs.data))
 })
 
-gulp.task('docs', gulp.series(() => {
-  return gulp.src([
-    'docs/**/*.md'
-  ])
-    .pipe(replace('.md)', ')', { skipBinary: true })) // wiki.md does not use extensions
-    .pipe(gulp.dest(dirs.data + '/content/docs'))
-}, () => {
-  return gulp.src([
-    'docs/**/*.png'
-  ])
-    .pipe(gulp.dest(dirs.data + '/content/docs/_media'))
-}))
+gulp.task(
+  'docs',
+  gulp.series(
+    () => {
+      return gulp
+        .src(['docs/**/*.md'], { encoding: false })
+        .pipe(replace('.md)', ')', { skipBinary: true })) // wiki.md does not use extensions
+        .pipe(gulp.dest(dirs.data + '/content/docs'))
+    },
+    () => {
+      return gulp.src(['docs/**/*.png'], { encoding: false }).pipe(gulp.dest(dirs.data + '/content/docs/_media'))
+    }
+  )
+)
 
-gulp.task('dist', gulp.parallel('core-php', 'core-meta', 'theme-elegant', 'plugin-media', 'plugin-macro', 'plugin-user', 'data', 'docs'))
+gulp.task(
+  'dist',
+  gulp.parallel(
+    'core-php',
+    'core-meta',
+    'theme-elegant',
+    'plugin-media',
+    'plugin-macro',
+    'plugin-user',
+    'data',
+    'docs'
+  )
+)
 
 gulp.task('package-tgz', () => {
-  return gulp.src([
-    dirs.build + '/wiki.md/**/*'
-  ], { base: dirs.build, dot: true })
-    .pipe(sort())
+  return gulp
+    .src([dirs.build + '/wiki.md/**/*'], { base: dirs.build, dot: true, encoding: false })
     .pipe(tar('wiki.md-' + p.version + '.tar'))
-    .pipe(gzip({ gzipOptions: { level: 9 } }))
     .pipe(gulp.dest(dirs.build))
 })
 
 gulp.task('package-zip', () => {
-  return gulp.src([
-    dirs.build + '/wiki.md/**/*'
-  ], { base: dirs.build, dot: true })
+  return gulp
+    .src([dirs.build + '/wiki.md/**/*'], { base: dirs.build, dot: true, encoding: false })
     .pipe(sort())
     .pipe(zip('wiki.md-' + p.version + '.zip'))
     .pipe(gulp.dest(dirs.build))
@@ -222,10 +220,11 @@ gulp.task('package-zip', () => {
 
 gulp.task('package', gulp.series('clean', 'dist', 'package-tgz', 'package-zip'))
 
-gulp.task('local', gulp.series('clean', 'dist', () => {
-  return gulp.src([
-     `${dirs.build}/wiki.md/**/*`,
-     `!${dirs.build}/wiki.md/data/**/*`
-  ], { dot: true })
-    .pipe(gulp.dest('.dist-local'))
-}))
+gulp.task(
+  'local',
+  gulp.series('clean', 'dist', () => {
+    return gulp
+      .src([`${dirs.build}/wiki.md/**/*`, `!${dirs.build}/wiki.md/data/**/*`], { dot: true, encoding: false })
+      .pipe(gulp.dest('.dist-local'))
+  })
+)

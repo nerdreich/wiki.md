@@ -1,0 +1,140 @@
+// Copyright 2020-2022 Markus Leupold-Löwenthal
+//
+// This file is part of wiki.md.
+//
+// wiki.md is free software: you can redistribute it and/or modify it under the
+// terms of the GNU Affero General Public License as published by the Free
+// Software Foundation, either version 3 of the License, or (at your option) any
+// later version.
+//
+// wiki.md is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
+
+////
+/// @group themes
+/// @access public
+////
+
+// Colors for 'elegant' theme in dark mode.
+
+$theme-dark-bg: $theme-color2;
+$theme-dark-fg: $theme-color3;
+$theme-dark-strong: #c9aeae;
+$theme-dark-primary: #c89495;
+
+@media (prefers-color-scheme: dark) {
+  html,
+  body {
+    background-color: $theme-dark-bg;
+    color: $theme-dark-fg;
+  }
+
+  body {
+    a {
+      @include typography-links($theme-dark-primary, $theme-dark-fg, 1px, transparent, $theme-dark-primary);
+
+      &.broken {
+        @include typography-links($color-negative, $theme-dark-fg, 1px, $color-negative, $color-negative);
+      }
+    }
+  }
+
+  strong {
+    color: $theme-dark-fg;
+  }
+
+  hr {
+    border-color: $color-white-50a;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  .h1,
+  .h2,
+  .h3,
+  .h4,
+  .h5,
+  .h6 {
+    color: $theme-dark-primary;
+  }
+
+  pre,
+  code,
+  kbd,
+  samp {
+    // background-color: $color-white-05a;
+    background-color: $color-gray-20;
+    color: $theme-dark-fg;
+  }
+
+  input[type='text'],
+  input[type='password'],
+  input[type='file'],
+  textarea {
+    background-color: $theme-dark-bg;
+    border-color: $color-white-20a;
+    color: $theme-dark-fg;
+  }
+
+  th {
+    color: $theme-dark-primary;
+  }
+
+  thead tr,
+  tbody tr:nth-child(even) {
+    background-color: $color-white-05a;
+  }
+
+  label.in-border {
+    background-color: $theme-dark-bg;
+    color: $color-white-40a;
+  }
+
+  .navbar {
+    background-color: $theme-dark-primary;
+  }
+
+  .banner {
+    background-color: $color-white-05a;
+
+    h1,
+    .h1,
+    h2,
+    .h2 {
+      color: $theme-dark-primary;
+    }
+  }
+
+  .sidenav {
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    .h1,
+    .h2,
+    .h3,
+    .h4,
+    .h5,
+    .h6 {
+      color: $theme-dark-fg;
+    }
+  }
+
+  .page-history .timeline {
+    border-color: $theme-dark-strong;
+
+    dt::before {
+      background-color: $theme-dark-strong;
+    }
+  }
+}
