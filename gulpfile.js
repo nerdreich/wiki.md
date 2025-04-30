@@ -52,7 +52,11 @@ gulp.task('clean', async () => {
 // --- theme: elegant ----------------------------------------------------------
 
 gulp.task('theme-elegant-js', () => {
-  return browserify(['src/themes/elegant/js/main.js'], {
+  return browserify([
+    'src/themes/elegant/js/hotkeys.js',
+    'src/themes/elegant/js/main.js',
+    'src/themes/elegant/js/textarea.js'
+  ], {
     paths: ['src/js']
   })
     .transform('babelify', {
@@ -80,7 +84,7 @@ gulp.task('theme-elegant-scss', () => {
     )
     .pipe(concat('style.css'))
     .pipe(replace('$VERSION$', p.version, { skipBinary: true }))
-    .pipe(sass({ outputStyle: 'compressed' }))
+    .pipe(sass({ outputStyle: 'compressed', quietDeps: true }))
     .pipe(autoprefixer())
     .pipe(gulp.dest(dirs.theme))
 })

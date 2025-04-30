@@ -1,6 +1,10 @@
 # v2.4.0
 
-* dark mode for elegant theme
+* added dark mode for elegant theme
+* added hotkeys (ctrl-e to edit, ctrl-s to save, Esc to cancel)
+* added textarea-hotkey ctrl-up/down move lines
+* added textarea to automatically close brackets around selection
+* updated build tools
 
 # v2.3.0
 

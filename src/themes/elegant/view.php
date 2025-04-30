@@ -23,7 +23,7 @@ outputNavbar($wiki);
 outputBanner($wiki);
 
 ?>
-<section class="section-main container">
+<section class="section-main container page-view">
   <div class="row">
     <div class="col-12 col-md-8 col-lg-9">
       <?php $wiki->echoIf('<h1>', $wiki->core->getTitle(), '</h1>'); ?>

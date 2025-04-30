@@ -23,7 +23,7 @@ outputNavbar($wiki);
 outputBanner($wiki);
 
 ?>
-<section class="section-main container elegant-edit">
+<section class="section-main container page-edit">
   <div class="row">
     <form class="col-12" action="?page=save" method="post">
       <?php if ($wip = $wiki->core->isWip()) { ?>
@@ -35,7 +35,9 @@ outputBanner($wiki);
       <label for="title" class="in-border"><?php __('Title - may remain empty'); ?></label>
       <input id="title" type="text" name="title" value="<?php echo $wiki->core->getTitle(); ?>">
       <label for="content" class="in-border"><?php __('Markdown'); ?></label>
-      <textarea id="content" name="content" required autofocus><?php echo $wiki->core->getContentMarkup(); ?></textarea>
+      <textarea id="content" class="textarea-fancy" name="content" required autofocus><?php
+          echo $wiki->core->getContentMarkup();
+        ?></textarea>
       <label for="author" class="in-border"><?php __('Author'); ?></label>
       <input id="author" type="text" name="author" value="<?php echo $wiki->user->getAlias(); ?>" required>
       <input type="submit" class="primary" name="save" value="<?php __('Save'); ?>"><input type="submit" name="edit"

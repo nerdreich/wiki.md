@@ -23,7 +23,7 @@ outputNavbar($wiki);
 outputBanner($wiki);
 
 ?>
-<section class="section-meta">
+<section class="section-meta page-delete">
   <div class="container">
     <div class="row">
       <div class="col-12">
