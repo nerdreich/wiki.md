@@ -1,3 +1,5 @@
+/* global localStorage */
+
 function getStoreValue (key) {
   return JSON.parse(localStorage.getItem('wikimd') ?? '{}')[key]
 }
@@ -11,7 +13,7 @@ function setStoreValue (key, value) {
 // -----------------------------------------------------------------------------
 
 function rememberAuthor () {
-  const form = document.querySelector('.elegant-edit form')
+  const form = document.querySelector('.page-edit form')
   if (form) {
     const author = getStoreValue('author')
     if (author) {

@@ -23,7 +23,7 @@ outputNavbar($wiki);
 outputBanner($wiki);
 
 ?>
-<section class="section-main container">
+<section class="section-main container page-login">
   <div class="row">
     <div class="col-12">
       <h2><?php __('Login required'); ?></h2>

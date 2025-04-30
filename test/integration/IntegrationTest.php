@@ -162,12 +162,12 @@ class IntegrationTest extends IntegrationTestCase
         $this->get('/');
         $this->assertPage();
         $this->assertNoCookies();
-        $this->assertPayloadContainsPreg('/<a href="\?auth=login">/');      // login button
-        $this->assertPayloadContainsNotPreg('/<a href="\?page=edit">/');    // edit button
-        $this->assertPayloadContainsNotPreg('/<a href="\?media=list">/');   // media button
-        $this->assertPayloadContainsNotPreg('/<a href="\?page=history">/'); // history button
-        $this->assertPayloadContainsNotPreg('/<a href="\?page=delete">/');  // delete button
-        $this->assertPayloadContainsNotPreg('/<a href="\?page=logout">/');  // logout button
+        $this->assertPayloadContainsPreg('/<a class="nav-login" href="\?auth=login">/');      // login button
+        $this->assertPayloadContainsNotPreg('/<a class="nav-edit" href="\?page=edit">/');    // edit button
+        $this->assertPayloadContainsNotPreg('/<a class="nav-list" href="\?media=list">/');   // media button
+        $this->assertPayloadContainsNotPreg('/<a class="nav-history" href="\?page=history">/'); // history button
+        $this->assertPayloadContainsNotPreg('/<a class="nav-delete" href="\?page=delete">/');  // delete button
+        $this->assertPayloadContainsNotPreg('/<a class="nav-logout" href="\?page=logout">/');  // logout button
 
         $this->post('/?auth=login', ['username' => 'docs', 'password' => 'doc']);
         $this->assertRedirect('/');
@@ -176,23 +176,23 @@ class IntegrationTest extends IntegrationTestCase
         $this->get('/');
         $this->assertPage();
         $this->assertSessionCookie();
-        $this->assertPayloadContainsNotPreg('/<a href="\?auth=login">/');   // login button
-        $this->assertPayloadContainsNotPreg('/<a href="\?page=edit">/');    // edit button
-        $this->assertPayloadContainsNotPreg('/<a href="\?media=list">/');   // media button
-        $this->assertPayloadContainsNotPreg('/<a href="\?page=history">/'); // history button
-        $this->assertPayloadContainsNotPreg('/<a href="\?page=delete">/');  // delete button
-        $this->assertPayloadContainsPreg('/<a href="\?auth=logout">/');     // logout button
+        $this->assertPayloadContainsNotPreg('/<a class="nav-login" href="\?auth=login">/');   // login button
+        $this->assertPayloadContainsNotPreg('/<a class="nav-edit" href="\?page=edit">/');    // edit button
+        $this->assertPayloadContainsNotPreg('/<a class="nav-list" href="\?media=list">/');   // media button
+        $this->assertPayloadContainsNotPreg('/<a class="nav-history" href="\?page=history">/'); // history button
+        $this->assertPayloadContainsNotPreg('/<a class="nav-delete" href="\?page=delete">/');  // delete button
+        $this->assertPayloadContainsPreg('/<a class="nav-logout" href="\?auth=logout">/');     // logout button
         $this->assertPayloadContainsPreg('/"page"/');                       // css
 
         $this->get('/docs/install');
         $this->assertPage();
         $this->assertSessionCookie();
-        $this->assertPayloadContainsNotPreg('/<a href="\?auth=login">/'); // login button
-        $this->assertPayloadContainsPreg('/<a href="\?page=edit">/');     // edit button
-        $this->assertPayloadContainsPreg('/<a href="\?media=list">/');    // media button
-        $this->assertPayloadContainsPreg('/<a href="\?page=history">/');  // history button
-        $this->assertPayloadContainsPreg('/<a href="\?page=delete">/');   // delete button
-        $this->assertPayloadContainsPreg('/<a href="\?auth=logout">/');   // logout button
+        $this->assertPayloadContainsNotPreg('/<a class="nav-login" href="\?auth=login">/'); // login button
+        $this->assertPayloadContainsPreg('/<a class="nav-edit" href="\?page=edit">/');     // edit button
+        $this->assertPayloadContainsPreg('/<a class="nav-list" href="\?media=list">/');    // media button
+        $this->assertPayloadContainsPreg('/<a class="nav-history" href="\?page=history">/');  // history button
+        $this->assertPayloadContainsPreg('/<a class="nav-delete" href="\?page=delete">/');   // delete button
+        $this->assertPayloadContainsPreg('/<a class="nav-logout" href="\?auth=logout">/');   // logout button
         $this->assertPayloadContainsPreg('/"page page-docs page-docs-install"/');   // css
 
         $this->get('/?auth=logout');
@@ -225,12 +225,12 @@ class IntegrationTest extends IntegrationTestCase
         $this->get('/');
         $this->assertPage();
         $this->assertNoCookies();
-        $this->assertPayloadContainsPreg('/<a href="\?auth=login">/');      // login button
-        $this->assertPayloadContainsNotPreg('/<a href="\?page=edit">/');    // edit button
-        $this->assertPayloadContainsNotPreg('/<a href="\?media=list">/');   // media button
-        $this->assertPayloadContainsNotPreg('/<a href="\?page=history">/'); // history button
-        $this->assertPayloadContainsNotPreg('/<a href="\?page=delete">/');  // delete button
-        $this->assertPayloadContainsNotPreg('/<a href="\?page=logout">/');  // logout button
+        $this->assertPayloadContainsPreg('/<a class="nav-login" href="\?auth=login">/');      // login button
+        $this->assertPayloadContainsNotPreg('/<a class="nav-edit" href="\?page=edit">/');    // edit button
+        $this->assertPayloadContainsNotPreg('/<a class="nav-list" href="\?media=list">/');   // media button
+        $this->assertPayloadContainsNotPreg('/<a class="nav-history" href="\?page=history">/'); // history button
+        $this->assertPayloadContainsNotPreg('/<a class="nav-delete" href="\?page=delete">/');  // delete button
+        $this->assertPayloadContainsNotPreg('/<a class="nav-logout" href="\?page=logout">/');  // logout button
 
         $this->post('/?auth=login', ['password' => 'doc']);
         $this->assertRedirect('/');
@@ -239,23 +239,23 @@ class IntegrationTest extends IntegrationTestCase
         $this->get('/');
         $this->assertPage();
         $this->assertSessionCookie();
-        $this->assertPayloadContainsNotPreg('/<a href="\?auth=login">/');   // login button
-        $this->assertPayloadContainsNotPreg('/<a href="\?page=edit">/');    // edit button
-        $this->assertPayloadContainsNotPreg('/<a href="\?media=list">/');   // media button
-        $this->assertPayloadContainsNotPreg('/<a href="\?page=history">/'); // history button
-        $this->assertPayloadContainsNotPreg('/<a href="\?page=delete">/');  // delete button
-        $this->assertPayloadContainsPreg('/<a href="\?auth=logout">/');     // logout button
+        $this->assertPayloadContainsNotPreg('/<a class="nav-login" href="\?auth=login">/');   // login button
+        $this->assertPayloadContainsNotPreg('/<a class="nav-edit" href="\?page=edit">/');    // edit button
+        $this->assertPayloadContainsNotPreg('/<a class="nav-list" href="\?media=list">/');   // media button
+        $this->assertPayloadContainsNotPreg('/<a class="nav-history" href="\?page=history">/'); // history button
+        $this->assertPayloadContainsNotPreg('/<a class="nav-delete" href="\?page=delete">/');  // delete button
+        $this->assertPayloadContainsPreg('/<a class="nav-logout" href="\?auth=logout">/');     // logout button
         $this->assertPayloadContainsPreg('/"page"/');                       // css
 
         $this->get('/docs/install');
         $this->assertPage();
         $this->assertSessionCookie();
-        $this->assertPayloadContainsNotPreg('/<a href="\?auth=login">/');  // login button
-        $this->assertPayloadContainsPreg('/<a href="\?page=edit">/');      // edit button
-        $this->assertPayloadContainsPreg('/<a href="\?media=list">/');     // media button
-        $this->assertPayloadContainsPreg('/<a href="\?page=history">/');   // history button
-        $this->assertPayloadContainsPreg('/<a href="\?page=delete">/');    // delete button
-        $this->assertPayloadContainsPreg('/<a href="\?auth=logout">/');    // logout button
+        $this->assertPayloadContainsNotPreg('/<a class="nav-login" href="\?auth=login">/');  // login button
+        $this->assertPayloadContainsPreg('/<a class="nav-edit" href="\?page=edit">/');      // edit button
+        $this->assertPayloadContainsPreg('/<a class="nav-list" href="\?media=list">/');     // media button
+        $this->assertPayloadContainsPreg('/<a class="nav-history" href="\?page=history">/');   // history button
+        $this->assertPayloadContainsPreg('/<a class="nav-delete" href="\?page=delete">/');    // delete button
+        $this->assertPayloadContainsPreg('/<a class="nav-logout" href="\?auth=logout">/');    // logout button
         $this->assertPayloadContainsPreg('/"page page-docs page-docs-install"/');   // css
 
         $this->get('/?auth=logout');

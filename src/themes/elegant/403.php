@@ -23,7 +23,7 @@ outputNavbar($wiki);
 outputBanner($wiki);
 
 ?>
-<section class="section-main container">
+<section class="section-main container page-403">
   <div class="row">
     <div class="col-12">
       <p><?php __('You do not have the necessary permissions to do this.'); ?></p>

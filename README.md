@@ -48,7 +48,7 @@ To build wiki.md yourself, you'll need `git`, `php` v7.2+ and `npm` v8.0+. Assum
 git clone --depth 1 https://github.com/nerdreich/wiki.md
 cd wiki.md
 npm install
-npm run gulp release
+npm run package
 ```
 
 Afterwards, the archives can be found in the `dist/` folder.

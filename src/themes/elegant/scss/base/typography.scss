@@ -25,11 +25,10 @@
 @import '../../fonts/NotoSerif/font';
 @import '../../fonts/NotoSansMono/font';
 
-$typography-font-list-serif-fallback: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
-  sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+$typography-font-list-serif-fallback: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif, 'Apple Color Emoji',
+  'Segoe UI Emoji', 'Segoe UI Symbol';
 
-$typography-font-list-monospace-fallback: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
-  monospace;
+$typography-font-list-monospace-fallback: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 
 $typography-font-list-serif: 'Noto Serif', $typography-font-list-serif-fallback;
 
@@ -76,8 +75,7 @@ $typography-body-font-size: px(18);
 ) {
   $gradient-transparent: linear-gradient(transparent, transparent);
 
-  background-image: $gradient-transparent, $gradient-transparent,
-    linear-gradient(to right, $underline-color, $underline-color);
+  background-image: $gradient-transparent, $gradient-transparent, linear-gradient(to right, $underline-color, $underline-color);
   background-position: left bottom 3px; // depends on underline
   background-repeat: no-repeat;
   background-size: 100% $underline-height;
@@ -88,7 +86,8 @@ $typography-body-font-size: px(18);
   text-decoration: none;
 
   &:hover {
-    background-image: $gradient-transparent, $gradient-transparent,
+    background-image:
+      $gradient-transparent, $gradient-transparent,
       linear-gradient(to right, $underline-color-hover, $underline-color-hover);
     color: $color-hover;
     text-decoration: none;
