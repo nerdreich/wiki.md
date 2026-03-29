@@ -27,7 +27,7 @@ Due its file-based nature, wiki.md works best for small to medium traffic sites.
 
 ## Requirements
 
-* PHP 7.4 - 8.3
+* PHP 7.4 - 8.5
 * Apache `.htaccess` / `mod_rewrite`
 
 ## Supported Browsers

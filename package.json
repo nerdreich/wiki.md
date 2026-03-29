@@ -45,7 +45,9 @@
     "test:integration:80": "IT_HOST=wiki80.localhost tools/phpunit-9.phar test/integration",
     "test:integration:81": "IT_HOST=wiki81.localhost tools/phpunit-9.phar test/integration",
     "test:integration:82": "IT_HOST=wiki82.localhost tools/phpunit-9.phar test/integration",
-    "test:integration:83": "IT_HOST=wiki83.localhost tools/phpunit-9.phar test/integration"
+    "test:integration:83": "IT_HOST=wiki83.localhost tools/phpunit-9.phar test/integration",
+    "test:integration:84": "IT_HOST=wiki84.localhost tools/phpunit-9.phar test/integration",
+    "test:integration:85": "IT_HOST=wiki85.localhost tools/phpunit-9.phar test/integration"
   },
   "devDependencies": {
     "@babel/core": "7.29.0",

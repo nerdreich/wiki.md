@@ -155,7 +155,7 @@ class WikiCore
      *               the current page will be used.
      * @return string URI Path, e.g. '/animal/'.
      */
-    public function getWikiPathParentFolder(string $wikiPath = null): string
+    public function getWikiPathParentFolder(?string $wikiPath = null): string
     {
         $wikiPath = $wikiPath ?? $this->wikiPath;
         if ($wikiPath[-1] === '/') { // README / it's own folder
@@ -183,7 +183,7 @@ class WikiCore
      *               is used.
      * @return string URL Path, e.g. '/mywiki/animal/lion'.
      */
-    public function getLocation(string $wikiPath = null): string
+    public function getLocation(?string $wikiPath = null): string
     {
         $wikiPath = $wikiPath ?? $this->wikiPath;
         return $this->wikiRoot . $wikiPath;
@@ -375,7 +375,7 @@ class WikiCore
      *                  page is checked.
      * @return boolean True, if the current path matches a page. False if not.
      */
-    public function exists(string $wikiPath = null): bool
+    public function exists(?string $wikiPath = null): bool
     {
         if ($wikiPath === null) {
             return is_file($this->contentFileFS);

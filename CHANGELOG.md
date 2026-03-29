@@ -1,5 +1,6 @@
 # v2.4.1
 
+* added PHP 8.4 and 8.5 support
 * fixed textarea line-up/down bug when cursor is on start of line
 * updated build tools for linting
 
