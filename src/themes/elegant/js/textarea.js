@@ -43,10 +43,20 @@ function record (input) {
   const textarea = input.target
   textarea._history = textarea._history ?? []
   if (textarea._history.length <= 0) {
-    textarea._history.push({ content: textarea.value, start: textarea.selectionStart, end: textarea.selectionEnd, initial: true })
+    textarea._history.push({
+      content: textarea.value,
+      start: textarea.selectionStart,
+      end: textarea.selectionEnd,
+      initial: true,
+    })
   } else {
     if (textarea._history.length > HISTORY_LENGTH) textarea._history.shift()
-    textarea._history.push({ content: textarea.value, start: textarea.selectionStart, end: textarea.selectionEnd, initial: false })
+    textarea._history.push({
+      content: textarea.value,
+      start: textarea.selectionStart,
+      end: textarea.selectionEnd,
+      initial: false,
+    })
   }
 }
 
@@ -83,7 +93,8 @@ function move (textarea, direction) {
   const start = textarea.selectionStart
   const end = textarea.selectionEnd
   const lineFrom = (v.substring(0, start).match(/\n/g) ?? []).length
-  const lineTo = (v.substring(0, end).replace(/\n$/, '').match(/\n/g) ?? []).length
+  const lineTo = (v.substring(0, end).replace(/\n$/, '').match(/\n/g) ?? [])
+    .length
   const lines = (v.match(/\n/g) ?? []).length
 
   // nothing to do?
@@ -92,9 +103,10 @@ function move (textarea, direction) {
 
   // swap lines
   const split = v.split(/\n/)
-  const delta = direction < 0
-    ? (split[lineFrom - 1].length + 1) * -1
-    : split[lineTo + 1].length + 1
+  const delta =
+    direction < 0
+      ? (split[lineFrom - 1].length + 1) * -1
+      : split[lineTo + 1].length + 1
   const toMove = split.splice(lineFrom, lineTo - lineFrom + 1)
   split.splice(lineFrom + direction, 0, ...toMove)
   textarea.value = split.join('\n')

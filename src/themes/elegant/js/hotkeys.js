@@ -1,4 +1,4 @@
-document.addEventListener('keydown', keydown => hotkeys(keydown))
+document.addEventListener('keydown', (keydown) => hotkeys(keydown))
 
 function hotkeys (keydown) {
   if (hotkeysView(keydown) || hotkeysEdit(keydown)) {

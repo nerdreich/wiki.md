@@ -15,7 +15,6 @@
 // along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
 
 @use 'sass:math';
-
 @import '../../../../node_modules/bootstrap/scss/bootstrap-reboot';
 @import '../../../../node_modules/bootstrap/scss/mixins/breakpoints';
 
@@ -23,15 +22,11 @@
 
 @import 'abstracts/tools';
 @import 'abstracts/variables';
-
 @import 'themes/colors';
 @import 'themes/elegant';
-
 @import 'layout/grid';
 @import 'layout/sections';
-
 @import 'base/typography';
-
 @import 'components/banner';
 @import 'components/buttons';
 @import 'components/cards';
@@ -39,8 +34,6 @@
 @import 'components/forms';
 @import 'components/navigation';
 @import 'components/tables';
-
 @import 'pages/history';
 @import 'pages/docs';
-
 @import 'themes/elegant-dark';

@@ -25,15 +25,12 @@
 @import '../../fonts/NotoSerif/font';
 @import '../../fonts/NotoSansMono/font';
 
-$typography-font-list-serif-fallback: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif, 'Apple Color Emoji',
-  'Segoe UI Emoji', 'Segoe UI Symbol';
-
-$typography-font-list-monospace-fallback: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-
+$typography-font-list-serif-fallback: -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, 'Helvetica Neue',
+  arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+$typography-font-list-monospace-fallback: sfmono-regular, menlo, monaco, consolas, 'Liberation Mono', 'Courier New',
+  monospace;
 $typography-font-list-serif: 'Noto Serif', $typography-font-list-serif-fallback;
-
 $typography-font-list-monospace: 'Noto Sans Mono', $typography-font-list-monospace-fallback;
-
 $typography-body-font-size: px(18);
 
 // ---------------------------------------------------------------------
@@ -75,7 +72,9 @@ $typography-body-font-size: px(18);
 ) {
   $gradient-transparent: linear-gradient(transparent, transparent);
 
-  background-image: $gradient-transparent, $gradient-transparent, linear-gradient(to right, $underline-color, $underline-color);
+  background-image:
+    $gradient-transparent, $gradient-transparent,
+    linear-gradient(to right, $underline-color, $underline-color);
   background-position: left bottom 3px; // depends on underline
   background-repeat: no-repeat;
   background-size: 100% $underline-height;
@@ -106,15 +105,32 @@ body {
 }
 
 body {
-  @include typography-font($typography-font-list-serif, 400, $typography-body-font-size, 1.6em);
+  @include typography-font(
+    $typography-font-list-serif,
+    400,
+    $typography-body-font-size,
+    1.6em
+  );
 
   color: $color-text;
 
   a {
-    @include typography-links($color-primary, $color-text, 1px, transparent, $color-primary);
+    @include typography-links(
+      $color-primary,
+      $color-text,
+      1px,
+      transparent,
+      $color-primary
+    );
 
     &.broken {
-      @include typography-links($color-negative, $color-text, 1px, $color-negative, $color-negative);
+      @include typography-links(
+        $color-negative,
+        $color-text,
+        1px,
+        $color-negative,
+        $color-negative
+      );
     }
   }
 }
@@ -123,7 +139,14 @@ pre,
 kbd,
 code,
 samp {
-  @include typography-font($typography-font-list-monospace, 400, px(16), 1.4em, 0, 75%);
+  @include typography-font(
+    $typography-font-list-monospace,
+    400,
+    px(16),
+    1.4em,
+    0,
+    75%
+  );
 
   color: $color-text;
   padding: 0.1em 0.25em;
@@ -141,7 +164,13 @@ $typography-letter-spacing-headline: 0.01em;
 
 .h0,
 %h0 {
-  @include typography-font($typography-font-list-serif, 700, 2em, 1.25em, $typography-letter-spacing-headline);
+  @include typography-font(
+    $typography-font-list-serif,
+    700,
+    2em,
+    1.25em,
+    $typography-letter-spacing-headline
+  );
 
   color: $color-text-bold;
   text-transform: uppercase;
@@ -150,7 +179,13 @@ $typography-letter-spacing-headline: 0.01em;
 h1,
 .h1,
 %h1 {
-  @include typography-font($typography-font-list-serif, 700, 2.5em, 1.25em, $typography-letter-spacing-headline);
+  @include typography-font(
+    $typography-font-list-serif,
+    700,
+    2.5em,
+    1.25em,
+    $typography-letter-spacing-headline
+  );
 
   color: $color-headline;
   margin-top: $spacing-huge;
@@ -159,7 +194,13 @@ h1,
 h2,
 .h2,
 %h2 {
-  @include typography-font($typography-font-list-serif, 700, 2em, 1.25em, $typography-letter-spacing-headline);
+  @include typography-font(
+    $typography-font-list-serif,
+    700,
+    2em,
+    1.25em,
+    $typography-letter-spacing-headline
+  );
 
   color: $color-headline;
   font-style: italic;
@@ -169,7 +210,13 @@ h2,
 h3,
 .h3,
 %h3 {
-  @include typography-font($typography-font-list-serif, 700, 1.5em, 1.25em, $typography-letter-spacing-headline);
+  @include typography-font(
+    $typography-font-list-serif,
+    700,
+    1.5em,
+    1.25em,
+    $typography-letter-spacing-headline
+  );
 
   color: $color-headline;
   font-style: italic;
@@ -188,7 +235,12 @@ h4,
 h5,
 .h5,
 %h5 {
-  @include typography-font($typography-font-list-serif, 700, $typography-body-font-size, 1.6em);
+  @include typography-font(
+    $typography-font-list-serif,
+    700,
+    $typography-body-font-size,
+    1.6em
+  );
 
   color: $color-headline;
   margin-top: $spacing-huge;
@@ -197,7 +249,12 @@ h5,
 h6,
 .h6,
 %h6 {
-  @include typography-font($typography-font-list-serif, 700, $typography-body-font-size, 1.6em);
+  @include typography-font(
+    $typography-font-list-serif,
+    700,
+    $typography-body-font-size,
+    1.6em
+  );
 
   margin-top: $spacing-huge;
 }

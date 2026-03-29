@@ -35,10 +35,22 @@ $theme-dark-primary: #c89495;
 
   body {
     a {
-      @include typography-links($theme-dark-primary, $theme-dark-fg, 1px, transparent, $theme-dark-primary);
+      @include typography-links(
+        $theme-dark-primary,
+        $theme-dark-fg,
+        1px,
+        transparent,
+        $theme-dark-primary
+      );
 
       &.broken {
-        @include typography-links($color-negative, $theme-dark-fg, 1px, $color-negative, $color-negative);
+        @include typography-links(
+          $color-negative,
+          $theme-dark-fg,
+          1px,
+          $color-negative,
+          $color-negative
+        );
       }
     }
   }

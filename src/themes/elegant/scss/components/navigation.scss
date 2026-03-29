@@ -28,7 +28,13 @@ $navbar-text-color: $color-white-100;
   padding-top: math.div($spacing, 4);
 
   a {
-    @include typography-links($navbar-text-color, $navbar-text-color, 1px, transparent, $navbar-text-color);
+    @include typography-links(
+      $navbar-text-color,
+      $navbar-text-color,
+      1px,
+      transparent,
+      $navbar-text-color
+    );
 
     margin-right: $spacing;
   }

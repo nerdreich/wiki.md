@@ -1,3 +1,7 @@
+# v2.4.1
+
+* updated build tools for linting
+
 # v2.4.0
 
 * added dark mode for elegant theme
