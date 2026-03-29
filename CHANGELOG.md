@@ -1,5 +1,6 @@
 # v2.4.1
 
+* fixed textarea line-up/down bug when cursor is on start of line
 * updated build tools for linting
 
 # v2.4.0
