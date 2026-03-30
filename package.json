@@ -1,6 +1,6 @@
 {
   "name": "wiki.md",
-  "version": "2.4.1",
+  "version": "2.5.0",
   "description": "A file-based, responsive Markdown wiki, written in PHP.",
   "type": "module",
   "keywords": [
@@ -55,7 +55,7 @@
     "babelify": "10.0.0",
     "browserify": "17.0.1",
     "del": "8.0.1",
-    "eslint": "9.39.1",
+    "eslint": "9.39.4",
     "neostandard": "0.13.0",
     "globals": "17.4.0",
     "gulp": "5.0.1",
@@ -78,6 +78,9 @@
   },
   "dependencies": {
     "bootstrap": "5.3.8"
+  },
+  "overrides": {
+    "glob": "^13"
   },
   "bgColor": "#fefdfa"
 }

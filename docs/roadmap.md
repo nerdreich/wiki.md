@@ -6,9 +6,9 @@ This document contains a backlog of things to (maybe) do next.
 
 * hotkeys: textarea: tab/shift-tab
 * fix sass deprecations
-* migrate paginate macro from sunset theme
 * Theme: Sticky header
 * rename-page feature
+* delete/clear history feature
 * make include-macro include the markdown, not the html
 * github action CI
 * RSS/feed for changes

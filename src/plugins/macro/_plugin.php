@@ -26,17 +26,20 @@ if (!class_exists('\at\nerdreich\wiki\MacroPlugin')) {
      * Macro expansion plugin for wiki.md.
      *
      * Will add the capability of using {{...}} macros in markdown and provide a
-     * default macro, {{include ...}}.
+     * a few default macros.
      */
     class MacroPlugin extends WikiPlugin
     {
         private $macros = [];          // array of {{macro ...}} handlers
 
-        public function setup()
+        public function setup(): void
         {
             // register core macros
             $this->registerMacro('include', function (?string $primary, ?array $secondary, string $path) {
                 return $this->macroInclude($primary, $secondary, $path);
+            });
+            $this->registerMacro('paginate', function (?string $primary, ?array $secondary, string $path) {
+                return $this->macroPaginate($primary, $secondary, $path);
             });
 
             // register plugin itself
@@ -150,6 +153,51 @@ if (!class_exists('\at\nerdreich\wiki\MacroPlugin')) {
             } else {
                 return '{{error include-permission-denied}}';
             }
+        }
+
+        /**
+         * Expand a {{paginate ...}} macro.
+         *
+         * @param string $primary The primary parameter. Pattern to match items to paginate.
+         * @param array $options The secondary parameters. Not used.
+         * @param string $pathFS Absolute path to file containing the macro (for relative processing).
+         * @return string Expanded macro.
+         */
+        private function macroPaginate(
+            ?string $primary,
+            ?array $options,
+            string $pathFS
+        ): string {
+            $snippet = '';
+            $pages = [];
+            $myIndex = -1;
+            $basename = basename($pathFS);
+
+            // load all matching files
+            $pattern = '/^' . str_replace('*', '.*', $primary) . '$/';
+            foreach (scandir(dirname($pathFS)) as $filename) {
+                if (preg_match($pattern, $filename)) {
+                    if (is_file(dirname($pathFS) . '/' . $filename)) {
+                        $pages[] = preg_replace('/\.md$/', '', $filename);
+                        if (basename($filename) === $basename) { // hey - it's us!
+                            $myIndex = sizeof($pages) - 1;
+                        }
+                    }
+                }
+            }
+
+            // output pagination
+            if ($myIndex < 0) {
+                return '{{error prevnext-not-found}}';
+            }
+            if ($myIndex > 0) {
+                $snippet .= '[←](' . ($pages[$myIndex - 1]) . ') | ';
+            }
+            $snippet .= ___('Page %d of %d', $myIndex + 1, count($pages));
+            if ($myIndex < sizeof($pages) - 1) {
+                $snippet .= ' | [→](' . ($pages[$myIndex + 1]) . ')';
+            }
+            return $snippet;
         }
     }
 

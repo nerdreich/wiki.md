@@ -32,3 +32,19 @@ This macro allows to include other pages in a page:
 ```
 
 `include` will not check for cyclic includes, which will result in an server error.
+
+## \{\{paginate\}\}
+
+This macro allows to group pages in a folder to navigate between them:
+
+```
+{​{paginate <pattern>}​}
+```
+
+Assuming there are a few pages called `Chapter01`, `Chapter02`, ..., adding
+
+```
+{​{paginate Chapter*}​}
+```
+
+to each page will add a prev/next widget to navigate between them. Order is alphabetically by wiki page / file name.
