@@ -14,26 +14,25 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
 
-@use 'sass:math';
-@import '../../../../node_modules/bootstrap/scss/bootstrap-reboot';
-@import '../../../../node_modules/bootstrap/scss/mixins/breakpoints';
+@use '../../../../node_modules/bootstrap/scss/bootstrap-reboot';
 
 // --- our stuff ----------------------------------------------------------
 
-@import 'abstracts/tools';
+/* @import 'abstracts/tools';
 @import 'abstracts/variables';
-@import 'themes/colors';
-@import 'themes/elegant';
-@import 'layout/grid';
-@import 'layout/sections';
-@import 'base/typography';
-@import 'components/banner';
-@import 'components/buttons';
-@import 'components/cards';
-@import 'components/footer';
-@import 'components/forms';
-@import 'components/navigation';
-@import 'components/tables';
-@import 'pages/history';
-@import 'pages/docs';
-@import 'themes/elegant-dark';
+@import 'themes/colors'; */
+
+@use 'themes/elegant';
+@use 'layout/grid';
+@use 'layout/sections';
+@use 'base/typography';
+@use 'components/banner';
+@use 'components/buttons';
+@use 'components/cards';
+@use 'components/footer';
+@use 'components/forms';
+@use 'components/navigation';
+@use 'components/tables';
+@use 'pages/history';
+@use 'pages/docs';
+@use 'themes/elegant-dark';

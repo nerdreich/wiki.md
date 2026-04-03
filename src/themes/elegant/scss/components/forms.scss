@@ -19,6 +19,9 @@
 /// @access public
 ////
 
+@use 'sass:math';
+@use '../global' as *;
+
 $input-padding: math.div($spacing, 2);
 
 form {

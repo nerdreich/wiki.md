@@ -19,6 +19,9 @@
 /// @access public
 ////
 
+@use 'sass:math';
+@use '../global' as *;
+
 // Basic handling of <sections>. Automatically adds proper spacing between
 // sections based on their content/usage (mostly depending on if they do have
 // background images/colors).

@@ -19,6 +19,32 @@
 /// @access public
 ////
 
+@use 'sass:math';
+@use 'sass:map';
+
+$grid-breakpoints: (
+  xs: 0,
+  sm: 576px,
+  md: 768px,
+  lg: 992px,
+  xl: 1200px,
+  xxl: 1400px,
+) !default;
+$grid-breakpoints-up: (
+  sm: 576px,
+  md: 768px,
+  lg: 992px,
+  xl: 1200px,
+  xxl: 1400px,
+) !default;
+$grid-max-widths: (
+  sm: 540px,
+  md: 720px,
+  lg: 960px,
+  xl: 1140px,
+  xxl: 1320px,
+) !default;
+
 /// Convert a px-length to rems. Will stick with pixels
 /// for small sizes. Based on 16px root font size.
 ///
@@ -49,5 +75,46 @@
 @mixin set-property-if-not($property, $old-value, $new-value) {
   @if $old-value != $new-value {
     #{$property}: $new-value;
+  }
+}
+
+// -----------------------------------------------------------------------------
+
+/// Responsive-first breakpoint rules. Overrule default (small) things with
+/// rules that apply to wider things.
+///
+/// @example scss
+///   media-breakpoint-up(sm) { ... }
+///
+/// @param {string} breakpoint Breakpoint name to apply the rules starting with.
+@mixin media-breakpoint-up($breakpoint) {
+  $width: map.get($grid-breakpoints, $breakpoint);
+
+  @if $width {
+    @media (min-width: $width) {
+      // stylelint-disable-line bs.media-query-no-invalid
+      @content;
+    }
+  } @else {
+    @content;
+  }
+}
+
+/// Responsive-first breakpoint rules. Overrule larger things with
+/// rules that apply to smaller things.
+///
+/// @example scss
+///   media-breakpoint-down(sm) { ... }
+///
+/// @param {string} breakpoint Breakpoint name to apply the rules starting with.
+@mixin media-breakpoint-down($breakpoint) {
+  $width: map.get($grid-breakpoints, $breakpoint);
+  @if $width {
+    @media (max-width: $width) {
+      // stylelint-disable-line bs.media-query-no-invalid
+      @content;
+    }
+  } @else {
+    @content;
   }
 }

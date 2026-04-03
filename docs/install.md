@@ -3,7 +3,7 @@
 Before installing, make sure the following requirements are met:
 
 * Apache httpd (`.htaccess` and `mod_rewrite` enabled)
-* PHP 7.4 - 8.3
+* PHP 7.4 - 8.5
 
 
 # Basic installation

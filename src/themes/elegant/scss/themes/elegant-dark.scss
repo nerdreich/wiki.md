@@ -19,6 +19,8 @@
 /// @access public
 ////
 
+@use '../global' as *;
+
 // Colors for 'elegant' theme in dark mode.
 
 $theme-dark-bg: $theme-color2;

@@ -15,24 +15,11 @@
 // along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
 
 ////
-/// @group themes
+/// @group layout
 /// @access public
 ////
 
-@use '../global' as *;
-
-pre,
-code,
-kbd,
-samp {
-  background-color: $theme-color4;
-  border-radius: $var-border-radius;
-}
-
-.error {
-  color: $color-negative;
-}
-
-.warning {
-  color: $color-warning;
+@mixin layout-top-margin($top-margin) {
+  margin-bottom: 0;
+  margin-top: $top-margin;
 }

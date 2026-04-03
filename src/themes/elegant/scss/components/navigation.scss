@@ -19,6 +19,9 @@
 /// @access public
 ////
 
+@use 'sass:math';
+@use '../global' as *;
+
 $navbar-text-color: $color-white-100;
 
 .navbar {

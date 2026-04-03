@@ -15,7 +15,7 @@
 // along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
 
 ////
-/// @group themes
+/// @group abstracts
 /// @access public
 ////
 
@@ -72,3 +72,21 @@ $color-negative: #be4f4e;
 $color-info: #496a81;
 $color-warning: #d5a021;
 $color-positive: #5fad41;
+
+// theme colors
+
+$theme-color1: #9b6a6c;
+$theme-color2: #202020;
+$theme-color3: #fefdfa;
+$theme-color4: #f4eeec;
+$theme-color5: #404040;
+$theme-color6: #c9aeae;
+$color-primary: $theme-color1;
+$color-bg: $theme-color3;
+$color-bg-secondary: $theme-color4;
+$color-bg-highlight: $color-bg-secondary;
+$color-panel-bg: $theme-color4;
+$color-text: $theme-color2;
+$color-text-bold: $theme-color5;
+$color-headline: $theme-color1;
+$color-line-strong: $theme-color6;

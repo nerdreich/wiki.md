@@ -19,6 +19,8 @@
 /// @access public
 ////
 
+@use '../global' as *;
+
 .banner {
   background-color: $color-panel-bg;
   font-size: 1.25em;

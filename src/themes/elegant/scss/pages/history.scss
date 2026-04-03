@@ -19,6 +19,8 @@
 /// @access public
 ////
 
+@use '../global' as *;
+
 .page-history {
   .diff {
     opacity: 0.33;

@@ -19,6 +19,8 @@
 /// @access public
 ////
 
+@use '../global' as *;
+
 .card {
   @include layout-top-margin($spacing); // add our layout.scss top-margins
 

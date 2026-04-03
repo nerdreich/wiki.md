@@ -59,6 +59,6 @@ Read the [Documentation](docs/) to learn more.
 
 ## Roadmap
 
-Check out the [roadmap](docs/ROADMAP.md) for planned features.
+Check out the [roadmap](docs/roadmap.md) for planned features.
 
 Feel free to report any [issues](https://github.com/nerdreich/wiki.md/issues) you find.

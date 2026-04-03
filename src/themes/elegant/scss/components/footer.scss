@@ -19,6 +19,8 @@
 /// @access public
 ////
 
+@use '../global' as *;
+
 footer {
   border-top: 2px solid $color-line;
   font-size: 0.75em;
