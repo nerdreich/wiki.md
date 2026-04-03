@@ -1,7 +1,7 @@
 <?php // phpcs:ignore
 
 /**
- * Copyright 2020-2022 Markus Leupold-Löwenthal
+ * Copyright 2020-2026 Markus Leupold-Löwenthal
  *
  * This file is part of wiki.md.
  *
