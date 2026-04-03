@@ -109,6 +109,7 @@ $grid-max-widths: (
 /// @param {string} breakpoint Breakpoint name to apply the rules starting with.
 @mixin media-breakpoint-down($breakpoint) {
   $width: map.get($grid-breakpoints, $breakpoint);
+
   @if $width {
     @media (max-width: $width) {
       // stylelint-disable-line bs.media-query-no-invalid
