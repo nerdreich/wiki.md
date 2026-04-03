@@ -1,7 +1,7 @@
 <?php // phpcs:ignore
 
 /**
- * Copyright 2020-2022 Markus Leupold-Löwenthal
+ * Copyright 2020-2026 Markus Leupold-Löwenthal
  *
  * This file is part of wiki.md.
  *
@@ -32,7 +32,7 @@ if (!class_exists('\at\nerdreich\wiki\MediaPlugin')) {
         private $pregMedia = '/\.(gif|jpg|png)$/i'; // files matching this are considered media
         private $mediaTypes = 'gif|jpg|png';        // shown to humans
 
-        public function setup()
+        public function setup(): void
         {
             $this->wiki->registerPageRoute(function ($wiki) {
                 $wikiPath = $wiki->core->getWikiPath();
@@ -181,7 +181,7 @@ if (!class_exists('\at\nerdreich\wiki\MediaPlugin')) {
          * @param array Array containing 'media'.
          */
         public function list(
-            string $wikiPath = null
+            ?string $wikiPath = null
         ): ?array {
             $mediaFolder = $this->core->getWikiPathParentFolder($wikiPath ?? $this->core->getWikiPath());
             if ($this->mayMedia($mediaFolder)) {

@@ -80,28 +80,40 @@ function getDiffPos (a, b) {
 
 function move (textarea, direction) {
   const v = textarea.value
-  const start = textarea.selectionStart
-  const end = textarea.selectionEnd
-  const lineFrom = (v.substring(0, start).match(/\n/g) ?? []).length
-  const lineTo = (v.substring(0, end).replace(/\n$/, '').match(/\n/g) ?? []).length
-  const lines = (v.match(/\n/g) ?? []).length
+  const lines = v.split(/\n/)
+
+  const selectionStart = textarea.selectionStart
+  const selectionEnd = textarea.selectionEnd
+  const selection = v.substring(selectionStart, selectionEnd)
+
+  let selectionEndTrimmed = selectionEnd
+  if (selection.length > 1) {
+    // trim trailing newline for for 0-length selections (cursor only)
+    if (selection.slice(-1) === '\n') {
+      selectionEndTrimmed--
+    }
+  }
+
+  const selectionLineFrom = (v.substring(0, selectionStart).match(/\n/g) ?? []).length // 0-based
+  const selectionLineTo = (v.substring(0, selectionEndTrimmed).match(/\n/g) ?? []).length // 0-based
+  const selectionLines = selectionLineTo - selectionLineFrom + 1
+  const newLine = selectionLineFrom + direction
 
   // nothing to do?
-  if (direction < 0 && lineFrom <= 0) return true // already first
-  if (direction > 0 && lineTo >= lines) return true // already last
+  if (newLine < 0) return true // already first
+  if (newLine > lines.length - selectionLines) return true // already last
 
   // swap lines
-  const split = v.split(/\n/)
-  const delta = direction < 0
-    ? (split[lineFrom - 1].length + 1) * -1
-    : split[lineTo + 1].length + 1
-  const toMove = split.splice(lineFrom, lineTo - lineFrom + 1)
-  split.splice(lineFrom + direction, 0, ...toMove)
-  textarea.value = split.join('\n')
+  const toMove = lines.splice(selectionLineFrom, selectionLineTo - selectionLineFrom + 1) // already removes from array!
+  lines.splice(newLine, 0, ...toMove)
+  textarea.value = lines.join('\n')
 
-  // update cursor
-  textarea.selectionStart = start + delta
-  textarea.selectionEnd = end + delta
+  // update cursor/selection
+  const delta = direction < 0
+    ? (lines[selectionLineTo].length + 1) * -1
+    : (lines[selectionLineFrom].length + 1)
+  textarea.selectionStart = selectionStart + delta
+  textarea.selectionEnd = selectionEnd + delta
 
   return true
 }

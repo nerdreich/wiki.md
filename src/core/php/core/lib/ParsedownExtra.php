@@ -6,7 +6,7 @@
 # https://github.com/erusev/parsedown-extra
 #
 # (c) Emanuil Rusev
-# http://erusev.com
+# https://erusev.com
 #
 # The MIT License (MIT)
 #
@@ -35,15 +35,15 @@ class ParsedownExtra extends Parsedown
 {
     # ~
 
-    const version = '0.8.0';
+    const version = '0.9.0';
 
     # ~
 
     function __construct()
     {
-        if (version_compare(parent::version, '1.7.1') < 0)
+        if (version_compare(parent::version, '1.8.0') < 0)
         {
-            throw new Exception('ParsedownExtra requires a later version of Parsedown');
+            throw new Exception('ParsedownExtra requires Parsedown 1.8.0 or later');
         }
 
         $this->BlockTypes[':'] []= 'DefinitionList';
@@ -349,7 +349,7 @@ class ParsedownExtra extends Parsedown
     #
     # Setext
 
-    protected function blockSetextHeader($Line, array $Block = null)
+    protected function blockSetextHeader($Line, ?array $Block = null)
     {
         $Block = parent::blockSetextHeader($Line, $Block);
 
@@ -526,7 +526,7 @@ class ParsedownExtra extends Parsedown
             ),
         );
 
-        uasort($this->DefinitionData['Footnote'], 'self::sortFootnotes');
+        uasort($this->DefinitionData['Footnote'], [$this, 'sortFootnotes']);
 
         foreach ($this->DefinitionData['Footnote'] as $definitionId => $DefinitionData)
         {
@@ -563,7 +563,7 @@ class ParsedownExtra extends Parsedown
 
             $n = count($textElements) -1;
 
-            if ($textElements[$n]['name'] === 'p')
+            if (isset($textElements[$n]['name']) && $textElements[$n]['name'] === 'p')
             {
                 $backLinkElements = array_merge(
                     array(
@@ -643,7 +643,11 @@ class ParsedownExtra extends Parsedown
         $DOMDocument = new DOMDocument;
 
         # http://stackoverflow.com/q/11309194/200145
-        $elementMarkup = mb_convert_encoding($elementMarkup, 'HTML-ENTITIES', 'UTF-8');
+        $elementMarkup = mb_encode_numericentity(
+            $elementMarkup,
+            [0x80, 0x10FFFF, 0, ~0],
+            'UTF-8'
+        );
 
         # http://stackoverflow.com/q/4879946/200145
         $DOMDocument->loadHTML($elementMarkup);

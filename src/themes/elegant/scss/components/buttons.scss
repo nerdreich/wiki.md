@@ -1,4 +1,4 @@
-// Copyright 2020-2022 Markus Leupold-Löwenthal
+// Copyright 2020-2026 Markus Leupold-Löwenthal
 //
 // This file is part of wiki.md.
 //
@@ -19,12 +19,16 @@
 /// @access public
 ////
 
+@use 'sass:math';
+@use '../global' as *;
+
 button,
 .btn,
 input[type='button'],
 input[type='submit'] {
   @include typography-font($typography-font-list-serif, 700, px(18), 1em, 1px);
   @include typography-links(inherit, inherit, 0);
+
   @include media-breakpoint-down(sm) {
     max-width: 100%;
     width: 100%;

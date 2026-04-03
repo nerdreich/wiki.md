@@ -1,7 +1,7 @@
 <?php // phpcs:ignore
 
 /**
- * Copyright 2020-2022 Markus Leupold-Löwenthal
+ * Copyright 2020-2026 Markus Leupold-Löwenthal
  *
  * This file is part of wiki.md.
  *
@@ -32,7 +32,7 @@ if (!class_exists('\at\nerdreich\wiki\UserPlugin')) {
      */
     class UserPlugin extends WikiPlugin
     {
-        public function setup()
+        public function setup(): void
         {
             $this->wiki->registerActionRoute('user', 'list', function ($wiki) {
                 if ($this->list($wiki->core->getWikiPath()) !== null) {
@@ -126,7 +126,7 @@ if (!class_exists('\at\nerdreich\wiki\UserPlugin')) {
          * @param array Array containing 'permissions' and 'users'.
          */
         public function list(
-            string $wikiPath = null
+            ?string $wikiPath = null
         ): ?array {
             $wikiPath = $wikiPath ?? $this->core->getWikiPath();
             if ($wikiPath[-1] !== '/') {

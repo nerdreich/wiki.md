@@ -1,4 +1,4 @@
-// Copyright 2020-2022 Markus Leupold-Löwenthal
+// Copyright 2020-2026 Markus Leupold-Löwenthal
 //
 // This file is part of wiki.md.
 //
@@ -19,28 +19,7 @@
 /// @access public
 ////
 
-// Color values for 'elegant' theme.
-
-$theme-color1: #9b6a6c;
-$theme-color2: #202020;
-$theme-color3: #fefdfa;
-$theme-color4: #f4eeec;
-$theme-color5: #404040;
-$theme-color6: #c9aeae;
-
-$color-primary: $theme-color1;
-
-$color-bg: $theme-color3;
-$color-bg-secondary: $theme-color4;
-$color-bg-highlight: $color-bg-secondary;
-
-$color-panel-bg: $theme-color4;
-$color-text: $theme-color2;
-$color-text-bold: $theme-color5;
-$color-headline: $theme-color1;
-$color-line-strong: $theme-color6;
-
-// #5D2E8C
+@use '../global' as *;
 
 pre,
 code,

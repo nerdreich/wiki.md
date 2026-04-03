@@ -27,7 +27,7 @@ Due its file-based nature, wiki.md works best for small to medium traffic sites.
 
 ## Requirements
 
-* PHP 7.4 - 8.3
+* PHP 7.4 - 8.5
 * Apache `.htaccess` / `mod_rewrite`
 
 ## Supported Browsers
@@ -59,6 +59,6 @@ Read the [Documentation](docs/) to learn more.
 
 ## Roadmap
 
-Check out the [roadmap](docs/ROADMAP.md) for planned features.
+Check out the [roadmap](docs/roadmap.md) for planned features.
 
 Feel free to report any [issues](https://github.com/nerdreich/wiki.md/issues) you find.

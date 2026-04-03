@@ -1,4 +1,4 @@
-// Copyright 2020-2022 Markus Leupold-Löwenthal
+// Copyright 2020-2026 Markus Leupold-Löwenthal
 //
 // This file is part of wiki.md.
 //
@@ -19,6 +19,8 @@
 /// @access public
 ////
 
+@use '../global' as *;
+
 // Colors for 'elegant' theme in dark mode.
 
 $theme-dark-bg: $theme-color2;
@@ -35,10 +37,22 @@ $theme-dark-primary: #c89495;
 
   body {
     a {
-      @include typography-links($theme-dark-primary, $theme-dark-fg, 1px, transparent, $theme-dark-primary);
+      @include typography-links(
+        $theme-dark-primary,
+        $theme-dark-fg,
+        1px,
+        transparent,
+        $theme-dark-primary
+      );
 
       &.broken {
-        @include typography-links($color-negative, $theme-dark-fg, 1px, $color-negative, $color-negative);
+        @include typography-links(
+          $color-negative,
+          $theme-dark-fg,
+          1px,
+          $color-negative,
+          $color-negative
+        );
       }
     }
   }

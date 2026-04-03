@@ -1,4 +1,4 @@
-// Copyright 2020-2022 Markus Leupold-Löwenthal
+// Copyright 2020-2026 Markus Leupold-Löwenthal
 //
 // This file is part of wiki.md.
 //
@@ -19,6 +19,9 @@
 /// @access public
 ////
 
+@use 'sass:math';
+@use '../global' as *;
+
 $input-padding: math.div($spacing, 2);
 
 form {
@@ -29,7 +32,14 @@ input[type='text'],
 input[type='password'],
 input[type='file'],
 textarea {
-  @include typography-font($typography-font-list-monospace, 400, px(18), 1.4em, 0, 75%);
+  @include typography-font(
+    $typography-font-list-monospace,
+    400,
+    px(18),
+    1.4em,
+    0,
+    75%
+  );
 
   background-color: $color-bg;
   border: 2px solid $color-line;

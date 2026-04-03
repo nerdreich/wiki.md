@@ -15,28 +15,11 @@
 // along with wiki.md. If not, see <https://www.gnu.org/licenses/>.
 
 ////
-/// @group components
+/// @group layout
 /// @access public
 ////
 
-@use 'sass:math';
-@use '../global' as *;
-
-table {
-  width: 100%;
-}
-
-thead tr,
-tbody tr:nth-child(even) {
-  background-color: $color-bg-highlight;
-}
-
-th {
-  color: $color-text;
-  font-weight: 700;
-  padding: math.div($spacing, 8) math.div($spacing, 4);
-}
-
-td {
-  padding: math.div($spacing, 8) math.div($spacing, 4);
+@mixin layout-top-margin($top-margin) {
+  margin-bottom: 0;
+  margin-top: $top-margin;
 }

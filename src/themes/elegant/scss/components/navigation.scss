@@ -1,4 +1,4 @@
-// Copyright 2020-2022 Markus Leupold-Löwenthal
+// Copyright 2020-2026 Markus Leupold-Löwenthal
 //
 // This file is part of wiki.md.
 //
@@ -19,6 +19,9 @@
 /// @access public
 ////
 
+@use 'sass:math';
+@use '../global' as *;
+
 $navbar-text-color: $color-white-100;
 
 .navbar {
@@ -28,7 +31,13 @@ $navbar-text-color: $color-white-100;
   padding-top: math.div($spacing, 4);
 
   a {
-    @include typography-links($navbar-text-color, $navbar-text-color, 1px, transparent, $navbar-text-color);
+    @include typography-links(
+      $navbar-text-color,
+      $navbar-text-color,
+      1px,
+      transparent,
+      $navbar-text-color
+    );
 
     margin-right: $spacing;
   }
